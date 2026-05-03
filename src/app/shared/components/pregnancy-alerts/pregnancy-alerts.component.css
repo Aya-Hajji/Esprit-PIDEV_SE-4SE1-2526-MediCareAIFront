@@ -1,0 +1,287 @@
+.pregnancy-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin: 1rem 0;
+}
+
+.pregnancy-alerts--empty {
+  border: 1px solid #e0e0e0;
+  color: #666;
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.95rem;
+}
+
+/* Loading State */
+.pregnancy-alerts__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #0066cc;
+  font-weight: 500;
+}
+
+.pregnancy-alerts__loading::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
+  border: 2px solid #0066cc;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error Message */
+.pregnancy-alerts__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  color: #c33;
+  font-size: 0.95rem;
+}
+
+.pregnancy-alerts__error p {
+  margin: 0;
+  flex: 1;
+}
+
+/* Success Message */
+.pregnancy-alerts__success {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 6px;
+  color: #2e7d32;
+  font-size: 0.95rem;
+}
+
+.pregnancy-alerts__success p {
+  margin: 0;
+  flex: 1;
+}
+
+/* Alerts Title */
+.pregnancy-alerts__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Alerts List */
+.pregnancy-alerts__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Alert Item */
+.pregnancy-alert-item {
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pregnancy-alert-item--urgent {
+  border-left-color: #d32f2f;
+  background-color: #ffebee;
+}
+
+.pregnancy-alert-item--warning {
+  border-left-color: #f57c00;
+  background-color: #fff3e0;
+}
+
+.pregnancy-alert-item--info {
+  border-left-color: #0066cc;
+  background-color: #e3f2fd;
+}
+
+/* Alert Item Header */
+.pregnancy-alert-item__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.alert-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.alert-type {
+  flex: 1;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.alert-severity {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.severity--urgent {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.severity--warning {
+  background-color: #f57c00;
+  color: white;
+}
+
+.severity--info {
+  background-color: #0066cc;
+  color: white;
+}
+
+/* Alert Message */
+.pregnancy-alert-item__message {
+  margin: 0.75rem 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Alert Recommendation */
+.pregnancy-alert-item__recommendation {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  border-left: 3px solid #666;
+  font-size: 0.9rem;
+}
+
+.pregnancy-alert-item__recommendation strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.pregnancy-alert-item__recommendation p {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Alert Actions */
+.pregnancy-alert-item__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn--escalate {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.btn--escalate:hover:not(:disabled) {
+  background-color: #b71c1c;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.btn--dismiss {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.btn--dismiss:hover:not(:disabled) {
+  background-color: #bdbdbd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Empty State */
+.pregnancy-alerts__empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #999;
+  font-size: 0.95rem;
+}
+
+.pregnancy-alerts__empty p {
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.pregnancy-alerts__empty small {
+  display: block;
+  color: #bbb;
+  font-size: 0.85rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .pregnancy-alerts {
+    padding: 0.75rem;
+  }
+
+  .pregnancy-alert-item {
+    padding: 0.75rem;
+  }
+
+  .pregnancy-alert-item__header {
+    flex-wrap: wrap;
+  }
+
+  .pregnancy-alert-item__actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

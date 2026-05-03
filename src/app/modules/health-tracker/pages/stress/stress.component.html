@@ -1,0 +1,61 @@
+<section class="ht-form-page ht-form-page--stress">
+  <header class="ht-page-header">
+    <h2>Stress Entries</h2>
+    <p>Monitor stress snapshots, edit quickly, and keep meaningful notes.</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="ht-alert" role="alert">{{ errorMessage() }}</div>
+  }
+
+  <form class="ht-form-card" [formGroup]="form" (ngSubmit)="submit()">
+    <h3>{{ isEditing() ? 'Edit Stress Entry' : 'Add Stress Entry' }}</h3>
+    <div class="ht-form-grid">
+      <label class="ht-field">
+        <span>Level (1-10)</span>
+        <input id="level" type="number" formControlName="level" min="1" max="10" />
+      </label>
+
+      <label class="ht-field">
+        <span>Date</span>
+        <input id="stress-date" type="date" formControlName="date" />
+      </label>
+
+      <label class="ht-field ht-field--full">
+        <span>Note</span>
+        <textarea id="note" formControlName="note" rows="3" placeholder="optional note"></textarea>
+      </label>
+    </div>
+
+    <div class="ht-actions">
+      <button class="ht-btn ht-btn--primary" type="submit" [disabled]="submitting() || form.invalid">
+        {{ submitting() ? 'Saving...' : isEditing() ? 'Update Stress' : 'Add Stress' }}
+      </button>
+      @if (isEditing()) {
+        <button class="ht-btn ht-btn--ghost" type="button" (click)="cancelEdit()">Cancel</button>
+      }
+    </div>
+  </form>
+
+  @if (loading()) {
+    <p class="ht-status">Loading stress entries...</p>
+  } @else if (!hasStressEntries()) {
+    <p class="ht-status">No stress entries available.</p>
+  } @else {
+    <div class="ht-entry-grid">
+      @for (item of stresses(); track trackByStressId($index, item)) {
+        <article class="ht-entry-card">
+          <h4>Stress Log</h4>
+          <p><strong>Level:</strong> {{ item.level }}/10</p>
+          <p><strong>Date:</strong> {{ item.timestamp | date: 'medium' }}</p>
+          <p><strong>Note:</strong> {{ item.notes || 'No note' }}</p>
+
+          <div class="ht-card-actions">
+            <button class="ht-btn ht-btn--edit" type="button" (click)="startEditStress(item)">Edit</button>
+            <button class="ht-btn ht-btn--danger" type="button" (click)="deleteStress(item.id)">Delete</button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

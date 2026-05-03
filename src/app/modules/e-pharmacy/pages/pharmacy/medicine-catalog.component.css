@@ -5,20 +5,44 @@
 }
 
 .catalog-header {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.catalog-eyebrow {
+  margin: 0 0 6px;
+  color: #00a082;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .catalog-title {
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 34px;
+  font-weight: 800;
   color: #111827;
   margin: 0 0 8px 0;
+  line-height: 1.1;
 }
 
 .catalog-subtitle {
-  font-size: 16px;
+  font-size: 15px;
   color: #6B7280;
   margin: 0;
+}
+
+.cart-shortcut {
+  text-decoration: none;
+  background: #00a082;
+  color: white;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 13px;
 }
 
 .error-banner {
@@ -37,9 +61,10 @@
 .filters-section {
   background: white;
   border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 32px;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px -20px rgba(17, 24, 39, 0.38);
 }
 
 .filters-header {
@@ -166,13 +191,13 @@
 
 .search-btn {
   width: 100%;
-  padding: 10px 16px;
-  background: #3B82F6;
+  padding: 11px 16px;
+  background: #00a082;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -182,7 +207,7 @@
 }
 
 .search-btn:hover {
-  background: #2563EB;
+  background: #00856d;
 }
 
 .results-info {
@@ -223,8 +248,8 @@
 
 .medicines-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
   margin-bottom: 40px;
 }
 

@@ -1,0 +1,43 @@
+<section class="smart-alerts" [class.smart-alerts--empty]="visibleAlerts().length === 0">
+  @if (visibleAlerts().length > 0) {
+    <div class="smart-alerts__grid">
+      @for (alert of visibleAlerts(); track trackByAlertId($index, alert)) {
+        <article
+          class="smart-alert-card"
+          [class.smart-alert-card--info]="alert.level === 'INFO'"
+          [class.smart-alert-card--warning]="alert.level === 'WARNING'"
+          [class.smart-alert-card--urgent]="alert.level === 'URGENT'"
+        >
+          <header class="smart-alert-card__header">
+            <span class="smart-alert-card__icon" aria-hidden="true">{{ getLevelIcon(alert.level) }}</span>
+
+            <div class="smart-alert-card__heading">
+              <span class="smart-alert-card__level">{{ getLevelLabel(alert.level) }}</span>
+              <h4>{{ alert.message }}</h4>
+            </div>
+
+            @if (alert.level === 'URGENT') {
+              <span class="smart-alert-card__priority">High priority</span>
+            }
+          </header>
+
+          <div class="smart-alert-card__body">
+            <p><span>Recommendation:</span> {{ alert.recommendation }}</p>
+            <p><span>Activity:</span> {{ alert.activity }}</p>
+          </div>
+
+          <footer class="smart-alert-card__actions">
+            <button type="button" class="smart-alert-card__ignore" (click)="ignoreAlert.emit(alert.id)">
+              Ignore
+            </button>
+          </footer>
+        </article>
+      }
+    </div>
+  } @else {
+    <div class="smart-alerts__empty">
+      <strong>No active alerts</strong>
+      <p>Everything looks stable right now. New alerts will appear here with recommendations and next activities.</p>
+    </div>
+  }
+</section>

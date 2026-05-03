@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class SpecialtyService {
-  private apiUrl = `${environment.apiUrl.replace(/\/+$/, '')}/specialties`;
+  private apiUrl = `${environment.apiUrl}/specialties`;
 
   constructor(private http: HttpClient) {}
 

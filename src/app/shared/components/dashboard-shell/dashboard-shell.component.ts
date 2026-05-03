@@ -27,12 +27,6 @@ export class DashboardShellComponent {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
-  onHealthEventsClick(): void {
-    if (this.isSidebarOpen) {
-      this.isSidebarOpen = false;
-    }
-  }
-
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
@@ -54,6 +48,10 @@ export class DashboardShellComponent {
     return this.currentRole === 'PATIENT' || this.currentRole === 'ADMIN';
   }
 
+  get isPatient(): boolean {
+    return this.currentRole === 'PATIENT';
+  }
+
   get dashboardRoute(): string {
     switch (this.currentRole) {
       case 'ADMIN':
@@ -65,14 +63,13 @@ export class DashboardShellComponent {
       case 'NURSE':
         return '/appointments/dashboard';
       case 'PATIENT':
-        return '/health-tracker/dashboard';
+        return '/patient/dashboard';
       default:
         return '/';
     }
   }
 
   private normalizeRole(role: unknown): string {
-    const normalized = (role || '').toString().toUpperCase().replace('ROLE_', '').trim();
-    return normalized === 'CLIENT' ? 'PATIENT' : normalized;
+    return (role || '').toString().toUpperCase().replace('ROLE_', '').trim();
   }
 }

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Frontend service with hot reload for development
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_ENV: development
+    container_name: medicare-ai-frontend-dev
+    ports:
+      - "4200:4200"
+      - "9876:9876"  # Karma test runner
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./angular.json:/app/angular.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - ANGULAR_CLI_ANALYTICS=ci
+    command: npm start
+    restart: unless-stopped
+
+  # Optional: Mock API server
+  mock-api:
+    image: mockserver/mockserver:latest
+    container_name: medicare-mock-api
+    ports:
+      - "1080:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
+    volumes:
+      - ./docker/mockserver:/config
+    restart: unless-stopped
+
+networks:
+  default:
+    name: medicare-dev

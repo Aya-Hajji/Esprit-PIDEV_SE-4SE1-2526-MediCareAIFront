@@ -317,6 +317,16 @@
   padding: 10px 14px;
 }
 
+.success-banner {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 10px;
+  color: #16A34A;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 14px;
+}
+
 .form-field {
   display: flex;
   flex-direction: column;

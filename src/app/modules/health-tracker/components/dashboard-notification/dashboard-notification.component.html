@@ -1,0 +1,58 @@
+<div class="dashboard-notification-shell">
+  <button
+    type="button"
+    class="dashboard-notification-shell__trigger"
+    (click)="togglePanel()"
+    [attr.aria-expanded]="notificationService.isOpen()"
+    aria-label="Health notifications"
+  >
+    <span class="dashboard-notification-shell__icon" aria-hidden="true">🔔</span>
+    @if (notificationService.badgeCount() > 0) {
+      <span class="dashboard-notification-shell__badge">{{ notificationService.badgeCount() }}</span>
+    }
+  </button>
+
+  @if (notificationService.isOpen()) {
+    <section class="dashboard-notification-panel" aria-label="Health notifications panel">
+      <header class="dashboard-notification-panel__header">
+        <div>
+          <span class="dashboard-notification-panel__eyebrow">Health Alerts</span>
+          <h3>Daily recommendations</h3>
+        </div>
+        <button type="button" class="dashboard-notification-panel__close" (click)="closePanel()">Close</button>
+      </header>
+
+      @if (notificationService.isLoading()) {
+        <div class="dashboard-notification-panel__state">Loading recommendations...</div>
+      } @else if (notificationService.hasNotifications()) {
+        <div class="dashboard-notification-list">
+          @for (notification of notificationService.notifications(); track notification.id) {
+            <article class="dashboard-notification-card dashboard-notification-card--{{ notification.tone }}">
+              <div class="dashboard-notification-card__top">
+                <div>
+                  <span class="dashboard-notification-card__badge">{{ notification.badge }}</span>
+                  <h4>{{ notification.title }}</h4>
+                </div>
+                @if (notification.dismissible) {
+                  <button type="button" class="dashboard-notification-card__dismiss" (click)="dismissNotification(notification.id)">×</button>
+                }
+              </div>
+
+              <p>{{ notification.description }}</p>
+
+              @if (notification.entries.length > 0) {
+                <ul class="dashboard-notification-card__list">
+                  @for (entry of notification.entries; track entry) {
+                    <li>{{ entry }}</li>
+                  }
+                </ul>
+              }
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="dashboard-notification-panel__state dashboard-notification-panel__state--empty">No notifications at this time.</div>
+      }
+    </section>
+  }
+</div>

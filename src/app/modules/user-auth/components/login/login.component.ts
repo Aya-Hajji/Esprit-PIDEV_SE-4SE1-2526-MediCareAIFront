@@ -27,6 +27,7 @@ export class LoginComponent {
   showPassword = false;
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
   returnUrl = '/';
 
   roles: RoleConfig[] = [
@@ -120,7 +121,10 @@ export class LoginComponent {
         }
 
         this.isLoading = false;
+        console.log('Login response:', response);
         const targetRoute = this.resolveTargetRoute(response);
+        console.log('Navigating to:', targetRoute);
+        this.successMessage = `Login successful! Redirecting to ${targetRoute}...`;
         this.navigateAfterLogin(targetRoute);
       },
       (error) => {
@@ -138,11 +142,22 @@ export class LoginComponent {
     const roleFromSelection = this.selectedRole?.id || '';
     const normalizedRole = (roleFromResponse || roleFromSelection).toUpperCase().replace('ROLE_', '');
 
+    console.log('Resolving target route:');
+    console.log('Role from response:', roleFromResponse);
+    console.log('Role from selection:', roleFromSelection);
+    console.log('Normalized role:', normalizedRole);
+
+    // If no role found, default to the selected role or 'PATIENT'
+    const finalRole = normalizedRole || roleFromSelection || 'PATIENT';
+
     if (this.returnUrl && this.returnUrl !== '/login' && this.returnUrl !== '/') {
+      console.log('Using return URL:', this.returnUrl);
       return this.returnUrl;
     }
 
-    return this.getDefaultRouteForRole(normalizedRole);
+    const targetRoute = this.getDefaultRouteForRole(finalRole);
+    console.log('Target route for role', finalRole, ':', targetRoute);
+    return targetRoute;
   }
 
   private getDefaultRouteForRole(role: string): string {
@@ -156,15 +171,27 @@ export class LoginComponent {
       case 'NURSE':
         return '/appointments/dashboard';
       case 'PATIENT':
-        return '/health-tracker/dashboard';
+        return '/patient/dashboard';
       default:
         return '/';
     }
   }
 
   private navigateAfterLogin(targetRoute: string): void {
+    console.log('Attempting navigation to:', targetRoute);
     this.router.navigateByUrl(targetRoute).then((navigated) => {
-      if (!navigated && typeof window !== 'undefined') {
+      console.log('Navigation result:', navigated);
+      if (!navigated) {
+        console.warn('Angular navigation failed, trying window.location');
+        if (typeof window !== 'undefined') {
+          window.location.href = targetRoute;
+        }
+      } else {
+        console.log('Navigation successful');
+      }
+    }).catch((error) => {
+      console.error('Navigation error:', error);
+      if (typeof window !== 'undefined') {
         window.location.href = targetRoute;
       }
     });

@@ -1,0 +1,117 @@
+<div class="share-container">
+  <div class="header-section">
+    <h2>Share Medical Records</h2>
+    <p class="subtitle">Securely share your medical records with healthcare providers</p>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-section">
+        <h4>Share a Record</h4>
+
+        <div *ngIf="success" class="alert alert-success">
+          {{ success }}
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <form [formGroup]="shareForm" (ngSubmit)="onSubmit()">
+          <div class="form-group mb-3">
+            <label for="recordId" class="form-label">Select Record</label>
+            <select
+              class="form-select"
+              id="recordId"
+              formControlName="recordId"
+              [class.is-invalid]="submitted && f['recordId'].errors"
+            >
+              <option value="">Choose a record to share</option>
+              <option *ngFor="let record of myRecords" [value]="record.id">
+                {{ record.documentType }} - {{ record.fileName }}
+              </option>
+            </select>
+            <div *ngIf="submitted && f['recordId'].errors" class="invalid-feedback d-block">
+              Please select a record to share
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="userId" class="form-label">Share With</label>
+            <select
+              class="form-select"
+              id="userId"
+              formControlName="userId"
+              [class.is-invalid]="submitted && f['userId'].errors"
+            >
+              <option value="">Choose a user</option>
+              <option *ngFor="let user of availableUsers" [value]="user.id">
+                {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
+              </option>
+            </select>
+            <div *ngIf="submitted && f['userId'].errors" class="invalid-feedback d-block">
+              Please select a user to share with
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="permissions" class="form-label">Permissions</label>
+            <select class="form-select" id="permissions" formControlName="permissions">
+              <option value="VIEW">View Only</option>
+              <option value="DOWNLOAD">Download</option>
+              <option value="SHARE">Share with Others</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="expiryDate" class="form-label">Expiry Date (Optional)</label>
+            <input
+              type="date"
+              class="form-control"
+              id="expiryDate"
+              formControlName="expiryDate"
+              placeholder="Leave empty for no expiry"
+            />
+            <small class="form-text text-muted">Access will be revoked after this date</small>
+          </div>
+
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            <span *ngIf="!loading">Share Record</span>
+            <span *ngIf="loading">
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              Sharing...
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="history-section">
+        <h4>Share History</h4>
+        <div *ngIf="sharedHistory.length > 0; else noShares" class="shares-list">
+          <div *ngFor="let share of sharedHistory" class="share-item">
+            <div class="share-info">
+              <div class="share-title">{{ share.recordType || 'Medical Record' }}</div>
+              <small class="share-details">
+                Shared with: {{ share.sharedWithUser?.firstName }} {{ share.sharedWithUser?.lastName }}
+              </small>
+              <small class="share-details">
+                Permissions: <span class="badge bg-info">{{ share.permissions }}</span>
+              </small>
+              <small class="share-date">
+                Shared on: {{ share.createdAt | date : 'short' }}
+              </small>
+            </div>
+            <button class="btn btn-sm btn-danger" (click)="revokeShare(share.id)" title="Revoke">
+              🔒 Revoke
+            </button>
+          </div>
+        </div>
+        <ng-template #noShares>
+          <div class="alert alert-info">No records shared yet. Share your first record above!</div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

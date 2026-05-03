@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface SignupRequest {
@@ -90,7 +90,7 @@ export class AuthService {
     const payload = this.buildRegisterPayload(data);
     console.log('Payload:', payload);
     return this.http.post(`${this.apiUrl}/register`, payload, { responseType: 'text' }).pipe(
-      map(response => this.normalizeAuthResponse(response, data.email)),
+      map(response => this.normalizeAuthResponse(response, data.email, data.gender)),
       tap(response => {
         console.log('Registration successful:', response);
         this.persistAuthResponse(response);
@@ -104,10 +104,16 @@ export class AuthService {
   login(data: LoginRequest): Observable<AuthResponse> {
     console.log('Sending login request to:', `${this.apiUrl}/login`);
     console.log('Payload:', data);
+    const existingUser = this.currentUserValue || this.getUserFromLocalStorage() || {};
+    const fallbackGender =
+      this.normalizeGenderValue(existingUser?.gender || existingUser?.user?.gender || localStorage.getItem('userGender')) || '';
+
     return this.http.post(`${this.apiUrl}/login`, data, { responseType: 'text' }).pipe(
-      map(response => this.normalizeAuthResponse(response, data.email)),
+      map(response => this.normalizeAuthResponse(response, data.email, fallbackGender)),
       tap(response => {
-        console.log('Login successful:', response);
+        console.log('Login successful, normalized response:', response);
+        console.log('Role from response:', response.role);
+        console.log('User from response:', response.user);
         this.persistAuthResponse(response);
       })
     );
@@ -174,13 +180,43 @@ export class AuthService {
   }
 
   /**
+   * Resolve the current authenticated user's numeric id.
+   * Tries the local session first, then falls back to the backend `/auth/user-id` endpoint.
+   */
+  getCurrentUserId(): Observable<number | null> {
+    const localUserId = this.getCurrentUserIdFromSession();
+    if (localUserId !== null) {
+      return of(localUserId);
+    }
+
+    return this.http.get(`${this.apiUrl}/user-id`, { responseType: 'text' }).pipe(
+      map((response) => {
+        const parsed = this.parseRawResponse(response);
+        const resolvedId = this.extractPositiveUserId(parsed);
+
+        if (resolvedId !== null) {
+          localStorage.setItem('userId', String(resolvedId));
+          const existingUser = this.currentUserValue || this.getUserFromLocalStorage() || {};
+          this.setUser({ ...existingUser, id: resolvedId });
+        }
+
+        return resolvedId;
+      }),
+      catchError((error) => {
+        console.error('Unable to resolve current user id from backend:', error);
+        return of(null);
+      })
+    );
+  }
+
+  /**
    * Logout user
    */
   logout(): void {
     // Clear token and user from local storage
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
-    localStorage.removeItem('userId');
+    localStorage.removeItem('userGender');
     this.tokenSubject.next(null);
     this.currentUserSubject.next(null);
   }
@@ -190,25 +226,6 @@ export class AuthService {
    */
   isLoggedIn(): boolean {
     return !!this.tokenValue;
-  }
-
-  isAuthenticated(): boolean {
-    return this.isLoggedIn();
-  }
-
-  getCurrentUserId(): number | null {
-    const storedUserId = Number(localStorage.getItem('userId'));
-    if (Number.isFinite(storedUserId) && storedUserId > 0) {
-      return storedUserId;
-    }
-
-    const user = this.currentUserValue;
-    const userId = Number(user?.id ?? user?.userId);
-    if (Number.isFinite(userId) && userId > 0) {
-      return userId;
-    }
-
-    return this.extractUserIdFromToken(this.tokenValue || '');
   }
 
   /**
@@ -248,23 +265,28 @@ export class AuthService {
   /**
    * Normalize backend auth response (JSON object, JSON string, or raw token string).
    */
-  private normalizeAuthResponse(raw: unknown, fallbackEmail = ''): AuthResponse {
+  private normalizeAuthResponse(raw: unknown, fallbackEmail = '', fallbackGender = ''): AuthResponse {
     const parsed = this.parseRawResponse(raw);
+    console.log('Raw auth response:', raw);
+    console.log('Parsed auth response:', parsed);
 
     if (typeof parsed === 'string') {
       const token = parsed.trim().replace(/^"|"$/g, '');
       const roleFromToken = this.extractRoleFromToken(token);
       const emailFromToken = this.extractEmailFromToken(token);
-      const userIdFromToken = this.extractUserIdFromToken(token);
+
+      console.log('Token extracted:', token.substring(0, 50) + '...');
+      console.log('Role from token:', roleFromToken);
+      console.log('Email from token:', emailFromToken);
 
       return {
         token,
         role: roleFromToken,
         email: emailFromToken || fallbackEmail,
         user: {
-          id: userIdFromToken ?? undefined,
           email: emailFromToken || fallbackEmail,
-          role: roleFromToken
+          role: roleFromToken,
+          gender: this.normalizeGenderValue(fallbackGender) || undefined
         }
       };
     }
@@ -281,26 +303,34 @@ export class AuthService {
     const role = (parsed?.role || backendUser?.role || '').toString();
     const email = (parsed?.email || backendUser?.email || fallbackEmail || '').toString();
 
+    console.log('Token from parsed response:', token ? token.substring(0, 50) + '...' : 'null');
+    console.log('Role from parsed response:', role);
+    console.log('Email from parsed response:', email);
+    console.log('Backend user object:', backendUser);
+
     const roleFinal = role || this.extractRoleFromToken(token);
     const emailFinal = email || this.extractEmailFromToken(token);
-    const userIdFinal = this.resolveAuthUserId(parsed, backendUser, token);
+
+    console.log('Final role after token extraction:', roleFinal);
+    console.log('Final email after token extraction:', emailFinal);
 
     const fullName = (backendUser?.fullName || parsed?.fullName || '').toString();
     const firstName = (backendUser?.firstName || '').toString();
     const lastName = (backendUser?.lastName || '').toString();
+    const gender = this.normalizeGenderValue(backendUser?.gender || parsed?.gender || fallbackGender);
 
     return {
       token: token.toString(),
       role: roleFinal,
       email: emailFinal,
       user: {
-        id: userIdFinal ?? undefined,
+        id: backendUser?.id,
         email: emailFinal,
         role: roleFinal,
         fullName,
         firstName,
         lastName,
-        gender: backendUser?.gender,
+        gender: gender || undefined,
         phoneNumber: backendUser?.phoneNumber
       }
     };
@@ -345,26 +375,51 @@ export class AuthService {
     }
 
     this.setToken(response.token);
+    const resolvedUserId = this.extractPositiveUserId(response.user) ?? this.extractNumericUserIdFromToken(response.token);
+    const existingUser = this.currentUserValue || this.getUserFromLocalStorage() || {};
+    const resolvedGender = this.normalizeGenderValue(
+      response.user?.gender || existingUser?.gender || existingUser?.user?.gender || localStorage.getItem('userGender')
+    );
     const userData = {
       email: response.email,
       role: response.role,
-      ...response.user
+      ...response.user,
+      ...(resolvedGender ? { gender: resolvedGender } : {}),
+      ...(resolvedUserId !== null ? { id: resolvedUserId } : {})
     };
-    this.setUser(userData);
 
-    const userId = Number(userData.id ?? (userData as any).userId);
-    if (Number.isFinite(userId) && userId > 0) {
-      localStorage.setItem('userId', userId.toString());
+    if (resolvedUserId !== null) {
+      localStorage.setItem('userId', String(resolvedUserId));
     }
+
+    if (resolvedGender) {
+      localStorage.setItem('userGender', resolvedGender);
+    }
+
+    this.setUser(userData);
+  }
+
+  private normalizeGenderValue(value: unknown): string {
+    const normalized = (value || '').toString().trim().toUpperCase();
+    if (normalized === 'F') {
+      return 'FEMALE';
+    }
+    if (normalized === 'M') {
+      return 'MALE';
+    }
+    return normalized;
   }
 
   private extractRoleFromToken(token: string): string {
     const payload = this.decodeJwtPayload(token);
+    console.log('JWT payload:', payload);
     if (!payload) {
+      console.log('No JWT payload found');
       return '';
     }
 
-    const role = payload.role || payload.roles || payload.authority || payload.authorities;
+    const role = payload.role || payload.roles || payload.authority || payload.authorities || payload.userRole || payload.user?.role || payload.claims?.role;
+    console.log('Role found in payload:', role);
     if (Array.isArray(role)) {
       return (role[0] || '').toString();
     }
@@ -381,62 +436,27 @@ export class AuthService {
     return (payload.email || payload.sub || payload.username || '').toString();
   }
 
-  private extractUserIdFromToken(token: string): number | null {
-    const payload = this.decodeJwtPayload(token);
-    if (!payload) {
-      return null;
-    }
-
-    const candidate = Number(
-      payload.id
-      ?? payload.userId
-      ?? payload.uid
-      ?? payload.user_id
-      ?? payload.userID
-      ?? payload.nameid
-      ?? payload.name_id
-      ?? payload.sub
-    );
-
-    return Number.isFinite(candidate) && candidate > 0 ? candidate : null;
-  }
-
-  private resolveAuthUserId(parsed: any, backendUser: any, token: string): number | null {
-    const candidate = Number(
-      backendUser?.id
-      ?? backendUser?.userId
-      ?? backendUser?.uid
-      ?? parsed?.id
-      ?? parsed?.userId
-      ?? parsed?.uid
-      ?? parsed?.data?.id
-      ?? parsed?.data?.userId
-      ?? parsed?.data?.uid
-    );
-
-    if (Number.isFinite(candidate) && candidate > 0) {
-      return candidate;
-    }
-
-    return this.extractUserIdFromToken(token);
-  }
-
   private decodeJwtPayload(token: string): any | null {
     if (!token || !token.includes('.')) {
+      console.log('Token is not a valid JWT format');
       return null;
     }
 
     try {
       const payload = token.split('.')[1];
       if (!payload) {
+        console.log('No payload part in JWT');
         return null;
       }
 
       const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
       const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
       const decoded = atob(padded);
-      return JSON.parse(decoded);
-    } catch {
+      const parsed = JSON.parse(decoded);
+      console.log('Successfully decoded JWT payload');
+      return parsed;
+    } catch (error) {
+      console.error('Error decoding JWT payload:', error);
       return null;
     }
   }
@@ -463,6 +483,93 @@ export class AuthService {
     } catch (error) {
       console.error('Error parsing user from localStorage:', error);
       localStorage.removeItem('authUser');
+      return null;
+    }
+  }
+
+  private getCurrentUserIdFromSession(): number | null {
+    const currentUserId = this.extractPositiveUserId(this.currentUserValue);
+    if (currentUserId !== null) {
+      return currentUserId;
+    }
+
+    const storedUser = this.getUserFromLocalStorage();
+    const storedUserId = this.extractPositiveUserId(storedUser);
+    if (storedUserId !== null) {
+      return storedUserId;
+    }
+
+    const persistedUserId = Number(localStorage.getItem('userId'));
+    if (Number.isFinite(persistedUserId) && persistedUserId > 0) {
+      return persistedUserId;
+    }
+
+    return this.extractNumericUserIdFromToken(this.tokenValue || this.getTokenFromLocalStorage());
+  }
+
+  private extractPositiveUserId(source: unknown): number | null {
+    if (source === null || source === undefined) {
+      return null;
+    }
+
+    if (typeof source === 'number') {
+      return Number.isFinite(source) && source > 0 ? source : null;
+    }
+
+    if (typeof source === 'string') {
+      const trimmed = source.trim();
+      if (!trimmed) {
+        return null;
+      }
+
+      const asNumber = Number(trimmed);
+      if (Number.isFinite(asNumber) && asNumber > 0) {
+        return asNumber;
+      }
+
+      const parsed = this.parseRawResponse(trimmed);
+      return parsed === source ? null : this.extractPositiveUserId(parsed);
+    }
+
+    if (typeof source === 'object') {
+      const objectSource = source as Record<string, unknown>;
+      const candidate = objectSource['id'] ?? objectSource['userId'] ?? objectSource['user_id'] ?? objectSource['uid'];
+      const nested = objectSource['user'];
+      const data = objectSource['data'];
+
+      const directCandidate = this.extractPositiveUserId(candidate);
+      if (directCandidate !== null) {
+        return directCandidate;
+      }
+
+      const nestedCandidate = this.extractPositiveUserId(nested);
+      if (nestedCandidate !== null) {
+        return nestedCandidate;
+      }
+
+      return this.extractPositiveUserId(data);
+    }
+
+    return null;
+  }
+
+  private extractNumericUserIdFromToken(token: string | null): number | null {
+    if (!token || !token.includes('.')) {
+      return null;
+    }
+
+    try {
+      const payload = token.split('.')[1];
+      if (!payload) {
+        return null;
+      }
+
+      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+      const decoded = atob(padded);
+      const parsed = JSON.parse(decoded);
+      return this.extractPositiveUserId(parsed);
+    } catch {
       return null;
     }
   }

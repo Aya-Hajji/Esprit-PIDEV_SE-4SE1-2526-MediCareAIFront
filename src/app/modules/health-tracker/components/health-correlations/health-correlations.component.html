@@ -1,0 +1,69 @@
+<section class="health-correlations">
+  <header class="health-correlations__header">
+    <div>
+      <span class="eyebrow">Personalized Correlations</span>
+      <h4>Sleep vs Mood vs Stress</h4>
+    </div>
+    <p>Chart.js visualization built from your own health tracking logs.</p>
+  </header>
+
+  @if (loading()) {
+    <div class="health-correlations__state">Loading your personalized correlations...</div>
+  } @else if (errorMessage()) {
+    <div class="health-correlations__state health-correlations__state--error" role="alert">
+      {{ errorMessage() }}
+    </div>
+  } @else if (hasData()) {
+    <div class="health-correlations__layout">
+      <article class="health-correlations__chart-card">
+        <div class="health-correlations__chart-shell">
+          <canvas
+            baseChart
+            class="health-correlations__chart"
+            [type]="'line'"
+            [data]="chartData()"
+            [options]="chartOptions()"
+            aria-label="Sleep, mood, and stress trend chart"
+          ></canvas>
+        </div>
+      </article>
+
+      <aside class="health-correlations__sidebar">
+        <div class="health-correlations__metrics">
+          <article class="health-correlations__metric">
+            <span>Average sleep</span>
+            <strong>{{ averageSleepHours() | number: '1.1-1' }}h</strong>
+          </article>
+          <article class="health-correlations__metric">
+            <span>Average mood</span>
+            <strong>{{ averageMoodLevel() | number: '1.1-1' }}/10</strong>
+          </article>
+          <article class="health-correlations__metric">
+            <span>Average stress</span>
+            <strong>{{ averageStressLevel() | number: '1.1-1' }}/10</strong>
+          </article>
+        </div>
+
+        <div class="health-correlations__insights">
+          <h5>Insights</h5>
+          <ul>
+            @for (insight of insightMessages(); track insight) {
+              <li>{{ insight }}</li>
+            }
+          </ul>
+        </div>
+      </aside>
+    </div>
+  } @else {
+    <div class="health-correlations__state health-correlations__state--soft">
+      <p>
+        No days yet where <strong>mood</strong>, <strong>sleep</strong>, and <strong>stress</strong> are all logged for the
+        <strong>same calendar date</strong>.
+      </p>
+      <p>
+        Add one entry from each tracker for the same day (for example today on all three). Use three or more aligned days
+        for clearer trends and insights.
+      </p>
+    </div>
+  }
+</section>

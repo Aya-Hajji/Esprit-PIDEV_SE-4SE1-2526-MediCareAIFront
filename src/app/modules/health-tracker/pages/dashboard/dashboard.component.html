@@ -1,0 +1,79 @@
+<section class="tracker-dashboard-shell">
+  <header class="hero-card">
+    <div class="hero-copy">
+      <span class="eyebrow">Health Tracker</span>
+      <h2>Green Wellness Command Center</h2>
+      <p>
+        A focused workspace for your daily health CRUD flows with fast access, clean cards, and a calmer green visual system.
+      </p>
+    </div>
+
+    <div class="hero-stat">
+      <span class="hero-stat__label">Quick Access</span>
+      <strong>{{ dashboardShortcuts.length }}</strong>
+      <span>forms ready to open instantly</span>
+    </div>
+  </header>
+
+  <section class="panel panel--correlation" aria-label="Personalized sleep and mood correlation">
+    <div class="correlation-orb correlation-orb--one" aria-hidden="true"></div>
+    <div class="correlation-orb correlation-orb--two" aria-hidden="true"></div>
+    <div class="section-heading section-heading--correlation">
+      <div>
+        <span class="section-kicker">Personalized Correlations</span>
+        <h3>Sleep vs Mood vs Stress Intelligence</h3>
+      </div>
+      <p>Daily correlations from your own logs to show how sleep, mood, and stress move together over time.</p>
+    </div>
+    <app-dashboard-notification></app-dashboard-notification>
+    <app-health-correlations
+      [userId]="currentUserId()"
+      [moods]="moods()"
+      [sleeps]="sleeps()"
+      [stresses]="stresses()"
+    ></app-health-correlations>
+  </section>
+  
+
+  <section class="panel" aria-label="Health Tracker CRUD shortcuts">
+    <div class="section-heading">
+      <div>
+        <span class="section-kicker">CRUD Navigation</span>
+        <h3>Open any form in one click</h3>
+      </div>
+      <p>Each tile routes directly to the relevant create/read/update/delete screen.</p>
+    </div>
+
+    <div class="shortcut-grid">
+      @for (shortcut of dashboardShortcuts; track shortcut.route) {
+        <a [routerLink]="shortcut.route" class="shortcut-card shortcut-card--{{ shortcut.tone }}">
+          <span class="shortcut-card__badge">{{ shortcut.badge }}</span>
+          <h4>{{ shortcut.title }}</h4>
+          <p>{{ shortcut.description }}</p>
+          <span class="shortcut-card__action">Open form</span>
+        </a>
+      }
+    </div>
+  </section>
+
+  <section class="panel panel--accent" aria-label="Pregnancy access">
+    <div class="section-heading">
+      <div>
+        <span class="section-kicker">Pregnancy Mode</span>
+        <h3>Dedicated care area</h3>
+      </div>
+      <p>Available for all users, with a soft medical theme and direct access cards.</p>
+    </div>
+
+    <div class="shortcut-grid shortcut-grid--compact">
+      @for (item of pregnancyShortcuts; track item.route) {
+        <a [routerLink]="item.route" class="shortcut-card shortcut-card--pregnancy shortcut-card--{{ item.tone }}">
+          <span class="shortcut-card__badge">Open</span>
+          <h4>{{ item.title }}</h4>
+          <p>{{ item.description }}</p>
+          <span class="shortcut-card__action">Go to page</span>
+        </a>
+      }
+    </div>
+  </section>
+</section>

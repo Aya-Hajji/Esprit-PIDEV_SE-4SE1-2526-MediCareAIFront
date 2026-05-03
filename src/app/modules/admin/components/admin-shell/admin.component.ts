@@ -25,12 +25,6 @@ export class AdminComponent {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
-  onHealthEventsClick(): void {
-    if (this.isSidebarOpen) {
-      this.isSidebarOpen = false;
-    }
-  }
-
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);

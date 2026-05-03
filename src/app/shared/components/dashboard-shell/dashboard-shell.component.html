@@ -47,6 +47,33 @@
         </a>
       }
 
+      @if (isPatient) {
+        <a routerLink="/patient/health-profile" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="6.66667" r="3.33333" stroke="currentColor" stroke-width="1.66667"/>
+            <path d="M3.33334 16.6667C3.33334 13.9052 6.31811 11.6667 10 11.6667C13.6819 11.6667 16.6667 13.9052 16.6667 16.6667" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+          </svg>
+          <span>Health Profile</span>
+        </a>
+
+        <a routerLink="/patient/prescriptions" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3.33334" y="2.5" width="13.3333" height="15" rx="1.66667" stroke="currentColor" stroke-width="1.66667"/>
+            <path d="M6.66666 6.66675H13.3333" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+            <path d="M6.66666 10H13.3333" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+            <path d="M6.66666 13.3333H10" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+          </svg>
+          <span>Prescriptions</span>
+        </a>
+
+        <a routerLink="/patient/messages" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Messages</span>
+        </a>
+      }
+
       @if (isDoctorOrAdmin || isPatientOrAdmin) {
         <a routerLink="/symptom-ai/dashboard" routerLinkActive="nav-item-active" class="nav-item">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -88,7 +115,7 @@
         </a>
       }
 
-      <a routerLink="/community/events" routerLinkActive="nav-item-active" class="nav-item" (click)="onHealthEventsClick()">
+      <a routerLink="/community/events" routerLinkActive="nav-item-active" class="nav-item">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="10" cy="10" r="8.33333" stroke="currentColor" stroke-width="1.66667"/>
           <polyline points="10 5 10 10 13.3333 11.6667" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>

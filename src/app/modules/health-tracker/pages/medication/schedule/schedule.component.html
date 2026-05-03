@@ -1,0 +1,178 @@
+<section class="ht-form-page ht-form-page--schedule">
+  <header class="ht-page-header">
+    <div class="ht-page-header__icon">💊</div>
+    <h2>Medication Schedule</h2>
+    <p>Organize your medications with dosage, frequency, and treatment periods for complete care management.</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="ht-alert" role="alert">
+      <svg class="ht-alert__icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <form class="ht-form-card ht-form-card--schedule" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="ht-form-header">
+      <h3>{{ isEditing() ? 'Update Medication Schedule' : 'Create New Schedule' }}</h3>
+      <span class="ht-form-badge">Medication Management</span>
+    </div>
+
+    <div class="ht-form-grid">
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2"/>
+            <line x1="8" y1="6" x2="16" y2="6"/>
+            <line x1="6" y1="10" x2="18" y2="10"/>
+            <line x1="6" y1="14" x2="18" y2="14"/>
+            <line x1="6" y1="18" x2="18" y2="18"/>
+          </svg>
+          Medicine Name
+        </span>
+        <input id="medicineName" type="text" formControlName="medicineName" class="ht-field__input" placeholder="e.g. Amoxicillin, Ibuprofen" />
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="19" cy="12" r="1"/>
+            <circle cx="5" cy="12" r="1"/>
+          </svg>
+          Dosage
+        </span>
+        <input id="dosage" type="text" formControlName="dosage" class="ht-field__input" placeholder="e.g. 500mg, 1 tablet" />
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Frequency
+        </span>
+        <input id="frequency" type="text" formControlName="frequency" class="ht-field__input" placeholder="e.g. Twice daily, Every 8 hours" />
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          Start Date
+        </span>
+        <input id="startDate" type="date" formControlName="startDate" class="ht-field__input" />
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          End Date (optional)
+        </span>
+        <input id="endDate" type="date" formControlName="endDate" class="ht-field__input" />
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          Record Date
+        </span>
+        <input id="recordDate" type="date" formControlName="recordDate" class="ht-field__input" />
+      </label>
+    </div>
+
+    <div class="ht-actions">
+      <button class="ht-btn ht-btn--primary ht-btn--large" type="submit" [disabled]="submitting() || form.invalid">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        {{ submitting() ? 'Saving...' : isEditing() ? 'Update Schedule' : 'Save Schedule' }}
+      </button>
+      @if (isEditing()) {
+        <button class="ht-btn ht-btn--secondary" type="button" (click)="cancelEdit()">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+          </svg>
+          Cancel
+        </button>
+      }
+    </div>
+  </form>
+
+  @if (loading()) {
+    <div class="ht-loading">
+      <div class="ht-loading__spinner"></div>
+      <p>Loading your medication schedules...</p>
+    </div>
+  } @else if (!hasSchedules()) {
+    <article class="ht-empty-state">
+      <div class="ht-empty-state__icon">📋</div>
+      <h3>No Medication Schedules</h3>
+      <p>Create your first medication schedule to organize your treatment plans.</p>
+    </article>
+  } @else {
+    <section class="ht-history-section">
+      <h3 class="ht-history-title">
+        <svg class="ht-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Active Schedules
+      </h3>
+      <div class="ht-entry-grid ht-entry-grid--schedule">
+        @for (item of schedules(); track trackByScheduleId($index, item)) {
+          <article class="ht-entry-card ht-entry-card--schedule">
+            <div class="ht-entry-header">
+              <span class="ht-entry-emoji">💊</span>
+              <div class="ht-entry-meta">
+                <h4>{{ item.medicineName }}</h4>
+                <p class="ht-entry-dosage">{{ item.dosage }} · {{ item.frequency }}</p>
+              </div>
+              <span class="ht-entry-badge" [class.ht-entry-badge--active]="isScheduleActive(item)">
+                @if (isScheduleActive(item)) { Active }
+                @else { Completed }
+              </span>
+            </div>
+            <div class="ht-entry-timeline">
+              <div class="ht-timeline-item">
+                <span class="ht-timeline-dot"></span>
+                <div class="ht-timeline-label">
+                  <small>Started</small>
+                  <strong>{{ item.startDate | date: 'shortDate' }}</strong>
+                </div>
+              </div>
+              @if (item.endDate) {
+                <div class="ht-timeline-item">
+                  <span class="ht-timeline-dot"></span>
+                  <div class="ht-timeline-label">
+                    <small>Ends</small>
+                    <strong>{{ item.endDate | date: 'shortDate' }}</strong>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="ht-card-actions">
+              <button class="ht-btn ht-btn--icon" type="button" (click)="startEditSchedule(item)" title="Edit schedule">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/><path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              </button>
+              <button class="ht-btn ht-btn--icon ht-btn--danger" type="button" (click)="deleteSchedule(item.id)" title="Delete schedule">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-9l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</section>

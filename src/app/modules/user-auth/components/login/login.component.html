@@ -145,6 +145,9 @@
             @if (errorMessage) {
               <div class="error-banner">{{ errorMessage }}</div>
             }
+            @if (successMessage) {
+              <div class="success-banner">{{ successMessage }}</div>
+            }
 
             <div class="form-field">
               <label class="field-label" for="email">Email Address</label>

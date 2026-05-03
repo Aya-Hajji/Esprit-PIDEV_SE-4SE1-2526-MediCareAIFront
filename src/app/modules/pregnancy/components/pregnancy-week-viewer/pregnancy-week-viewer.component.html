@@ -1,0 +1,41 @@
+@if (!loading()) {
+  @if (error()) {
+    <div class="ht-alert">{{ error() }}</div>
+  } @else {
+    @if (selectedWeekData(); as week) {
+      <div class="ht-card">
+        <div class="ht-card-media">
+          @if (week.image) {
+            <img [src]="week.image" [alt]="week.title" />
+          } @else {
+            <div class="ht-placeholder">👶</div>
+          }
+        </div>
+
+        <div class="ht-card-body">
+          <h3>{{ week.title }}</h3>
+          <p class="ht-week-size">Size: <strong>{{ week.size }}</strong></p>
+          <p class="ht-week-desc">{{ week.description }}</p>
+
+          <div class="ht-progress">
+            <div class="ht-progress__bar">
+              <div class="ht-progress__fill" [style.width.%]="pct()"></div>
+            </div>
+            <div class="ht-progress__meta">Week {{ selectedWeek() }} / 40 — {{ pct() }}%</div>
+          </div>
+
+          <div class="ht-week-actions">
+            <button class="ht-btn" type="button" (click)="showPrev()">Previous</button>
+            <input type="number" min="1" max="40" [value]="selectedWeek()" (change)="selectWeek($any($event.target).valueAsNumber)" class="ht-week-input" />
+            <button class="ht-btn ht-btn--primary" type="button" (click)="showNext()">Next</button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+} @else {
+  <div class="ht-week-loading">
+    <div class="ht-loading__spinner"></div>
+    <p>Loading week data…</p>
+  </div>
+}

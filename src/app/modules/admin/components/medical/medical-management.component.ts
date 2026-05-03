@@ -28,7 +28,6 @@ import { UserService } from '../../../../shared/services/user.service';
 export class MedicalManagementComponent implements OnInit {
   specialties: Specialty[] = [];
   diseases: Disease[] = [];
-  symptoms: Symptom[] = [];
   activeTab: 'specialties' | 'diseases' | 'symptoms' | 'records' = 'specialties';
   loading = false;
 
@@ -89,7 +88,6 @@ export class MedicalManagementComponent implements OnInit {
   ngOnInit(): void {
     this.loadSpecialties();
     this.loadDiseases();
-    this.loadSymptoms();
     this.loadPatients();
   }
 
@@ -126,13 +124,6 @@ export class MedicalManagementComponent implements OnInit {
     });
   }
 
-  loadSymptoms(): void {
-    this.medicalService.getAllSymptoms().subscribe({
-      next: (data) => this.symptoms = data,
-      error: (error) => console.error('Error loading symptoms:', error)
-    });
-  }
-
   deleteSpecialty(id: number): void {
     if (confirm('Delete this specialty?')) {
       this.specialtyService.deleteSpecialty(id).subscribe({
@@ -147,41 +138,6 @@ export class MedicalManagementComponent implements OnInit {
       this.medicalService.deleteDisease(id).subscribe({
         next: () => this.loadDiseases(),
         error: (error) => console.error('Error:', error)
-      });
-    }
-  }
-
-  addSymptom(): void {
-    const name = prompt('Symptom name?');
-    if (!name || !name.trim()) {
-      return;
-    }
-
-    const description = prompt('Symptom description?') || '';
-    this.medicalService.createSymptom({ name: name.trim(), description }).subscribe({
-      next: () => this.loadSymptoms(),
-      error: (error) => console.error('Error creating symptom:', error)
-    });
-  }
-
-  editSymptom(symptom: Symptom): void {
-    const name = prompt('Symptom name?', symptom.name);
-    if (!name || !name.trim()) {
-      return;
-    }
-
-    const description = prompt('Symptom description?', symptom.description || '') || '';
-    this.medicalService.updateSymptom(symptom.id!, { name: name.trim(), description }).subscribe({
-      next: () => this.loadSymptoms(),
-      error: (error) => console.error('Error updating symptom:', error)
-    });
-  }
-
-  deleteSymptom(id: number): void {
-    if (confirm('Delete this symptom?')) {
-      this.medicalService.deleteSymptom(id).subscribe({
-        next: () => this.loadSymptoms(),
-        error: (error) => console.error('Error deleting symptom:', error)
       });
     }
   }

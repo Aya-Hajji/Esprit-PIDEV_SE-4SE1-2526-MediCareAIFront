@@ -83,35 +83,7 @@
   </div>
 
   <div *ngIf="activeTab === 'symptoms'">
-    <div class="controls-bar">
-      <button class="btn btn-primary" (click)="addSymptom()">Add Symptom</button>
-    </div>
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let symptom of symptoms">
-            <td>{{ symptom.id }}</td>
-            <td>{{ symptom.name }}</td>
-            <td>{{ symptom.description || '—' }}</td>
-            <td>
-              <button class="btn-icon" (click)="editSymptom(symptom)">Edit</button>
-              <button class="btn-icon btn-danger" (click)="deleteSymptom(symptom.id!)">Delete</button>
-            </td>
-          </tr>
-          <tr *ngIf="symptoms.length === 0">
-            <td colspan="4">No symptoms found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <p class="info-text">Symptoms management coming soon...</p>
   </div>
 
   <div *ngIf="activeTab === 'records'" class="records-layout">

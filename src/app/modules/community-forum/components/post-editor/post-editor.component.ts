@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil, switchMap } from 'rxjs/operators';
+import { EMPTY, Subject, of } from 'rxjs';
+import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
 import { ForumExtendedService } from '../../services/forum-extended.service';
 import { BadWordsService } from '../../services/bad-words.service';
 import { PostExtended } from '../../models/forum-extended.model';
@@ -154,45 +154,49 @@ export class PostEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const userId = this.authService.getCurrentUserId();
-    if (!userId) {
-      alert('Impossible de récupérer vos informations utilisateur.\nVeuillez vous reconnecter.');
-      this.router.navigate(['/login']);
-      return;
-    }
-
     const formValue = this.postForm.value;
     const textToCheck = `${formValue.title} ${formValue.content}`;
 
-    // ── Step 1: Bad Words check ────────────────────────────────────────────
-    this.checkingBadWords = true;
-    this.badWordsError = '';
-    this.submitting = false;
-    this.cdr.detectChanges();
+    this.authService
+      .getCurrentUserId()
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((userId) => {
+          if (!userId) {
+            alert('Impossible de récupérer vos informations utilisateur.\nVeuillez vous reconnecter.');
+            this.router.navigate(['/login']);
+            return EMPTY;
+          }
 
-    this.badWordsService.checkText(textToCheck).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: (result) => {
-        this.checkingBadWords = false;
-
-        if (!result.isClean) {
-          // ❌ BLOQUÉ — afficher l'erreur, ne pas soumettre
-          this.badWordsError = result.message ||
-            'Votre texte contient des mots inappropriés. Veuillez les supprimer.';
+          this.checkingBadWords = true;
+          this.badWordsError = '';
+          this.submitting = false;
           this.cdr.detectChanges();
-          return;
-        }
 
-        // ✅ OK — soumettre le post
-        this.submitPost(formValue, userId);
-      },
-      error: () => {
-        // Si le service Bad Words échoue, on laisse passer (non-bloquant)
-        this.checkingBadWords = false;
-        this.submitPost(formValue, userId);
-      }
-    });
+          return this.badWordsService.checkText(textToCheck).pipe(
+            catchError(() => of({ isClean: true, message: '' })),
+            map((result) => ({ userId, result }))
+          );
+        })
+      )
+      .subscribe({
+        next: ({ userId, result }) => {
+          this.checkingBadWords = false;
+
+          if (!result.isClean) {
+            this.badWordsError =
+              result.message || 'Votre texte contient des mots inappropriés. Veuillez les supprimer.';
+            this.cdr.detectChanges();
+            return;
+          }
+
+          this.submitPost(formValue, userId);
+        },
+        error: () => {
+          this.checkingBadWords = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   private submitPost(formValue: any, userId: number): void {

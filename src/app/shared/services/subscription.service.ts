@@ -8,8 +8,8 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class SubscriptionService {
-  private apiUrl = `${environment.apiUrl.replace(/\/+$/, '')}/subscriptions`;
-  private planUrl = `${environment.apiUrl.replace(/\/+$/, '')}/subscription-plans`;
+  private apiUrl = `${environment.apiUrl}/subscriptions`;
+  private planUrl = `${environment.apiUrl}/subscription-plans`;
 
   constructor(private http: HttpClient) {}
 

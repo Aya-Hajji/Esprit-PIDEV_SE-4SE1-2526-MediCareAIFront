@@ -1,0 +1,136 @@
+<section class="ht-form-page ht-form-page--tracking">
+  <header class="ht-page-header">
+    <div class="ht-page-header__icon">🤰</div>
+    <h2>Pregnancy Journey Tracker</h2>
+    <p>Celebrate every milestone with detailed tracking. Record weeks, due date, and personal notes about your pregnancy journey.</p>
+  </header>
+
+  <app-pregnancy-week-viewer></app-pregnancy-week-viewer>
+
+  @if (errorMessage()) {
+    <div class="ht-alert" role="alert">
+      <svg class="ht-alert__icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <form class="ht-form-card ht-form-card--pregnancy" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="ht-form-header">
+      <h3>Add Pregnancy Milestone</h3>
+      <span class="ht-form-badge">Expecting & Celebrating</span>
+    </div>
+
+    <div class="ht-form-grid">
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          Pregnancy Start Date
+        </span>
+        <input id="startDate" type="date" formControlName="startDate" class="ht-field__input" />
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Current Week
+        </span>
+        <input id="currentWeek" type="number" min="1" max="42" formControlName="currentWeek" class="ht-field__input" placeholder="e.g. 20" />
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Expected Due Date
+        </span>
+        <input id="dueDate" type="date" formControlName="dueDate" class="ht-field__input" />
+      </label>
+
+      <label class="ht-field ht-field--full">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Personal Notes (optional)
+        </span>
+        <textarea id="notes" rows="4" formControlName="notes" class="ht-field__input" placeholder="Share your feelings, symptoms, or milestone moments during this week..."></textarea>
+      </label>
+    </div>
+
+    <div class="ht-actions">
+      <button class="ht-btn ht-btn--primary ht-btn--large" type="submit" [disabled]="submitting() || form.invalid">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        {{ submitting() ? 'Saving...' : 'Record Milestone' }}
+      </button>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <div class="ht-loading">
+      <div class="ht-loading__spinner"></div>
+      <p>Loading your pregnancy journey...</p>
+    </div>
+  } @else if (!hasEntries()) {
+    <article class="ht-empty-state">
+      <div class="ht-empty-state__icon">👶</div>
+      <h3>No Tracking Entries Yet</h3>
+      <p>Start your pregnancy journey by creating your first milestone entry. We'll help you celebrate every moment.</p>
+    </article>
+  } @else {
+    <section class="ht-history-section">
+      <h3 class="ht-history-title">
+        <svg class="ht-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Your Journey Timeline
+      </h3>
+      <div class="ht-entry-grid ht-entry-grid--pregnancy">
+        @for (entry of trackingEntries(); track trackByEntryId($index, entry)) {
+          <article class="ht-entry-card ht-entry-card--pregnancy">
+            <div class="ht-entry-header">
+              <span class="ht-entry-emoji">✨</span>
+              <div class="ht-entry-meta">
+                <h4>Week {{ entry.currentWeek }}</h4>
+                <time class="ht-entry-date">{{ entry.startDate | date: 'shortDate' }}</time>
+              </div>
+              <span class="ht-entry-badge">Milestone</span>
+            </div>
+            <div class="ht-pregnancy-timeline">
+              <div class="ht-timeline-dot-pregnancy"></div>
+              <div class="ht-timeline-info">
+                <div class="ht-timeline-label">
+                  <small>Started</small>
+                  <strong>{{ entry.startDate | date: 'MMMM d' }}</strong>
+                </div>
+                <div class="ht-timeline-label">
+                  <small>Due</small>
+                  <strong>{{ entry.dueDate | date: 'MMMM d' }}</strong>
+                </div>
+              </div>
+            </div>
+            @if (entry.notes) {
+              <p class="ht-entry-note">{{ entry.notes }}</p>
+            }
+            <div class="ht-card-actions">
+              <button class="ht-btn ht-btn--icon ht-btn--danger" type="button" (click)="deleteEntry(entry.id)" title="Delete entry">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-9l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</section>

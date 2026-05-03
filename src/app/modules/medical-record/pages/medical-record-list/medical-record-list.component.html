@@ -1,0 +1,112 @@
+<div class="medical-record-list-container">
+  <div class="header-section">
+    <h2>Medical Records</h2>
+    <p class="subtitle">Manage and view your medical documents</p>
+  </div>
+
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Filter and Search Section -->
+    <div class="filters-section">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Search by filename or description..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+          />
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" [(ngModel)]="filterType" (change)="onFilterChange()">
+            <option value="ALL">All Document Types</option>
+            <option *ngFor="let type of documentTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" [(ngModel)]="sortBy" (change)="onSortChange()">
+            <option value="date">Sort by Date (Newest)</option>
+            <option value="name">Sort by Name</option>
+            <option value="type">Sort by Type</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Records Count -->
+    <div class="records-info">
+      <p *ngIf="filteredRecords.length === 0" class="alert alert-info">
+        No medical records found. <a routerLink="upload" class="alert-link">Upload your first record</a>
+      </p>
+      <p *ngIf="filteredRecords.length > 0" class="text-muted">
+        Showing {{ filteredRecords.length }} of {{ medicalRecords.length }} records
+      </p>
+    </div>
+
+    <!-- Records Table -->
+    <div *ngIf="filteredRecords.length > 0" class="records-section">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Document Type</th>
+              <th>File Name</th>
+              <th>Upload Date</th>
+              <th>File Size</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of filteredRecords">
+              <td>
+                <span class="badge bg-primary">
+                  {{ getDocumentIcon(record.documentType) }} {{ record.documentType }}
+                </span>
+              </td>
+              <td>
+                <strong>{{ record.fileName }}</strong>
+              </td>
+              <td>{{ record.uploadDate | date : 'short' }}</td>
+              <td>
+                <small class="text-muted">{{ formatFileSize(record.size) }}</small>
+              </td>
+              <td>
+                <small>{{ record.description || '-' }}</small>
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-primary"
+                  (click)="downloadRecord(record)"
+                  title="Download"
+                >
+                  ⬇️ Download
+                </button>
+                <button
+                  class="btn btn-sm btn-danger ms-2"
+                  (click)="deleteRecord(record.id)"
+                  title="Delete"
+                >
+                  🗑️ Delete
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Upload Button -->
+    <div class="upload-section">
+      <a routerLink="upload" class="btn btn-success btn-lg">
+        <span>+ Upload Medical Record</span>
+      </a>
+    </div>
+  </div>
+</div>

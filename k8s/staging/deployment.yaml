@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medicareai-frontend-staging
+  namespace: staging
+  labels:
+    app: medicareai-frontend
+    environment: staging
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: medicareai-frontend-staging
+  template:
+    metadata:
+      labels:
+        app: medicareai-frontend-staging
+        environment: staging
+    spec:
+      containers:
+      - name: frontend
+        image: ghcr.io/brahem-ahmed/esprit-pidev_se-4se1-2526-medicareaifront:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config-staging
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medicareai-frontend-staging
+  namespace: staging
+  labels:
+    app: medicareai-frontend
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    nodePort: 30081
+    name: http
+  selector:
+    app: medicareai-frontend-staging
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: medicareai-frontend-staging
+  namespace: staging
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: staging-medicare.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: medicareai-frontend-staging
+            port:
+              number: 80

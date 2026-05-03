@@ -1,0 +1,103 @@
+<div class="booking-container">
+  <div class="booking-card">
+    <h2>Book an Appointment</h2>
+    <p>Schedule a consultation with your healthcare provider</p>
+
+    <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="doctorName">Doctor Name</label>
+        <input 
+          type="text" 
+          id="doctorName" 
+          formControlName="doctorName" 
+          class="form-control"
+          placeholder="e.g., Dr. John Smith"
+        />
+        <div *ngIf="submitted && f['doctorName'].invalid" class="error-text">
+          <small *ngIf="f['doctorName'].errors?.['required']">Doctor name is required</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="specialty">Specialty</label>
+        <input 
+          type="text" 
+          id="specialty" 
+          formControlName="specialty" 
+          class="form-control"
+          placeholder="e.g., Cardiology, Dermatology"
+        />
+        <div *ngIf="submitted && f['specialty'].invalid" class="error-text">
+          <small *ngIf="f['specialty'].errors?.['required']">Specialty is required</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="appointmentDate">Date</label>
+          <input 
+            type="date" 
+            id="appointmentDate" 
+            formControlName="appointmentDate" 
+            class="form-control"
+            [min]="minDate"
+          />
+          <div *ngIf="submitted && f['appointmentDate'].invalid" class="error-text">
+            <small *ngIf="f['appointmentDate'].errors?.['required']">Date is required</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="appointmentTime">Time</label>
+          <input 
+            type="time" 
+            id="appointmentTime" 
+            formControlName="appointmentTime" 
+            class="form-control"
+          />
+          <div *ngIf="submitted && f['appointmentTime'].invalid" class="error-text">
+            <small *ngIf="f['appointmentTime'].errors?.['required']">Time is required</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="consultationType">Consultation Type</label>
+        <select id="consultationType" formControlName="consultationType" class="form-control">
+          <option *ngFor="let type of consultationTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="reason">Reason for Visit</label>
+        <textarea 
+          id="reason" 
+          formControlName="reason" 
+          class="form-control" 
+          rows="4"
+          placeholder="Describe your symptoms or reason for the visit..."
+        ></textarea>
+        <div *ngIf="submitted && f['reason'].invalid" class="error-text">
+          <small *ngIf="f['reason'].errors?.['required']">Reason is required</small>
+          <small *ngIf="f['reason'].errors?.['minlength']">Please provide at least 10 characters</small>
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn btn-primary">
+        {{ loading ? 'Booking...' : 'Book Appointment' }}
+      </button>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+      <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+    </form>
+  </div>
+
+  <div class="info-card">
+    <h3>Consultation Types</h3>
+    <ul>
+      <li><strong>IN_PERSON:</strong> Face-to-face consultation at clinic</li>
+      <li><strong>VIDEO:</strong> Video consultation from home</li>
+      <li><strong>PHONE:</strong> Telephone consultation</li>
+    </ul>
+  </div>
+</div>

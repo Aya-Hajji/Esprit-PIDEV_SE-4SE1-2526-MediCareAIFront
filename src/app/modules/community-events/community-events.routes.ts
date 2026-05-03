@@ -8,7 +8,7 @@ export const COMMUNITY_EVENTS_ROUTES: Routes = [
     path: 'community',
     component: DashboardShellComponent,
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'DOCTOR', 'PATIENT', 'CLIENT'] },
+    data: { roles: ['ADMIN', 'DOCTOR', 'PATIENT'] },
     children: [
       {
         path: 'forums',

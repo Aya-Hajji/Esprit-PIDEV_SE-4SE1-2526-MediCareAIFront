@@ -49,10 +49,6 @@ export class LandingComponent {
   }
 
   private getDefaultRouteForRole(role: string): string {
-    if (role === 'CLIENT') {
-      role = 'PATIENT';
-    }
-
     switch (role) {
       case 'ADMIN':
         return '/admin/dashboard';
@@ -63,7 +59,7 @@ export class LandingComponent {
       case 'NURSE':
         return '/appointments/dashboard';
       case 'PATIENT':
-        return '/health-tracker/dashboard';
+        return '/patient/dashboard';
       default:
         return '/';
     }

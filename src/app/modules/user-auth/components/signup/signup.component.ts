@@ -175,7 +175,20 @@ export class SignupComponent {
 
   private redirectAfterAuth(response: { role?: string; user?: { role?: string } }): void {
     const userRole = (response.role || response.user?.role || '').toUpperCase().replace('ROLE_', '');
-    this.router.navigate([this.getDefaultRouteForRole(userRole)]);
+    console.log('Signup - Redirecting after auth, user role:', userRole);
+    const route = this.getDefaultRouteForRole(userRole);
+    console.log('Signup - Target route:', route);
+    this.router.navigate([route]).then((navigated) => {
+      console.log('Signup navigation result:', navigated);
+      if (!navigated && typeof window !== 'undefined') {
+        window.location.href = route;
+      }
+    }).catch((error) => {
+      console.error('Signup navigation error:', error);
+      if (typeof window !== 'undefined') {
+        window.location.href = route;
+      }
+    });
   }
 
   private getDefaultRouteForRole(role: string): string {
@@ -189,7 +202,7 @@ export class SignupComponent {
       case 'NURSE':
         return '/appointments/dashboard';
       case 'PATIENT':
-        return '/health-tracker/dashboard';
+        return '/patient/dashboard';
       default:
         return '/';
     }

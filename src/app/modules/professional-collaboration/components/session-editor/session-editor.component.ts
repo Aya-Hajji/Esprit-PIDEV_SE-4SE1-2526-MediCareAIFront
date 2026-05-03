@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { take } from 'rxjs/operators';
 import { CollaborationService } from '../../services/collaboration.service';
 import { AuthService } from '../../../../services/auth.service';
 import { SessionExtended } from '../../models/collaboration.model';
@@ -46,29 +47,22 @@ export class SessionEditorComponent implements OnInit {
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
-    // Récupérer l'ID utilisateur au démarrage
-    this.currentUserId = this.authService.getCurrentUserId();
-    console.log('✅ SessionEditorComponent initialized with userId:', this.currentUserId);
-  }
+  ) {}
 
   ngOnInit() {
+    this.authService
+      .getCurrentUserId()
+      .pipe(take(1))
+      .subscribe((userId) => {
+        this.currentUserId = userId;
+        if (!this.currentUserId || this.currentUserId <= 0) {
+          this.errorMessage =
+            "Erreur: Votre ID utilisateur n'est pas disponible. Veuillez vous reconnecter.";
+        }
+      });
+
     this.initializeForm();
     this.checkEditMode();
-    
-    // Debug: Afficher les données de localStorage
-    console.log('🔍 localStorage content:');
-    console.log('  - authToken:', localStorage.getItem('authToken') ? 'Present' : 'Missing');
-    console.log('  - authUser:', localStorage.getItem('authUser'));
-    console.log('  - userId:', localStorage.getItem('userId'));
-    
-    // Debug: Afficher l'ID utilisateur
-    if (!this.currentUserId || this.currentUserId <= 0) {
-      console.error('❌ NO VALID USER ID!');
-      this.errorMessage = 'Erreur: Votre ID utilisateur n\'est pas disponible. Veuillez vous reconnecter.';
-    } else {
-      console.log('✅ Valid user ID available:', this.currentUserId);
-    }
   }
 
   initializeForm() {
@@ -121,58 +115,59 @@ export class SessionEditorComponent implements OnInit {
       return;
     }
 
-    // Récupérer l'ID utilisateur fraîchement
-    const creatorId = this.authService.getCurrentUserId();
-    console.log('📝 Form submission - Retrieved creatorId:', creatorId);
-    console.log('📝 Current stored userId:', this.currentUserId);
-
-    if (!creatorId || creatorId <= 0) {
-      console.error('❌ SUBMISSION BLOCKED: Invalid creatorId=', creatorId);
-      this.errorMessage = 'Erreur: Votre ID utilisateur n\'est pas disponible. Veuillez vous reconnecter.';
-      console.error('📋 Current localStorage values:');
-      console.error('  - userId:', localStorage.getItem('userId'));
-      console.error('  - authUser:', localStorage.getItem('authUser'));
-      return;
-    }
-
-    this.isSubmitting = true;
-    this.errorMessage = '';
-
-    const formValue = this.form.value;
-    console.log('📤 Sending request with creatorId:', creatorId);
-
-    const request = this.editMode && this.sessionId
-      ? this.collaborationService.updateSession(this.sessionId, formValue)
-      : this.collaborationService.createSession(formValue, creatorId);
-
-    request.subscribe({
-      next: (session: any) => {
-        this.successMessage = this.editMode
-          ? 'Session mise à jour avec succès'
-          : 'Session créée avec succès';
-        this.isSubmitting = false;
-        setTimeout(() => {
-          this.router.navigate(['/collaboration/dashboard']);
-        }, 2000);
-      },
-      error: (error: any) => {
-        console.error('Error saving session:', error);
-        this.isSubmitting = false;
-        
-        // Meilleure gestion des erreurs
-        if (error.status === 400 && error.error?.message?.includes('creatorId')) {
-          this.errorMessage = 'Erreur: L\'ID du créateur est invalide. Veuillez vous reconnecter.';
-        } else if (error.status === 400) {
-          this.errorMessage = error.error?.message || 'Erreur de validation. Veuillez vérifier les données.';
-        } else if (error.status === 401) {
-          this.errorMessage = 'Erreur: Vous n\'êtes pas authentifié. Veuillez vous reconnecter.';
-        } else if (error.status === 403) {
-          this.errorMessage = 'Erreur: Vous n\'avez pas les permissions nécessaires.';
-        } else {
-          this.errorMessage = error.error?.message || error.message || 'Erreur lors de l\'enregistrement de la session';
+    this.authService
+      .getCurrentUserId()
+      .pipe(take(1))
+      .subscribe((creatorId) => {
+        if (!creatorId || creatorId <= 0) {
+          this.errorMessage =
+            "Erreur: Votre ID utilisateur n'est pas disponible. Veuillez vous reconnecter.";
+          return;
         }
-      }
-    });
+
+        this.isSubmitting = true;
+        this.errorMessage = '';
+
+        const formValue = this.form.value;
+
+        const request =
+          this.editMode && this.sessionId
+            ? this.collaborationService.updateSession(this.sessionId, formValue)
+            : this.collaborationService.createSession(formValue, creatorId);
+
+        request.subscribe({
+          next: (session: any) => {
+            this.successMessage = this.editMode
+              ? 'Session mise à jour avec succès'
+              : 'Session créée avec succès';
+            this.isSubmitting = false;
+            setTimeout(() => {
+              this.router.navigate(['/collaboration/dashboard']);
+            }, 2000);
+          },
+          error: (error: any) => {
+            console.error('Error saving session:', error);
+            this.isSubmitting = false;
+
+            if (error.status === 400 && error.error?.message?.includes('creatorId')) {
+              this.errorMessage =
+                "Erreur: L'ID du créateur est invalide. Veuillez vous reconnecter.";
+            } else if (error.status === 400) {
+              this.errorMessage =
+                error.error?.message || 'Erreur de validation. Veuillez vérifier les données.';
+            } else if (error.status === 401) {
+              this.errorMessage = "Erreur: Vous n'êtes pas authentifié. Veuillez vous reconnecter.";
+            } else if (error.status === 403) {
+              this.errorMessage = "Erreur: Vous n'avez pas les permissions nécessaires.";
+            } else {
+              this.errorMessage =
+                error.error?.message ||
+                error.message ||
+                "Erreur lors de l'enregistrement de la session";
+            }
+          }
+        });
+      });
   }
 
   goBack() {

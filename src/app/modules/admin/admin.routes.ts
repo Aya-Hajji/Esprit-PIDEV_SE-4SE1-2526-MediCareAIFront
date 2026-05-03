@@ -26,7 +26,6 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'appointments', component: AppointmentListComponent },
       { path: 'appointments/create', component: AppointmentCreateComponent },
       { path: 'medical', component: MedicalManagementComponent },
-      { path: 'medical-data', loadComponent: () => import('./components/admin-medical-data/admin-medical-data.component').then(m => m.AdminMedicalDataComponent) },
       { path: 'events', component: EventsListComponent },
       { path: 'subscriptions', component: SubscriptionManagementComponent },
       { path: 'forum', component: ForumManagementComponent }

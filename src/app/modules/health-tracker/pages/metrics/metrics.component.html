@@ -1,0 +1,70 @@
+<section class="ht-form-page ht-form-page--metrics">
+  <header class="ht-page-header">
+    <h2>Well-being Metrics</h2>
+    <p>Manage metric periods with full CRUD operations.</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="ht-alert" role="alert">{{ errorMessage() }}</div>
+  }
+
+  <form class="ht-form-card" [formGroup]="form" (ngSubmit)="submit()">
+    <h3>{{ isEditing() ? 'Edit Metric' : 'Add Metric' }}</h3>
+    <div class="ht-form-grid">
+      <label class="ht-field">
+        <span>Start Date</span>
+        <input id="start_date" type="date" formControlName="start_date" />
+      </label>
+
+      <label class="ht-field">
+        <span>End Date</span>
+        <input id="end_date" type="date" formControlName="end_date" />
+      </label>
+
+      <label class="ht-field">
+        <span>Frequency</span>
+        <input id="frequency" type="text" formControlName="frequency" placeholder="daily, weekly..." />
+      </label>
+
+      <label class="ht-field">
+        <span>Level</span>
+        <input id="level" type="text" formControlName="level" placeholder="e.g. LOW, MEDIUM, HIGH or 7/10" />
+      </label>
+    </div>
+
+    <div class="ht-actions">
+      <button class="ht-btn ht-btn--primary" type="submit" [disabled]="submitting() || form.invalid">
+        {{ submitting() ? 'Saving...' : isEditing() ? 'Update Metric' : 'Add Metric' }}
+      </button>
+      @if (isEditing()) {
+        <button class="ht-btn ht-btn--ghost" type="button" (click)="cancelEdit()">Cancel</button>
+      }
+      <button class="ht-btn ht-btn--ghost" type="button" (click)="refreshMetrics()" [disabled]="loading()">
+        Refresh
+      </button>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <p class="ht-status">Loading metrics...</p>
+  } @else if (!hasMetrics()) {
+    <p class="ht-status">No metrics available yet.</p>
+  } @else {
+    <div class="ht-entry-grid">
+      @for (metric of metrics(); track trackByMetricId($index, metric)) {
+        <article class="ht-entry-card">
+          <h4>Metric #{{ metric.id ?? 'N/A' }}</h4>
+          <p><strong>Start:</strong> {{ metric.start_date | date: 'mediumDate' }}</p>
+          <p><strong>End:</strong> {{ metric.end_date | date: 'mediumDate' }}</p>
+          <p><strong>Frequency:</strong> {{ metric.frequency }}</p>
+          <p><strong>Level:</strong> {{ metric.level }}</p>
+
+          <div class="ht-card-actions">
+            <button class="ht-btn ht-btn--edit" type="button" (click)="startEditMetric(metric)">Edit</button>
+            <button class="ht-btn ht-btn--danger" type="button" (click)="deleteMetric(metric.id)">Delete</button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

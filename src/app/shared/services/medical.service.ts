@@ -100,6 +100,13 @@ export class MedicalService {
     return this.http.delete<void>(`${this.medicalRecordUrl}/${id}`);
   }
 
+  uploadMedicalRecord(file: File, description: string): Observable<MedicalRecordDTO> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('description', description);
+    return this.http.post<MedicalRecordDTO>(`${this.medicalRecordUrl}/upload`, formData);
+  }
+
   // Visit Notes
   getVisitNoteById(id: number): Observable<VisitNoteDTO> {
     return this.http.get<VisitNoteDTO>(`${this.visitNoteUrl}/${id}`);

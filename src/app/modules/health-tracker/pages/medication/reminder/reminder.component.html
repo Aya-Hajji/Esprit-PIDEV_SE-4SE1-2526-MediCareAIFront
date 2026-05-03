@@ -1,0 +1,130 @@
+<section class="ht-form-page ht-form-page--reminder">
+  <header class="ht-page-header">
+    <div class="ht-page-header__icon">⏰</div>
+    <h2>Medication Reminders</h2>
+    <p>Stay on top of your medication schedule with timely, personalized reminders and alerts.</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="ht-alert" role="alert">
+      <svg class="ht-alert__icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <form class="ht-form-card ht-form-card--reminder" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="ht-form-header">
+      <h3>{{ isEditing() ? 'Update Reminder' : 'Create New Reminder' }}</h3>
+      <span class="ht-form-badge">Stay on Schedule</span>
+    </div>
+
+    <div class="ht-form-grid">
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6-6 6 6M12 3v18"/>
+          </svg>
+          Select Medication Schedule
+        </span>
+        <select id="medicationScheduleId" formControlName="medicationScheduleId" class="ht-field__input">
+          @if (scheduleOptions().length === 0) {
+            <option [value]="0" disabled>No active schedules available</option>
+          } @else {
+            <option [value]="0" disabled>Choose a medication schedule...</option>
+            @for (option of scheduleOptions(); track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          }
+        </select>
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Reminder Time
+        </span>
+        <input id="time" type="time" formControlName="time" class="ht-field__input" />
+      </label>
+
+      <label class="ht-field ht-field--full">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Reminder Message
+        </span>
+        <textarea id="message" rows="3" formControlName="message" class="ht-field__input" placeholder="e.g. Take one tablet after breakfast with water"></textarea>
+      </label>
+    </div>
+
+    <div class="ht-actions">
+      <button class="ht-btn ht-btn--primary ht-btn--large" type="submit" [disabled]="submitting() || form.invalid">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        {{ submitting() ? 'Saving...' : isEditing() ? 'Update Reminder' : 'Create Reminder' }}
+      </button>
+      @if (isEditing()) {
+        <button class="ht-btn ht-btn--secondary" type="button" (click)="cancelEdit()">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+          </svg>
+          Cancel
+        </button>
+      }
+    </div>
+  </form>
+
+  @if (loading()) {
+    <div class="ht-loading">
+      <div class="ht-loading__spinner"></div>
+      <p>Loading your medication reminders...</p>
+    </div>
+  } @else if (!hasReminders()) {
+    <article class="ht-empty-state">
+      <div class="ht-empty-state__icon">🔔</div>
+      <h3>No Reminders Set</h3>
+      <p>Create your first reminder to help you stay on track with your medications.</p>
+    </article>
+  } @else {
+    <section class="ht-history-section">
+      <h3 class="ht-history-title">
+        <svg class="ht-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Your Reminders
+      </h3>
+      <div class="ht-entry-grid ht-entry-grid--reminder">
+        @for (item of reminders(); track trackByReminderId($index, item)) {
+          <article class="ht-entry-card ht-entry-card--reminder">
+            <div class="ht-entry-header">
+              <span class="ht-entry-emoji">🔔</span>
+              <div class="ht-entry-meta">
+                <h4>{{ item.time }}</h4>
+                <p class="ht-entry-schedule">Schedule #{{ item.medicationScheduleId }}</p>
+              </div>
+              <span class="ht-entry-badge ht-entry-badge--active">Active</span>
+            </div>
+            <div class="ht-entry-message">
+              <p>{{ item.message }}</p>
+            </div>
+            <div class="ht-card-actions">
+              <button class="ht-btn ht-btn--icon" type="button" (click)="startEditReminder(item)" title="Edit reminder">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/><path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              </button>
+              <button class="ht-btn ht-btn--icon ht-btn--danger" type="button" (click)="deleteReminder(item.id)" title="Delete reminder">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-9l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</section>
