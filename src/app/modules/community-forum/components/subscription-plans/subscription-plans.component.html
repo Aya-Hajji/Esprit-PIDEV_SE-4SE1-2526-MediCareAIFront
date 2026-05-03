@@ -1,0 +1,123 @@
+<div class="subscription-container">
+  <!-- Header -->
+  <div class="subscription-header">
+    <div class="header-content">
+      <h1>Nos Plans d'Abonnement</h1>
+      <p class="subtitle">Débloquez l'accès complet au contenu premium et aux fonctionnalités exclusives</p>
+    </div>
+  </div>
+
+  <!-- Current Subscription Info -->
+  <div class="current-subscription" *ngIf="userHasSubscription && currentSubscription">
+    <div class="subscription-info">
+      <div class="info-header">
+        <span class="badge-active">✓ ABONNEMENT ACTIF</span>
+        <h3>{{ currentSubscription.planName }}</h3>
+      </div>
+      <p class="subscription-status">
+        Expire le {{ currentSubscription.endDate | date: 'dd/MM/yyyy' }}
+        <span class="days-remaining">({{ getDaysRemaining() }} jours restants)</span>
+      </p>
+      <div class="subscription-actions">
+        <button class="btn btn-action" (click)="renewSubscription()">
+          Renouveler l'abonnement
+        </button>
+        <button class="btn btn-danger" (click)="cancelSubscription()">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Subscription Message -->
+  <div class="no-subscription" *ngIf="!userHasSubscription">
+    <p class="message">
+      Vous n'avez actuellement pas d'abonnement actif. Choisissez un plan ci-dessous pour accéder aux fonctionnalités premium.
+    </p>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement des plans...</p>
+  </div>
+
+  <!-- Plans Grid -->
+  <div class="plans-grid" *ngIf="!loading && plans.length > 0">
+    <div class="plan-card" *ngFor="let plan of plans" [class.current-plan]="isCurrentPlan(plan)">
+      <!-- Most Popular Badge -->
+      <div class="popular-badge" *ngIf="plan.name.includes('Premium Annuel')">
+        <span>⭐ PLUS POPULAIRE</span>
+      </div>
+
+      <!-- Plan Header -->
+      <div class="plan-header">
+        <h2 class="plan-name">{{ plan.name }}</h2>
+        <div class="plan-price">
+          <span class="currency">$</span>
+          <span class="amount">{{ plan.price || 0 }}</span>
+          <span class="period">/{{ plan.durationDays === 365 ? 'an' : 'mois' }}</span>
+        </div>
+      </div>
+
+      <!-- Plan Description -->
+      <p class="plan-description">{{ plan.description }}</p>
+
+      <!-- Features List -->
+      <ul class="features-list">
+        <li *ngFor="let feature of getFeatures(plan.name)">
+          <span class="check-icon">✓</span>
+          {{ feature }}
+        </li>
+      </ul>
+
+      <!-- Plan Footer -->
+      <div class="plan-footer">
+        <button 
+          class="btn btn-subscribe" 
+          *ngIf="!isCurrentPlan(plan)"
+          (click)="subscribeToPlan(plan)"
+        >
+          S'abonner maintenant
+        </button>
+        <button 
+          class="btn btn-current" 
+          *ngIf="isCurrentPlan(plan)"
+          disabled
+        >
+          ✓ Plan actuel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && plans.length === 0">
+    <div class="empty-icon">📋</div>
+    <h3>Aucun plan disponible</h3>
+    <p>Les plans d'abonnement seront bientôt disponibles</p>
+  </div>
+
+  <!-- FAQ Section -->
+  <div class="faq-section">
+    <h2>Questions Fréquemment Posées</h2>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>Puis-je résilier mon abonnement à tout moment?</h4>
+        <p>Oui, vous pouvez annuler votre abonnement à tout moment. L'accès premium cessera à la fin de votre période d'abonnement actuelle.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Quel est la différence entre les plans?</h4>
+        <p>Le plan annuel est plus avantageux que le plan mensuel. Il offre un meilleur prix et des avantages supplémentaires.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Comment puis-je change de plan?</h4>
+        <p>Vous pouvez modifier votre plan en annulant votre plan actuel et en vous inscrivant à un nouveau plan.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Y a-t-il une période d'essai gratuite?</h4>
+        <p>Contactez notre support pour en savoir plus sur nos offres d'essai gratuit.</p>
+      </div>
+    </div>
+  </div>
+</div>

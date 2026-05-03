@@ -65,6 +65,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": ["knoll-darkness-crown.ngrok-free.dev"]
+          },
           "configurations": {
             "production": {
               "buildTarget": "MediCareAIFront:build:production"

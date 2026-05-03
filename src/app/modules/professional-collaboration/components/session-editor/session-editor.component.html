@@ -1,0 +1,140 @@
+﻿<div class="editor-container">
+  <!-- Header -->
+  <div class="header-section">
+    <button class="btn-back" (click)="goBack()">← Back</button>
+    <h1>{{ editMode ? 'Edit Session' : 'Create Session' }}</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading session...</p>
+  </div>
+
+  <!-- Main Form -->
+  <div *ngIf="!isLoading" class="editor-form">
+    <!-- Alert Messages -->
+    <div *ngIf="errorMessage" class="alert alert-error">
+      <span>❌</span> {{ errorMessage }}
+    </div>
+    <div *ngIf="successMessage" class="alert alert-success">
+      <span>✅</span> {{ successMessage }}
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <!-- Title Field -->
+      <div class="form-group">
+        <label for="title">Session title *</label>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          placeholder="Ex: Collaborative diagnosis - Complex case"
+          [class.error]="isFieldInvalid('title')"
+        />
+        <div class="char-counter">
+          <span>{{ getTitleCharCount() }}/150</span>
+          <div class="progress-bar">
+            <div class="progress" [style.width.%]="getTitlePercentage()"></div>
+          </div>
+        </div>
+        <div *ngIf="isFieldInvalid('title')" class="error-message">
+          {{ getFieldError('title') }}
+        </div>
+      </div>
+
+      <!-- Case Number Field -->
+      <div class="form-group">
+        <label for="caseNumber">Case number *</label>
+        <input
+          id="caseNumber"
+          type="text"
+          formControlName="caseNumber"
+          placeholder="Ex: CASE-2024-001"
+          [class.error]="isFieldInvalid('caseNumber')"
+        />
+        <div class="hint">Format: Letters, numbers, hyphens only</div>
+        <div *ngIf="isFieldInvalid('caseNumber')" class="error-message">
+          {{ getFieldError('caseNumber') }}
+        </div>
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="form-row">
+        <!-- Category Field -->
+        <div class="form-group">
+          <label for="category">Specialty *</label>
+          <select id="category" formControlName="category">
+            <option *ngFor="let cat of categories" [value]="cat.value">
+              {{ cat.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Status Field -->
+        <div class="form-group">
+          <label for="status">Status *</label>
+          <select id="status" formControlName="status">
+            <option *ngFor="let st of statuses" [value]="st.value">
+              {{ st.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Max Participants -->
+        <div class="form-group">
+          <label for="maxParticipants">Max participants *</label>
+          <input
+            id="maxParticipants"
+            type="number"
+            formControlName="maxParticipants"
+            min="2"
+            max="100"
+            [class.error]="isFieldInvalid('maxParticipants')"
+          />
+          <div *ngIf="isFieldInvalid('maxParticipants')" class="error-message">
+            {{ getFieldError('maxParticipants') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Description Field -->
+      <div class="form-group">
+        <label for="description">Detailed description *</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Describe the medical case, collaboration objectives, documents to share..."
+          rows="6"
+          [class.error]="isFieldInvalid('description')"
+        ></textarea>
+        <div class="char-counter">
+          <span>{{ getDescriptionCharCount() }}/2000</span>
+          <div class="progress-bar">
+            <div class="progress" [style.width.%]="getDescriptionPercentage()"></div>
+          </div>
+        </div>
+        <div *ngIf="isFieldInvalid('description')" class="error-message">
+          {{ getFieldError('description') }}
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="goBack()">
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="btn-submit"
+          [disabled]="form.invalid || isSubmitting"
+        >
+          <span *ngIf="!isSubmitting">
+            {{ editMode ? '💾 Update' : '➕ Create Session' }}
+          </span>
+          <span *ngIf="isSubmitting">⏳ Processing...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

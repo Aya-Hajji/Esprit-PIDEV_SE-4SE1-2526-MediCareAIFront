@@ -1,0 +1,150 @@
+﻿<div class="create-meeting-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>➕ Create a Professional Meeting</h1>
+    <p class="subtitle">Schedule a meeting to discuss a complex medical case</p>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>❌</span> {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span>✅</span> {{ successMessage }}
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="meetingForm" (ngSubmit)="createMeeting()" class="meeting-form">
+    <div class="form-section">
+      <h3>📋 Meeting Information</h3>
+
+      <!-- Title -->
+      <div class="form-group">
+        <label for="title">Meeting title *</label>
+        <input
+          type="text"
+          id="title"
+          formControlName="title"
+          placeholder="Ex: Cardiac case patient #5678"
+          class="input-field"
+        />
+        <small *ngIf="meetingForm.get('title')?.hasError('required')" class="error-text">
+          Title required
+        </small>
+        <small *ngIf="meetingForm.get('title')?.hasError('minlength')" class="error-text">
+          Minimum 5 characters
+        </small>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="description">Description (optional)</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Describe the meeting topic..."
+          rows="4"
+          class="textarea-field"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>⏰ Date and Time</h3>
+
+      <div class="form-row">
+        <!-- Date -->
+        <div class="form-group">
+          <label for="scheduledDate">Date *</label>
+          <input
+            type="date"
+            id="scheduledDate"
+            formControlName="scheduledDate"
+            [min]="getTodayDate()"
+            class="input-field"
+          />
+          <small *ngIf="meetingForm.get('scheduledDate')?.hasError('required')" class="error-text">
+            Date required
+          </small>
+        </div>
+
+        <!-- Time -->
+        <div class="form-group">
+          <label for="scheduledTime">Time *</label>
+          <input
+            type="time"
+            id="scheduledTime"
+            formControlName="scheduledTime"
+            class="input-field"
+          />
+        </div>
+
+        <!-- Duration -->
+        <div class="form-group">
+          <label for="duration">Duration (minutes) *</label>
+          <input
+            type="number"
+            id="duration"
+            formControlName="duration"
+            min="15"
+            max="480"
+            class="input-field"
+          />
+          <small class="help-text">Between 15 min and 8 hours</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>🎥 Recording & Minutes</h3>
+
+      <div class="form-group checkbox">
+        <input
+          type="checkbox"
+          id="allowRecording"
+          formControlName="allowRecording"
+          class="checkbox-field"
+        />
+        <label for="allowRecording">
+          ✅ Allow recording and automatic generation of Meeting Minutes
+        </label>
+        <small class="help-text">
+          AI will automatically generate the minutes after the meeting (STT + NLP)
+        </small>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        (click)="cancel()"
+        class="btn btn-secondary"
+        [disabled]="isLoading"
+      >
+        ✖️ Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="meetingForm.invalid || isLoading"
+      >
+        <span *ngIf="!isLoading">🚀 Create Meeting</span>
+        <span *ngIf="isLoading">⏳ Creating...</span>
+      </button>
+    </div>
+  </form>
+
+  <!-- Info Box -->
+  <div class="info-box">
+    <h4>ℹ️ How does it work?</h4>
+    <ol>
+      <li><strong>Create:</strong> You create a meeting with date/time</li>
+      <li><strong>Invite:</strong> Invite professionals to participate</li>
+      <li><strong>Meeting:</strong> The Jitsi meeting starts automatically</li>
+      <li><strong>Recording:</strong> Audio is recorded and transcribed</li>
+      <li><strong>AI Minutes:</strong> AI generates the Meeting Minutes automatically</li>
+      <li><strong>Share:</strong> Minutes are sent to all participants</li>
+    </ol>
+  </div>
+</div>

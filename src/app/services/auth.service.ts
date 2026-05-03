@@ -180,6 +180,7 @@ export class AuthService {
     // Clear token and user from local storage
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
+    localStorage.removeItem('userId');
     this.tokenSubject.next(null);
     this.currentUserSubject.next(null);
   }
@@ -189,6 +190,25 @@ export class AuthService {
    */
   isLoggedIn(): boolean {
     return !!this.tokenValue;
+  }
+
+  isAuthenticated(): boolean {
+    return this.isLoggedIn();
+  }
+
+  getCurrentUserId(): number | null {
+    const storedUserId = Number(localStorage.getItem('userId'));
+    if (Number.isFinite(storedUserId) && storedUserId > 0) {
+      return storedUserId;
+    }
+
+    const user = this.currentUserValue;
+    const userId = Number(user?.id ?? user?.userId);
+    if (Number.isFinite(userId) && userId > 0) {
+      return userId;
+    }
+
+    return this.extractUserIdFromToken(this.tokenValue || '');
   }
 
   /**
@@ -331,6 +351,11 @@ export class AuthService {
       ...response.user
     };
     this.setUser(userData);
+
+    const userId = Number(userData.id ?? (userData as any).userId);
+    if (Number.isFinite(userId) && userId > 0) {
+      localStorage.setItem('userId', userId.toString());
+    }
   }
 
   private extractRoleFromToken(token: string): string {

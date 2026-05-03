@@ -1,0 +1,174 @@
+<div class="forum-detail-container">
+
+  <button class="back-btn" (click)="goBack()">← Back to discussions</button>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error">
+    <div class="error-message">
+      <span class="error-icon">❌</span>
+      <div>
+        <h3>Error</h3>
+        <p>{{ error }}</p>
+      </div>
+      <button class="btn btn-primary" (click)="goBack()">Go back</button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading" *ngIf="loading && !error">
+    <div class="spinner"></div>
+    <p>Loading post...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="detail-content" *ngIf="!loading && post">
+
+    <div class="post-detail-card">
+
+      <div class="post-detail-header">
+        <div class="header-top">
+          <div class="author-section">
+            <div class="avatar-large">{{ getInitial(post.authorName) }}</div>
+            <div class="author-info">
+              <h3 class="author-name">{{ post.authorName || 'Anonymous user' }}</h3>
+              <p class="post-meta">{{ getTimeAgo(post.createdAt) }}</p>
+            </div>
+          </div>
+          <div class="premium-section" *ngIf="post.premiumOnly">
+            <span class="badge premium-badge">⭐ PREMIUM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-detail-content">
+        <h1 class="post-title">
+          {{ post.title }}
+          <span *ngIf="isTranslating" class="translating-badge">🌐 Translating...</span>
+        </h1>
+        <div class="post-body">{{ post.content }}</div>
+        <div class="post-tags" *ngIf="post.tags && post.tags.length > 0">
+          <span class="tag" *ngFor="let tag of post.tags">#{{ tag }}</span>
+        </div>
+        <!-- Translation bar -->
+        <div class="translation-bar">
+          <span class="translation-info" *ngIf="isTranslating">🌐 Translating content...</span>
+          <span class="translation-info translated" *ngIf="isTranslated && !isTranslating">✅ Translated to English</span>
+          <button *ngIf="!isTranslating" class="btn-translate" (click)="toggleTranslation()">
+            {{ isTranslated ? '🔄 Show original' : '🌐 Translate to English' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="post-detail-footer">
+        <div class="post-stats">
+          <span class="stat">
+            <span class="icon">👁️</span> {{ post.viewCount || post.viewsCount || 0 }} views
+          </span>
+          <span class="stat">
+            <span class="icon">💬</span> {{ post.replyCount || 0 }} replies
+          </span>
+          <span class="stat">
+            <span class="icon">❤️</span> {{ post.likerCount || post.likesCount || 0 }} likes
+          </span>
+        </div>
+
+        <div class="post-actions">
+          <button class="action-btn" (click)="$event.stopPropagation(); likePost()" *ngIf="!post.isLiked">
+            ❤️ Like
+          </button>
+          <button class="action-btn active" (click)="$event.stopPropagation(); unlikePost()" *ngIf="post.isLiked">
+            ❤️ Liked
+          </button>
+          <button class="action-btn" (click)="$event.stopPropagation(); editPost()" title="Edit">
+            ✏️ Edit
+          </button>
+          <button class="action-btn danger" (click)="$event.stopPropagation(); deletePost()" title="Delete">
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Replies Section -->
+    <div class="replies-section">
+      <h2 class="replies-title">Replies ({{ replies.length }})</h2>
+
+      <!-- Premium Restriction -->
+      <div class="premium-restriction" *ngIf="post.premiumOnly && !userHasSubscription">
+        <div class="restriction-content">
+          <span class="icon">🔒</span>
+          <div>
+            <h4>Premium Content</h4>
+            <p>You need a subscription to view replies and participate in this discussion.</p>
+            <button class="btn btn-primary" (click)="goToSubscriptions()">View subscription plans</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reply Form -->
+      <div class="reply-form-container" *ngIf="canReply">
+        <h3>Add a reply</h3>
+
+        <div class="reply-error" *ngIf="replyError">
+          <div class="error-message-inline" [class.bad-words-block]="replyError.includes('inapproprié') || replyError.includes('inappropriate')">
+            <span class="error-icon">{{ (replyError.includes('inapproprié') || replyError.includes('inappropriate')) ? '🚫' : '⚠️' }}</span>
+            <p>{{ replyError }}</p>
+            <button class="close-btn" (click)="replyError = null; cdr.detectChanges()">✕</button>
+          </div>
+        </div>
+
+        <div class="reply-form">
+          <textarea
+            [(ngModel)]="replyText"
+            placeholder="Write your reply here..."
+            class="reply-textarea"
+            rows="5"
+          ></textarea>
+          <div class="form-actions">
+            <button
+              class="btn btn-primary"
+              (click)="submitReply()"
+              [disabled]="!replyText.trim() || submittingReply || checkingBadWords"
+            >
+              <span *ngIf="checkingBadWords">🔍 Checking content…</span>
+              <span *ngIf="submittingReply && !checkingBadWords">⏳ Publishing…</span>
+              <span *ngIf="!submittingReply && !checkingBadWords">Post reply</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Replies List -->
+      <div class="replies-list" *ngIf="!isLoadingReplies && replies.length > 0">
+        <div class="reply-card" *ngFor="let reply of replies">
+          <div class="reply-header">
+            <div class="author-section">
+              <div class="avatar">{{ getInitial(reply.authorName) }}</div>
+              <div class="author-info">
+                <h4 class="author-name">{{ reply.authorName || 'Anonymous user' }}</h4>
+                <p class="reply-meta">{{ getTimeAgo(reply.createdAt) }}</p>
+              </div>
+            </div>
+            <div class="reply-actions">
+              <button class="action-btn" (click)="$event.stopPropagation(); likeReply(reply.id)" title="Like">❤️</button>
+              <button class="action-btn danger" (click)="$event.stopPropagation(); deleteReply(reply.id)" title="Delete">🗑️</button>
+            </div>
+          </div>
+          <div class="reply-content">{{ reply.content }}</div>
+        </div>
+      </div>
+
+      <!-- No Replies -->
+      <div class="empty-replies" *ngIf="!isLoadingReplies && replies.length === 0 && canReply">
+        <p>No replies yet. Be the first to reply!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post Not Found -->
+  <div class="error-state" *ngIf="!loading && !post">
+    <h3>Post not found</h3>
+    <p>The post you are looking for does not exist or has been deleted.</p>
+    <button class="btn btn-primary" (click)="goBack()">Back to discussions</button>
+  </div>
+</div>

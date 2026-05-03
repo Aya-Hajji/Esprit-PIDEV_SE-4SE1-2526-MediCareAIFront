@@ -1,0 +1,592 @@
+﻿<!-- Test/Debug Section - Shows basic data -->
+<div *ngIf="session && !isLoading" class="debug-section" style="background: #f0f7ff; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; border-left: 4px solid #2196F3;">
+  <h3 style="margin-top: 0; color: #1976d2;">✅ Data loaded successfully!</h3>
+  <p><strong>Title:</strong> {{ session.title }}</p>
+  <p><strong>Status:</strong> {{ session.status }}</p>
+  <p><strong>Participants:</strong> {{ session.participants?.length || 0 }}</p>
+  <p><strong>Documents:</strong> {{ documents.length }}</p>
+</div>
+
+<!-- Global Alert Messages -->
+<div *ngIf="errorMessage" class="alert alert-error" style="margin: 1rem;">
+  <span>❌</span> {{ errorMessage }}
+</div>
+<div *ngIf="successMessage" class="alert alert-success" style="margin: 1rem;">
+  <span>✅</span> {{ successMessage }}
+</div>
+
+<!-- Loading State (Global) -->
+<div *ngIf="isLoading" class="loading-container">
+  <div class="spinner"></div>
+  <p>Loading session...</p>
+  <p class="loading-hint">⏱️ If this takes more than 10 seconds, check that the backend server is active.</p>
+</div>
+
+<!-- Error State (Global - when session fails to load) -->
+<div *ngIf="!isLoading && !session && errorMessage" class="error-container">
+  <div class="error-box">
+    <span class="error-icon">❌</span>
+    <h2>Loading Error</h2>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-back" (click)="goBack()">← Back to list</button>
+  </div>
+</div>
+
+<!-- Debug Info -->
+<div *ngIf="session && false" class="debug-info" style="background: #fff3cd; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem;">
+  <p><strong>DEBUG:</strong> Session loaded: {{ session | json }}</p>
+</div>
+
+<div class="detail-container" *ngIf="session">
+
+  <!-- Header with Back Button -->
+  <div class="header-section">
+    <button class="btn-back" (click)="goBack()">← Back</button>
+    <div class="header-content">
+      <h1>{{ session.title || 'Untitled' }}</h1>
+      <span [class]="'status-badge session-' + ((session.status || 'unknown').toLowerCase())">
+  {{ session.status || 'Unknown' }}
+</span>
+    </div>
+    <div class="header-actions" *ngIf="canEdit() || canDelete()">
+      <button *ngIf="canEdit()" class="btn-action edit" (click)="editSession()">
+        ✏️ Edit
+      </button>
+      <button *ngIf="canDelete()" class="btn-action delete" (click)="deleteSession()">
+        🗑️ Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State (inside detail container) -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading documents...</p>
+  </div>
+
+  <!-- Content Tabs -->
+  <div *ngIf="!isLoading" class="tabs-container">
+    <!-- Tab Navigation -->
+    <div class="tab-buttons">
+      <button [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'" class="tab-btn">
+        📋 Overview
+      </button>
+      <button [class.active]="activeTab === 'documents'" (click)="activeTab = 'documents'" class="tab-btn">
+        📁 Documents ({{ documents.length }})
+      </button>
+      <button [class.active]="activeTab === 'participants'" (click)="activeTab = 'participants'" class="tab-btn">
+        👥 Participants ({{ session.participants?.length || 0 }})
+      </button>
+      <button [class.active]="activeTab === 'discussions'" (click)="activeTab = 'discussions'" class="tab-btn">
+        🎥 Live Meeting
+      </button>
+      <button [class.active]="activeTab === 'annotations'" (click)="activeTab = 'annotations'" class="tab-btn">
+        📝 Annotations
+      </button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'" class="tab-content">
+      <div class="overview-grid">
+        <div class="info-card">
+          <h3>Session information</h3>
+          <div class="info-item">
+            <span class="label">Med. case:</span>
+            <span class="value">{{ session.caseNumber || 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Organizer:</span>
+            <span class="value">{{ session.organizerName || 'Unknown' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Created on:</span>
+            <span class="value">{{ session.createdAt ? (session.createdAt | date:'longDate') : 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Participants:</span>
+            <span class="value">{{ (session.participants?.length || 0) }} / {{ session.maxParticipants || '∞' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Status:</span>
+            <span class="value">
+              <span [class]="'status-badge session-' + ((session.status || 'unknown').toLowerCase())">
+                {{ session.status || 'Unknown' }}
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Description Card -->
+        <div class="description-card">
+          <h3>Description</h3>
+          <p>{{ session.description || 'No description provided.' }}</p>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="stats-card">
+          <h3>Statistics</h3>
+          <div class="stat">
+            <div class="stat-number">{{ session.participants?.length || 0 }}</div>
+            <div class="stat-label">Participants</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">{{ documents.length }}</div>
+            <div class="stat-label">Documents</div>
+          </div>
+          <div class="stat" *ngIf="session.documentCount">
+            <div class="stat-number">{{ session.documentCount }}</div>
+            <div class="stat-label">Total Docs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features Section -->
+      <div class="features-section">
+        <h2>Features & Collaboration</h2>
+        
+        <!-- Feature 1: Document Sharing -->
+        <div class="feature-card">
+          <div class="feature-header">
+            <span class="feature-icon">📄</span>
+            <h3>Medical Document Sharing</h3>
+          </div>
+          <p class="feature-description">
+            Share and manage important medical documents: X-rays, analyses, reports and other clinical files.
+            All documents are centralized and accessible to the entire authorized team.
+          </p>
+          <div class="feature-details">
+            <div class="detail-item">
+              <span class="icon">📁</span>
+              <span class="text">{{ documents.length }} shared document(s)</span>
+            </div>
+            <div class="detail-item">
+              <span class="icon">👥</span>
+              <span class="text">Accessible to {{ session.participants?.length || 0 }} professional(s)</span>
+            </div>
+          </div>
+          <button class="btn-feature" (click)="activeTab = 'documents'">
+            📁 Access Documents
+          </button>
+        </div>
+
+        <!-- Feature 2: Real-Time Annotations -->
+        <div class="feature-card">
+          <div class="feature-header">
+            <span class="feature-icon">✏️</span>
+            <h3>Real-Time Annotations</h3>
+          </div>
+          <p class="feature-description">
+            Annotate directly on shared documents with comments, highlights and arrows.
+            Collaborate in real time with your colleagues to discuss medical cases.
+          </p>
+          <div class="feature-details">
+            <div class="detail-item">
+              <span class="icon">💬</span>
+              <span class="text">Comments and discussions</span>
+            </div>
+            <div class="detail-item">
+              <span class="icon">🟨</span>
+              <span class="text">Highlights and markings</span>
+            </div>
+            <div class="detail-item">
+              <span class="icon">➜</span>
+              <span class="text">Pointers and indicators</span>
+            </div>
+          </div>
+          <button class="btn-feature" (click)="activeTab = 'annotations'">
+            📝 View Annotations
+          </button>
+        </div>
+
+        <!-- Feature 3: Participant Management -->
+        <div class="feature-card">
+          <div class="feature-header">
+            <span class="feature-icon">👥</span>
+            <h3>Participant Management</h3>
+          </div>
+          <p class="feature-description">
+            Invite only authorized healthcare professionals. Control access and manage roles
+            (Organizer, Editor, Viewer) to secure the sharing of sensitive medical data.
+          </p>
+          <div class="feature-details">
+            <div class="detail-item">
+              <span class="icon">🔐</span>
+              <span class="text">Controlled and secure access</span>
+            </div>
+            <div class="detail-item">
+              <span class="icon">📋</span>
+              <span class="text">Defined roles and permissions</span>
+            </div>
+            <div class="detail-item">
+              <span class="icon">✅</span>
+              <span class="text">{{ session.participants?.length || 0 }} / {{ session.maxParticipants || '∞' }} professional(s)</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center;">
+            <button class="btn-feature" (click)="activeTab = 'participants'">
+              👥 Manage Participants
+            </button>
+            <button class="btn-invite-quick" (click)="showQuickInviteForm = !showQuickInviteForm">
+              {{ showQuickInviteForm ? '❌ Cancel' : '➕ Invite Now' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Invite Form in Overview -->
+        <div *ngIf="showQuickInviteForm" class="quick-invite-section">
+          <form [formGroup]="inviteForm" (ngSubmit)="inviteParticipant()" class="invite-form-quick">
+            <div class="form-header">
+              <h4>📧 Invite a Professional</h4>
+              <p class="form-hint">Add an expert to discuss this medical case</p>
+            </div>
+
+            <div class="form-group">
+              <label for="quickInviteEmail">
+                <span class="label-text">Professional's email</span>
+                <span class="label-required">*</span>
+              </label>
+              <input 
+                id="quickInviteEmail" 
+                type="email" 
+                formControlName="email" 
+                placeholder="example: dr.martin@hospital.com"
+                class="form-input"
+              />
+              <span class="form-error" *ngIf="inviteForm.get('email')?.hasError('required') && inviteForm.get('email')?.touched">
+                Email is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="quickInviteRole">
+                <span class="label-text">Role</span>
+              </label>
+              <select id="quickInviteRole" formControlName="role" class="form-select">
+                <option value="VIEWER">👁️ VIEWER - Read only</option>
+                <option value="EDITOR">✏️ EDITOR - Annotations & Discussions</option>
+              </select>
+            </div>
+
+            <div class="form-actions-quick">
+              <button type="submit" class="btn-send-quick" [disabled]="inviteForm.invalid || isSubmitting">
+                <span *ngIf="!isSubmitting">✅ Send invitation</span>
+                <span *ngIf="isSubmitting">⏳ In progress...</span>
+              </button>
+              <button type="button" class="btn-cancel-quick" (click)="showQuickInviteForm = false">
+                Cancel
+              </button>
+            </div>
+
+            <div *ngIf="successMessage" class="success-message">
+              ✅ {{ successMessage }}
+            </div>
+            <div *ngIf="errorMessage" class="error-message">
+              ❌ {{ errorMessage }}
+            </div>
+
+            <!-- Invitation Link Display -->
+            <div *ngIf="showInvitationLink && lastInvitationLink" class="invitation-link-section">
+              <div class="invitation-link-card">
+                <h4>🔗 Generated invitation link</h4>
+                <p class="invitation-link-text">{{ lastInvitedEmail }}</p>
+                <div class="link-container">
+                  <input 
+                    type="text" 
+                    class="link-input" 
+                    [value]="lastInvitationLink" 
+                    readonly
+                  >
+                  <button 
+                    type="button" 
+                    class="btn-copy-link" 
+                    (click)="copyInvitationLink()"
+                  >
+                    📋 Copy link
+                  </button>
+                </div>
+                <p class="invitation-expiry">⏰ Link valid for 24 hours</p>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Feature 4: Live Meeting -->
+        <div class="feature-card">
+          <div class="feature-header">
+            <span class="feature-icon">🎥</span>
+            <h3>Medical Live Meeting</h3>
+          </div>
+          <p class="feature-description">
+            Launch a secure live meeting between specialists to discuss the case via audio/video.
+            The system automatically creates the meeting linked to this session if it doesn't exist yet.
+          </p>
+          <div class="feature-details">
+            <div class="detail-item">
+              <span class="icon">📹</span>
+              <span class="text">Live video/audio call</span>
+            </div>
+            <div class="detail-item">
+              <span class="icon">🖥️</span>
+              <span class="text">Screen sharing and real-time collaboration</span>
+            </div>
+          </div>
+          <button class="btn-feature" (click)="activeTab = 'discussions'">
+            🎥 Join Live Meeting
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents Tab -->
+    <div *ngIf="activeTab === 'documents'" class="tab-content">
+      <!-- Upload Form -->
+      <div class="document-upload">
+        <button class="btn-upload" (click)="showUploadForm = !showUploadForm">
+          📤 {{ showUploadForm ? 'Cancel' : 'Upload a document' }}
+        </button>
+
+        <form *ngIf="showUploadForm" [formGroup]="uploadForm" (ngSubmit)="uploadDocument()" class="upload-form">
+          <div class="form-group">
+            <label for="fileInput">Select a file *</label>
+            <input id="fileInput" type="file" (change)="onFileSelected($event)" class="file-input" />
+          </div>
+
+          <div class="form-group">
+            <label for="fileDescription">Description (optional)</label>
+            <textarea id="fileDescription" formControlName="description" placeholder="Describe the file content..." rows="3"></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit" [disabled]="uploadForm.invalid">
+            ⬆️ Upload
+          </button>
+        </form>
+      </div>
+
+      <!-- Documents List -->
+      <div *ngIf="documents.length > 0" class="documents-list">
+        <div *ngFor="let doc of documents" class="document-item">
+          <div class="document-icon">{{ getFileIcon(doc.fileType) }}</div>
+          <div class="document-info">
+            <h4>{{ doc.fileName }}</h4>
+            <div class="document-meta">
+              <span>{{ formatFileSize(doc.fileSize) }}</span>
+              <span>Uploaded by: {{ doc.uploadedBy || 'Unknown' }}</span>
+              <span>{{ doc.uploadedAt | date:'short' }}</span>
+            </div>
+            <p *ngIf="doc.description" class="document-description">{{ doc.description }}</p>
+          </div>
+          <div class="document-actions">
+            <button class="btn-view" (click)="goToDocumentDetail(doc.id!)">
+              👁️ Voir
+            </button>
+            <a *ngIf="doc.url" [href]="doc.url" target="_blank" class="btn-download" title="Télécharger">
+              ⬇️
+            </a>
+            <button *ngIf="canEdit()" class="btn-delete" (click)="deleteDocument(doc.id!)">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="documents.length === 0" class="empty-state">
+        <p>No documents shared yet</p>
+      </div>
+    </div>
+
+    <!-- Participants Tab -->
+    <div *ngIf="activeTab === 'participants'" class="tab-content">
+      <!-- Security Info Card -->
+      <div class="security-info-card">
+        <div class="security-icon">🔐</div>
+        <h3>Secure Participant Management</h3>
+        <p>Only invited healthcare professionals have access to this session and the shared medical documents.
+           Access is controlled through defined roles to ensure data confidentiality.</p>
+        
+        <div class="roles-legend">
+          <h4>📋 Roles and Permissions:</h4>
+          <div class="role-legend-item">
+            <span class="role-badge role-organizer">ORGANIZER</span>
+            <span>Full access: edit, delete, invite other participants</span>
+          </div>
+          <div class="role-legend-item">
+            <span class="role-badge role-editor">EDITOR</span>
+            <span>Extended access: view, comment, add annotations</span>
+          </div>
+          <div class="role-legend-item">
+            <span class="role-badge role-viewer">VIEWER</span>
+            <span>Limited access: view only, no modifications</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Participants List -->
+      <div class="participants-section">
+        <!-- Invite Button - Always Visible -->
+        <div class="invite-button-container" *ngIf="canEdit()">
+          <button class="btn-invite-primary" type="button" (click)="showInviteForm = !showInviteForm">
+            <span class="btn-icon">➕</span>
+            <span class="btn-text">{{ showInviteForm ? '❌ Cancel' : '➕ Add / Invite a Participant' }}</span>
+            <span class="btn-hint">Authorized professionals</span>
+          </button>
+        </div>
+
+        <!-- Invite Form -->
+        <form *ngIf="showInviteForm && canEdit()" [formGroup]="inviteForm" (ngSubmit)="inviteParticipant()" class="invite-form">
+          <div class="form-header">
+            <h4>📧 New Invitation</h4>
+            <p class="form-hint">Invite a healthcare professional to collaborate on this session</p>
+          </div>
+
+          <div class="form-group">
+            <label for="inviteEmail">
+              <span class="label-text">Professional's email</span>
+              <span class="label-required">*</span>
+            </label>
+            <input 
+              id="inviteEmail" 
+              type="email" 
+              formControlName="email" 
+              placeholder="example: dr.martin@hospital.com"
+              class="form-input"
+            />
+            <span class="form-error" *ngIf="inviteForm.get('email')?.hasError('required') && inviteForm.get('email')?.touched">
+              Email is required
+            </span>
+            <span class="form-error" *ngIf="inviteForm.get('email')?.hasError('email') && inviteForm.get('email')?.touched">
+              Invalid email
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="inviteRole">
+              <span class="label-text">Access role</span>
+              <span class="label-hint">(optional)</span>
+            </label>
+            <select id="inviteRole" formControlName="role" class="form-select">
+              <option value="VIEWER">👁️ VIEWER - Read only</option>
+              <option value="EDITOR">✏️ EDITOR - Annotations & Comments</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-send" [disabled]="inviteForm.invalid">
+              ✅ Send invitation
+            </button>
+            <button type="button" class="btn-cancel" (click)="showInviteForm = false">
+              Cancel
+            </button>
+          </div>
+
+          <div class="form-info" *ngIf="session.maxParticipants">
+            <span>📊 Available spots: {{ (session.maxParticipants - (session.participants?.length || 0)) }}</span>
+          </div>
+        </form>
+      </div>
+
+      <div *ngIf="session.participants && session.participants.length > 0" class="participants-list">
+        <div class="participants-header">
+          <h3>👥 Invited Professionals ({{ session.participants.length }})</h3>
+        </div>
+        
+        <div *ngFor="let participant of session.participants" class="participant-card">
+          <div class="participant-avatar">
+            {{ getInitial(participant.name) }}
+          </div>
+          <div class="participant-info">
+            <h4>{{ participant.name }}</h4>
+            <p class="participant-specialty">{{ participant.specialty || 'Specialty not specified' }}</p>
+            <p class="participant-email" *ngIf="participant.email">📧 {{ participant.email }}</p>
+            <p class="participant-joined" *ngIf="participant.joinedAt">
+              ✓ Added on {{ participant.joinedAt | date:'shortDate' }}
+            </p>
+          </div>
+          <div class="participant-role">
+            <span [class]="'role-badge role-' + (participant.role.toLowerCase() || 'viewer')">
+              {{ participant.role }}
+            </span>
+          </div>
+          <div class="participant-actions" *ngIf="canEdit()">
+            <button class="btn-delete-participant" 
+                    (click)="deleteParticipant(participant.id!, participant.name)"
+                    title="Remove this participant">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!session.participants || session.participants.length === 0" class="empty-state">
+        <div class="empty-icon">👥</div>
+        <h4>No participants yet</h4>
+        <p>Invite healthcare professionals to collaborate on this session</p>
+        <button *ngIf="canEdit()" class="btn-empty-state" (click)="showInviteForm = true; activeTab = 'participants'">
+          ➕ Start inviting
+        </button>
+      </div>
+    </div>
+
+    <!-- Discussions Tab -->
+    <div *ngIf="activeTab === 'discussions'" class="tab-content">
+      <div class="discussions-container">
+        <div class="discussions-header">
+          <h3>🎥 Live Meeting</h3>
+          <button class="btn-go-discussions" (click)="goToDiscussions()">
+            Join live meeting →
+          </button>
+        </div>
+        <div style="margin: 0.75rem 0 1rem 0; padding: 0.75rem; border: 1px solid #dbe7ff; border-radius: 0.5rem; background: #f8fbff;">
+          <p style="margin: 0 0 0.5rem 0;"><strong>Session → meeting link</strong></p>
+          <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem;">
+            Session #{{ session.id }} linked to:
+            <strong *ngIf="getLinkedMeetingIdForCurrentSession()">meeting #{{ getLinkedMeetingIdForCurrentSession() }}</strong>
+            <span *ngIf="!getLinkedMeetingIdForCurrentSession()">no meeting</span>
+          </p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <input #manualMeetingIdInput type="number" min="1" placeholder="ID réunion (ex: 10)" style="padding: 0.45rem 0.6rem; border: 1px solid #ccd6eb; border-radius: 0.4rem;" />
+            <button type="button" class="btn-go-discussions" [disabled]="isLinkingMeeting" (click)="linkSessionToMeetingById(manualMeetingIdInput.value)">
+              {{ isLinkingMeeting ? 'Verifying...' : 'Link this ID' }}
+            </button>
+            <button *ngIf="canEdit()" type="button" class="btn-go-discussions" [disabled]="isLinkingMeeting" (click)="linkSessionToLastCreatedMeeting()">
+              Link last created meeting
+            </button>
+          </div>
+        </div>
+        <p class="discussions-hint">Direct access to the live meeting for this session.</p>
+      </div>
+    </div>
+
+    <!-- Annotations & Documents Detail Tab -->
+    <div *ngIf="activeTab === 'annotations'" class="tab-content">
+      <div class="annotations-container">
+        <div class="annotations-header">
+          <h3>📝 Annotations and Detailed Documents</h3>
+        </div>
+        
+        <div *ngIf="documents.length > 0" class="documents-for-annotation">
+          <p class="documents-hint">Select a document to view and add annotations</p>
+          <div class="documents-quick-list">
+            <div *ngFor="let doc of documents" class="document-link">
+              <button class="btn-document-link" (click)="goToDocumentDetail(doc.id!)">
+                📄 {{ doc.fileName }}
+                <span class="annotation-count" *ngIf="doc.annotationCount && doc.annotationCount > 0">
+                  ({{ doc.annotationCount }} annotations)
+                </span>              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="documents.length === 0" class="empty-state">
+          <p>No documents yet. Upload a document in the Documents tab to add annotations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="!session && !isLoading" class="error-container">
+  <h2>Session not found</h2>
+  <p>{{ errorMessage || 'The requested session does not exist.' }}</p>
+  <button class="btn-back" (click)="goBack()">← Back</button>
+</div>

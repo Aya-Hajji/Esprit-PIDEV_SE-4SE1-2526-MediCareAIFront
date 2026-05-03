@@ -5,6 +5,7 @@ import { ADMIN_ROUTES } from './modules/admin/admin.routes';
 import { APPOINTMENTS_SCHEDULING_ROUTES } from './modules/appointments-scheduling/appointments-scheduling.routes';
 import { COLLABORATION_ROUTES } from './modules/collaboration/collaboration.routes';
 import { COMMUNITY_EVENTS_ROUTES } from './modules/community-events/community-events.routes';
+import { COMMUNITY_FORUM_ROUTES, LEGACY_FORUM_ROUTES } from './modules/community-forum/community-forum.routes';
 import { E_PHARMACY_ROUTES } from './modules/e-pharmacy/e-pharmacy.routes';
 import { HEALTH_TRACKER_ROUTES } from './modules/health-tracker/health-tracker.routes';
 import { MEDICAL_RECORD_ROUTES } from './modules/medical-record/medical-record.routes';
@@ -21,6 +22,13 @@ const routes: Routes = [
   ...HEALTH_TRACKER_ROUTES,
   ...COLLABORATION_ROUTES,
   ...COMMUNITY_EVENTS_ROUTES,
+  ...COMMUNITY_FORUM_ROUTES,
+  ...LEGACY_FORUM_ROUTES,
+  {
+    path: 'professional-collaboration',
+    redirectTo: 'collaboration/dashboard',
+    pathMatch: 'full'
+  },
   ...ADMIN_ROUTES,
 ];
 
