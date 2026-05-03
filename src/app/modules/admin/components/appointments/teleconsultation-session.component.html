@@ -1,0 +1,32 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Teleconsultation Session</h2>
+    <p>Appointment #{{ appointmentId }} live consultation room and e-visit workflow.</p>
+  </div>
+
+  <div class="loading" *ngIf="loading">Loading session...</div>
+  <div class="error-message" *ngIf="error">{{ error }}</div>
+  <div class="success-message" *ngIf="infoMessage">{{ infoMessage }}</div>
+
+  <div class="context-card" *ngIf="appointment">
+    <div><strong>Doctor:</strong> {{ appointment.doctorId }}</div>
+    <div><strong>Patient:</strong> {{ appointment.patientId }}</div>
+    <div><strong>Start:</strong> {{ appointment.startTime | date:'medium' }}</div>
+    <div><strong>Type:</strong> {{ appointment.consultationType }}</div>
+    <div><strong>Status:</strong> {{ appointment.status }}</div>
+  </div>
+
+  <div class="session-card" *ngIf="session">
+    <div><strong>Room:</strong> {{ session.roomId || 'N/A' }}</div>
+    <div><strong>Session Status:</strong> {{ session.status || 'PENDING' }}</div>
+    <div><strong>Meeting Link:</strong>
+      <a *ngIf="session.meetingLink" [href]="session.meetingLink" target="_blank" rel="noopener noreferrer">Open Meeting</a>
+      <span *ngIf="!session.meetingLink">Not generated yet</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" (click)="startSession()" [disabled]="loading">Start Session</button>
+    <button class="btn btn-secondary" (click)="joinSession()" [disabled]="loading">Join Session</button>
+  </div>
+</div>

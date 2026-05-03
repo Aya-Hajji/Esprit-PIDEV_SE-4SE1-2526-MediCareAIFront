@@ -1,0 +1,159 @@
+<div class="landing-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo-section">
+        <img src="https://api.builder.io/api/v1/image/assets/TEMP/6b800d294244134f64b61d895da3707d78e30a74?width=80" alt="MediCareAI Logo" class="logo">
+        <span class="logo-text">MediCareAI</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#providers" class="nav-link">Providers</a>
+        <a href="#security" class="nav-link">Security</a>
+      </nav>
+      <div class="header-buttons">
+        @if (currentUser$ | async; as user) {
+          <button class="profile-btn" (click)="navigateToProfile(user.role)">PROFILE</button>
+          <button class="logout-btn" (click)="logout()">LOG OUT</button>
+        } @else {
+          <button class="sign-up-btn" (click)="navigateToSignup()">SIGN UP</button>
+          <button class="sign-in-btn" (click)="navigateToRoleSelection()">SIGN IN</button>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-label">NEXT-GEN HEALTHCARE PLATFORM</span>
+      <h1 class="hero-title">
+        THE FUTURE OF<br>
+        <span class="highlight">DIGITAL HEALTH</span><br>
+        IS HERE.
+      </h1>
+      <p class="hero-description">
+        MediCareAI connects patients and providers through a secure, <br>
+        AI-powered ecosystem designed to improve clinical outcomes<br>
+        and simplify patient management.
+      </p>
+      <div class="cta-buttons">
+        <button class="btn btn-primary" (click)="navigateToRoleSelection()">GET STARTED NOW</button>
+        <button class="btn btn-secondary" (click)="watchDemo()">
+          WATCH DEMO
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.5 5L15 10L7.5 15V5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-number">12,000+</span>
+          <span class="stat-label">ACTIVE USERS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Image -->
+    <div class="hero-image-container">
+      <div class="heart-rate-widget">
+        <svg class="heart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="heart-rate-info">
+          <span class="heart-rate-label">HEART RATE</span>
+          <span class="heart-rate-value">72 bpm</span>
+        </div>
+      </div>
+      <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=500&h=600&fit=crop" alt="Medical Laboratory" class="hero-image">
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="features-content">
+      <h2 class="section-title">ENTERPRISE HEALTH SUITE</h2>
+      <p class="section-description">
+        Everything you need to manage healthcare at scale, from AI diagnostics to secure<br>
+        teleconsultations.
+      </p>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="feature-icon ai-diagnostics">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L15.09 8.26H22L17.59 12.89L19.68 19.26L12 14.63L4.32 19.26L6.41 12.89L2 8.26H8.91L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">AI DIAGNOSTICS</h3>
+          <p class="feature-description">
+            Advanced algorithms for symptom analysis and clinical decision support.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="feature-icon hipaa-compliant">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">HIPAA COMPLIANT</h3>
+          <p class="feature-description">
+            Full compliance with international health data standards and privacy laws.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="feature-icon patient-focused">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">PATIENT FOCUSED</h3>
+          <p class="feature-description">
+            Intuitive interfaces designed to reduce patient stress and improve engagement.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Ready to Transform Healthcare Delivery?</h2>
+      <p>Join thousands of healthcare providers using MediCareAI to improve patient outcomes.</p>
+      <button class="btn btn-primary" (click)="navigateToRoleSelection()">GET STARTED NOW</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <div class="footer-logo-section">
+          <img src="https://api.builder.io/api/v1/image/assets/TEMP/6b800d294244134f64b61d895da3707d78e30a74?width=80" alt="MediCareAI Logo" class="footer-logo">
+          <span class="footer-logo-text">MediCareAI</span>
+        </div>
+        <p class="footer-text">© 2025 MediCareAI Healthcare Systems. All Rights Reserved.</p>
+      </div>
+      <div class="footer-section">
+        <a href="#privacy" class="footer-link">PRIVACY POLICY</a>
+        <a href="#terms" class="footer-link">TERMS OF SERVICE</a>
+      </div>
+    </div>
+  </footer>
+
+  @if (showLoginModal) {
+    <div class="login-modal-backdrop" (click)="closeLoginModal()">
+      <div class="login-modal-panel" (click)="$event.stopPropagation()">
+        <app-login [modalMode]="true" (close)="closeLoginModal()"></app-login>
+      </div>
+    </div>
+  }
+</div>

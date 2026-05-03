@@ -1,0 +1,369 @@
+<div class="signup-page">
+  <div class="signup-card">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="panel-inner signup-panel">
+
+        <!-- Header -->
+        <div class="signup-header">
+          <div class="brand" (click)="navigateHome()">
+            <img src="https://api.builder.io/api/v1/image/assets/TEMP/2e6d3cfbb1b2ec614b2d472fa9c587bcbcd6facd?width=80" alt="MediCareAI Logo" class="brand-logo" />
+            <span class="brand-name">MediCareAI</span>
+          </div>
+          <div class="signup-title-group">
+            <h1 class="signup-heading">Create Account</h1>
+            <p class="signup-sub">Join our healthcare platform</p>
+          </div>
+        </div>
+
+        <!-- Progress indicator -->
+        <div class="progress-container">
+          <div class="progress-bar" [style.width]="(currentStep / 3) * 100 + '%'"></div>
+          <div class="step-indicators">
+            <div class="step-indicator" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+              <span class="step-number">1</span>
+              <span class="step-label">Personal</span>
+            </div>
+            <div class="step-indicator" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+              <span class="step-number">2</span>
+              <span class="step-label">Credentials</span>
+            </div>
+            <div class="step-indicator" [class.active]="currentStep >= 3">
+              <span class="step-number">3</span>
+              <span class="step-label">Details</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error/Success messages -->
+        @if (errorMessage) {
+          <div class="error-banner">{{ errorMessage }}</div>
+        }
+        @if (successMessage) {
+          <div class="success-banner">{{ successMessage }}</div>
+        }
+
+        <!-- STEP 1: Personal Info -->
+        @if (currentStep === 1) {
+          <div class="form-step">
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label class="field-label" for="firstName">First Name</label>
+                <div class="input-wrap">
+                  <input
+                    id="firstName"
+                    type="text"
+                    class="text-input"
+                    placeholder="Enter your first name"
+                    [(ngModel)]="formData.firstName"
+                    name="firstName"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label class="field-label" for="lastName">Last Name</label>
+                <div class="input-wrap">
+                  <input
+                    id="lastName"
+                    type="text"
+                    class="text-input"
+                    placeholder="Enter your last name"
+                    [(ngModel)]="formData.lastName"
+                    name="lastName"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-secondary" disabled style="opacity: 0.5;">
+                ← Back
+              </button>
+              <button class="btn-primary" (click)="nextStep()">
+                Next
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- STEP 2: Credentials -->
+        @if (currentStep === 2) {
+          <div class="form-step">
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label class="field-label" for="email">Email Address</label>
+                <div class="input-wrap">
+                  <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="22,6 12,13 2,6" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <input
+                    id="email"
+                    type="email"
+                    class="text-input"
+                    placeholder="Enter your email"
+                    [(ngModel)]="formData.email"
+                    name="email"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label class="field-label" for="password">Password</label>
+                <div class="input-wrap">
+                  <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <input
+                    id="password"
+                    [type]="showPassword ? 'text' : 'password'"
+                    class="text-input"
+                    placeholder="Enter your password"
+                    [(ngModel)]="formData.password"
+                    name="password"
+                  />
+                  <button type="button" class="toggle-password" (click)="togglePassword()">
+                    @if (!showPassword) {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    }
+                    @if (showPassword) {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="1" y1="1" x2="23" y2="23" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    }
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Password Strength Indicator -->
+            @if (formData.password) {
+              <div class="password-strength">
+                <div class="strength-bar">
+                  <div
+                    class="strength-fill"
+                    [style.width]="getPasswordStrength().percentage + '%'"
+                    [style.background]="getPasswordStrength().color"
+                  ></div>
+                </div>
+                <span class="strength-text" [style.color]="getPasswordStrength().color">
+                  {{ getPasswordStrength().strength }}
+                </span>
+              </div>
+            }
+
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label class="field-label" for="confirmPassword">Confirm Password</label>
+                <div class="input-wrap">
+                  <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <input
+                    id="confirmPassword"
+                    [type]="showConfirmPassword ? 'text' : 'password'"
+                    class="text-input"
+                    placeholder="Confirm your password"
+                    [(ngModel)]="formData.confirmPassword"
+                    name="confirmPassword"
+                  />
+                  <button type="button" class="toggle-password" (click)="toggleConfirmPassword()">
+                    @if (!showConfirmPassword) {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    }
+                    @if (showConfirmPassword) {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="1" y1="1" x2="23" y2="23" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    }
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-secondary" (click)="previousStep()">
+                ← Back
+              </button>
+              <button class="btn-primary" (click)="nextStep()">
+                Next
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- STEP 3: Role & Details -->
+        @if (currentStep === 3) {
+          <div class="form-step">
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label class="field-label">Role</label>
+                <div class="role-selector">
+                  @for (role of roles; track role.id) {
+                    <button
+                      type="button"
+                      class="role-option"
+                      [class.selected]="formData.role === role.id"
+                      (click)="formData.role = role.id"
+                    >
+                      <div class="role-option-inner">
+                        {{ role.label }}
+                      </div>
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label class="field-label" for="gender">Gender</label>
+                <select
+                  id="gender"
+                  class="select-input"
+                  [(ngModel)]="formData.gender"
+                  name="gender"
+                >
+                  <option value="">Select gender</option>
+                  @for (gender of genders; track gender.id) {
+                    <option value="{{ gender.id }}">{{ gender.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="field-label" for="phoneNumber">Phone Number</label>
+                <div class="input-wrap">
+                  <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 16.92V19.92C22.0008 20.1999 21.9406 20.4763 21.8237 20.7278C21.7068 20.9793 21.5365 21.2001 21.3172 21.3713C21.0979 21.5425 20.8358 21.6597 20.556 21.7157C20.2762 21.7717 19.9878 21.7655 19.71 21.6978C16.7507 21.0319 13.9621 19.5873 11.67 17.5C9.37788 15.4127 8.06947 12.6241 7.4 9.66493C7.33237 9.38716 7.32628 9.09879 7.38228 8.81901C7.43827 8.53922 7.55547 8.27708 7.72671 8.05783C7.89796 7.83858 8.11874 7.66827 8.37018 7.55135C8.62161 7.43443 8.89802 7.37416 9.178 7.375H12.178C12.5557 7.37326 12.9201 7.50415 13.2063 7.74681C13.4925 7.98947 13.6799 8.32759 13.74 8.7L14.73 15.7C14.7887 16.0707 14.7318 16.4505 14.5671 16.7841C14.4024 17.1177 14.1389 17.3889 13.81 17.56L12.2 18.52C13.6652 20.3505 15.6495 21.6365 17.9 22.15L19.51 21.19C19.8389 21.0211 20.2096 20.9642 20.5732 21.1289C20.9368 21.2936 21.2563 21.5571 21.41 21.9L22.4 28.9C22.46 29.3224 22.3938 29.7556 22.2077 30.1415C22.0216 30.5274 21.7247 30.8438 21.3548 31.0429C20.9849 31.242 20.5576 31.3151 20.1375 31.2524C19.7174 31.1897 19.3282 30.9942 19.0339 30.691C12.2385 23.8955 7.10457 18.7615 0.309011 11.9661C0.00577616 11.6718 -0.189718 11.2826 -0.127016 10.8625C-0.0643148 10.4424 0.0087932 10.0151 0.207982 9.64521C0.407171 9.27533 0.723647 8.97843 1.10954 8.79234C1.49543 8.60625 1.92856 8.53997 2.351 8.596L9.351 9.585C9.72784 9.64521 10.0659 9.83259 10.3085 10.1188C10.5511 10.4051 10.6821 10.7695 10.68 11.147L9.68 18.147C9.51103 18.4789 9.25444 18.7424 8.92085 18.907C8.58727 19.0717 8.20705 19.1286 7.83637 19.07L6.22637 18.11C8.48681 21.3507 11.7724 23.3349 15.6035 23.84L17.2135 22.88C17.5773 22.7253 17.9805 22.7222 18.3468 22.8718C18.7131 23.0213 19.0119 23.3133 19.1835 23.685L20.1735 30.685" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <input
+                    id="phoneNumber"
+                    type="tel"
+                    class="text-input"
+                    placeholder="Enter your phone number"
+                    [(ngModel)]="formData.phoneNumber"
+                    name="phoneNumber"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Terms checkbox -->
+            <div class="form-field checkbox-field">
+              <input
+                id="terms"
+                type="checkbox"
+                class="checkbox-input"
+                [(ngModel)]="formData.agreeToTerms"
+                name="agreeToTerms"
+              />
+              <label for="terms" class="checkbox-label">
+                I agree to the <a href="#" class="link">Terms of Service</a> and <a href="#" class="link">Privacy Policy</a>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-secondary" (click)="previousStep()">
+                ← Back
+              </button>
+              <button class="btn-primary" (click)="onSignUp()" [class.loading]="isLoading" [disabled]="isLoading">
+                @if (isLoading) {
+                  <span class="spinner"></span>
+                  Creating Account...
+                }
+                @if (!isLoading) {
+                  Create Account
+                }
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Sign in link -->
+        <div class="signin-link-container">
+          <p class="signin-link-text">Already have an account? <a href="#" class="signin-link" (click)="navigateToLogin(); $event.preventDefault()">Sign In</a></p>
+        </div>
+
+        <p class="hipaa-note">Secure HIPAA-Compliant Access</p>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="right-glow right-glow--top"></div>
+      <div class="right-glow right-glow--bottom"></div>
+
+      <div class="right-content">
+        <div class="security-top">
+          <div class="lock-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z" stroke="#7BF1A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#7BF1A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="security-title">Enterprise Grade Security</h2>
+          <p class="security-desc">
+            MediCareAI uses advanced 256-bit encryption and multi-factor authentication to ensure patient data remains confidential and secure.
+          </p>
+        </div>
+
+        <div class="security-features">
+          <div class="security-feature">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4.5 6L5.5 7L7.5 5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="feature-label">Biometric Authentication Support</span>
+          </div>
+          <div class="security-feature">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4.5 6L5.5 7L7.5 5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="feature-label">Real-time Audit Logging</span>
+          </div>
+          <div class="security-feature">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4.5 6L5.5 7L7.5 5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="feature-label">End-to-End Encryption</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

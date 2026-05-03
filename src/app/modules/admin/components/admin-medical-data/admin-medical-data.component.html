@@ -1,0 +1,266 @@
+<div class="admin-shell">
+
+  <!-- HEADER -->
+  <div class="admin-header">
+    <div class="header-left">
+      <div class="header-icon">⚕️</div>
+      <div>
+        <h1 class="header-title">Gestion des Données Médicales</h1>
+        <p class="header-subtitle">Administration · Maladies · Spécialités · Symptômes</p>
+      </div>
+    </div>
+    <button class="btn-primary" (click)="openAddModal(activeTab)">
+      <span>+</span> Ajouter {{ getTabLabel(activeTab) | slice:0:-1 }}
+    </button>
+  </div>
+
+  <!-- ALERTS -->
+  <div *ngIf="successMsg" class="alert alert-success">
+    <span>✓</span> {{ successMsg }}
+  </div>
+  <div *ngIf="errorMsg" class="alert alert-error">
+    <span>✕</span> {{ errorMsg }}
+  </div>
+
+  <!-- TABS + SEARCH -->
+  <div class="controls-bar">
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'diseases'" (click)="setTab('diseases')">
+        🦠 Maladies <span class="badge">{{ diseases.length }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'specialties'" (click)="setTab('specialties')">
+        🩺 Spécialités <span class="badge">{{ specialties.length }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'symptoms'" (click)="setTab('symptoms')">
+        🔬 Symptômes <span class="badge">{{ symptoms.length }}</span>
+      </button>
+    </div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="search-input"
+        name="search"
+        [(ngModel)]="searchQuery"
+        placeholder="Rechercher..."
+        class="search-input"
+      />
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des données…</p>
+  </div>
+
+  <!-- ===== DISEASES TABLE ===== -->
+  <div *ngIf="!isLoading && activeTab === 'diseases'" class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Description</th>
+          <th>Causes</th>
+          <th>Traitement</th>
+          <th>Spécialité</th>
+          <th>Symptômes</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let disease of filteredDiseases">
+          <td class="name-cell"><strong>{{ disease.name }}</strong></td>
+          <td class="desc-cell">{{ disease.description || '—' }}</td>
+          <td class="desc-cell">{{ disease.causes || '—' }}</td>
+          <td class="desc-cell">{{ disease.treatment || '—' }}</td>
+          <td>
+            <span *ngIf="disease.specialtyName" class="chip chip-blue">{{ disease.specialtyName }}</span>
+            <span *ngIf="!disease.specialtyName" class="muted">—</span>
+          </td>
+          <td>
+            <span *ngFor="let s of disease.symptoms" class="chip chip-green">{{ s }}</span>
+            <span *ngIf="!disease.symptoms || disease.symptoms.length === 0" class="muted">—</span>
+          </td>
+          <td class="actions-cell">
+            <button class="btn-icon btn-edit" (click)="openEditModal('diseases', disease)" title="Modifier">✏️</button>
+            <button class="btn-icon btn-delete" (click)="confirmDelete('diseases', disease)" title="Supprimer">🗑️</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredDiseases.length === 0">
+          <td colspan="7" class="empty-row">Aucune maladie trouvée.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== SPECIALTIES TABLE ===== -->
+  <div *ngIf="!isLoading && activeTab === 'specialties'" class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Description</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let specialty of filteredSpecialties">
+          <td class="name-cell"><strong>{{ specialty.name }}</strong></td>
+          <td class="desc-cell">{{ specialty.description || '—' }}</td>
+          <td class="actions-cell">
+            <button class="btn-icon btn-edit" (click)="openEditModal('specialties', specialty)" title="Modifier">✏️</button>
+            <button class="btn-icon btn-delete" (click)="confirmDelete('specialties', specialty)" title="Supprimer">🗑️</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredSpecialties.length === 0">
+          <td colspan="3" class="empty-row">Aucune spécialité trouvée.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== SYMPTOMS TABLE ===== -->
+  <div *ngIf="!isLoading && activeTab === 'symptoms'" class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Description</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let symptom of filteredSymptoms">
+          <td class="name-cell"><strong>{{ symptom.name }}</strong></td>
+          <td class="desc-cell">{{ symptom.description || '—' }}</td>
+          <td class="actions-cell">
+            <button class="btn-icon btn-edit" (click)="openEditModal('symptoms', symptom)" title="Modifier">✏️</button>
+            <button class="btn-icon btn-delete" (click)="confirmDelete('symptoms', symptom)" title="Supprimer">🗑️</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredSymptoms.length === 0">
+          <td colspan="3" class="empty-row">Aucun symptôme trouvé.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ===== MODAL ===== -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{ modalMode === 'add' ? 'Ajouter' : 'Modifier' }}
+        {{ getTabLabel(modalTab) | slice:0:-1 }}
+      </h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+
+    <div *ngIf="errorMsg" class="alert alert-error alert-sm">{{ errorMsg }}</div>
+
+    <div class="modal-body">
+
+      <!-- SPECIALTY FORM -->
+      <ng-container *ngIf="modalTab === 'specialties'">
+        <div class="form-group">
+          <label for="specialty-name">Nom <span class="required">*</span></label>
+          <input type="text" id="specialty-name" name="specialtyName" [(ngModel)]="specialtyForm.name" placeholder="Ex: Cardiologie" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="specialty-desc">Description</label>
+          <textarea id="specialty-desc" name="specialtyDescription" [(ngModel)]="specialtyForm.description" placeholder="Description de la spécialité…" class="form-textarea" rows="3"></textarea>
+        </div>
+      </ng-container>
+
+      <!-- SYMPTOM FORM -->
+      <ng-container *ngIf="modalTab === 'symptoms'">
+        <div class="form-group">
+          <label for="symptom-name">Nom <span class="required">*</span></label>
+          <input type="text" id="symptom-name" name="symptomName" [(ngModel)]="symptomForm.name" placeholder="Ex: Toux persistante" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="symptom-desc">Description</label>
+          <textarea id="symptom-desc" name="symptomDescription" [(ngModel)]="symptomForm.description" placeholder="Description du symptôme…" class="form-textarea" rows="3"></textarea>
+        </div>
+      </ng-container>
+
+      <!-- DISEASE FORM -->
+      <ng-container *ngIf="modalTab === 'diseases'">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="disease-name">Nom <span class="required">*</span></label>
+            <input type="text" id="disease-name" name="diseaseName" [(ngModel)]="diseaseForm.name" placeholder="Ex: Pneumonie" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label for="disease-specialty">Spécialité</label>
+            <select id="disease-specialty" name="diseaseSpecialty" [(ngModel)]="diseaseForm.specialtyId" class="form-input">
+              <option [ngValue]="undefined">— Aucune —</option>
+              <option *ngFor="let sp of specialties" [ngValue]="sp.id">{{ sp.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="disease-desc">Description</label>
+          <textarea id="disease-desc" name="diseaseDescription" [(ngModel)]="diseaseForm.description" placeholder="Description de la maladie…" class="form-textarea" rows="2"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="disease-causes">Causes</label>
+            <textarea id="disease-causes" name="diseaseCauses" [(ngModel)]="diseaseForm.causes" placeholder="Causes connues…" class="form-textarea" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="disease-treatment">Traitement</label>
+            <textarea id="disease-treatment" name="diseaseTreatment" [(ngModel)]="diseaseForm.treatment" placeholder="Traitements recommandés…" class="form-textarea" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Symptômes associés</label>
+          <div class="symptom-picker">
+            <div
+              *ngFor="let sym of symptoms"
+              class="symptom-chip"
+              [class.selected]="isSymptomSelected(sym.id!)"
+              (click)="toggleSymptomId(sym.id!)"
+            >
+              {{ sym.name }}
+            </div>
+          </div>
+          <p class="hint">Cliquez pour sélectionner / désélectionner</p>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="closeModal()">Annuler</button>
+      <button class="btn-primary" (click)="submitForm()">
+        {{ modalMode === 'add' ? 'Ajouter' : 'Enregistrer' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== DELETE CONFIRM ===== -->
+<div *ngIf="showDeleteConfirm" class="modal-overlay" (click)="cancelDelete()">
+  <div class="modal-panel modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header danger">
+      <h2 class="modal-title">Confirmer la suppression</h2>
+      <button class="modal-close" (click)="cancelDelete()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">
+        Êtes-vous sûr de vouloir supprimer <strong>« {{ deleteTarget?.name }} »</strong> ?
+        <br><span class="muted">Cette action est irréversible.</span>
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cancelDelete()">Annuler</button>
+      <button class="btn-danger" (click)="executeDelete()">Supprimer</button>
+    </div>
+  </div>
+</div>
