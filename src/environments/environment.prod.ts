@@ -1,6 +1,9 @@
+const API_PORT = 8090;
+
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8090',
+  apiPort: API_PORT,
+  apiUrl: `http://localhost:${API_PORT}/MediCareAI`,
   devAuthToken: '',
   appUrl: '',
   openaiApiKey: ''

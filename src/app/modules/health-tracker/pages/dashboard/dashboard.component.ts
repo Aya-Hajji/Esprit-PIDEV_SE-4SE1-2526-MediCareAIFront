@@ -198,27 +198,7 @@ export class DashboardComponent {
   }
 
   private resolveUserIdFromSession(): number | null {
-    const authUserRaw = localStorage.getItem('authUser');
-    if (authUserRaw) {
-      try {
-        const authUser = JSON.parse(authUserRaw) as { id?: number | string };
-        const authUserId = Number(authUser?.id);
-        if (Number.isFinite(authUserId) && authUserId > 0) {
-          return authUserId;
-        }
-      } catch {
-        // Ignore invalid authUser JSON and fall back to other sources.
-      }
-    }
-
-    const raw = localStorage.getItem('userId');
-    const parsed = Number(raw);
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return parsed;
-    }
-
-    const token = localStorage.getItem('authToken');
-    return this.extractNumericUserIdFromToken(token);
+    return this.authService.getStoredUserId();
   }
 
   private normalizeDate(value: string | undefined): string {
@@ -231,28 +211,5 @@ export class DashboardComponent {
     }
 
     return value;
-  }
-
-  private extractNumericUserIdFromToken(token: string | null): number | null {
-    if (!token || !token.includes('.')) {
-      return null;
-    }
-
-    try {
-      const payload = token.split('.')[1];
-      if (!payload) {
-        return null;
-      }
-
-      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-      const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
-      const decoded = atob(padded);
-      const parsed = JSON.parse(decoded) as { userId?: number | string; id?: number | string; sub?: number | string };
-      const candidate = Number(parsed.userId ?? parsed.id ?? parsed.sub);
-
-      return Number.isFinite(candidate) && candidate > 0 ? candidate : null;
-    } catch {
-      return null;
-    }
   }
 }

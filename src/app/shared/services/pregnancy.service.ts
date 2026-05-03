@@ -15,8 +15,7 @@ export type PregnancyWeek = {
 })
 export class PregnancyService {
   private readonly http = inject(HttpClient);
-  // Ensure base points to backend host; fallback to explicit localhost if misconfigured
-  private readonly baseUrl = (environment.apiUrl && String(environment.apiUrl).trim()) || 'http://localhost:8090';
+  private readonly baseUrl = environment.apiUrl.replace(/\/+$/, '');
 
   // Call backend to compute the timeline for a given LMP (last menstrual period)
   getTimeline(lmp?: string): Observable<any> {

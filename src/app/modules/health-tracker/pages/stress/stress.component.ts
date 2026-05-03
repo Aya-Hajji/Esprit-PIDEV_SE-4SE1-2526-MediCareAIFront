@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../../services/auth.service';
 import { HealthTrackerService } from '../../../../shared/services/health-tracker.service';
 import { Stress } from '../../../../shared/models/health-tracking.model';
 
@@ -19,6 +20,7 @@ type StressFormValue = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StressComponent {
+  private readonly authService = inject(AuthService);
   private readonly healthTrackerService = inject(HealthTrackerService);
   private readonly formBuilder = inject(FormBuilder);
 
@@ -176,51 +178,7 @@ export class StressComponent {
       }
     }
 
-    const authUserRaw = localStorage.getItem('authUser');
-    if (authUserRaw) {
-      try {
-        const authUser = JSON.parse(authUserRaw) as { id?: number | string };
-        const authUserId = Number(authUser?.id);
-        if (Number.isFinite(authUserId) && authUserId > 0) {
-          return authUserId;
-        }
-      } catch {
-        // ignore invalid authUser JSON and fall back to other sources
-      }
-    }
-
-    const raw = localStorage.getItem('userId');
-    const parsed = Number(raw);
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return parsed;
-    }
-
-    const token = localStorage.getItem('authToken');
-    const tokenUserId = this.extractNumericUserIdFromToken(token);
-    return tokenUserId;
-  }
-
-  private extractNumericUserIdFromToken(token: string | null): number | null {
-    if (!token || !token.includes('.')) {
-      return null;
-    }
-
-    try {
-      const payload = token.split('.')[1];
-      if (!payload) {
-        return null;
-      }
-
-      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-      const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
-      const decoded = atob(padded);
-      const parsed = JSON.parse(decoded) as { userId?: number | string; id?: number | string; sub?: number | string };
-      const candidate = Number(parsed.userId ?? parsed.id ?? parsed.sub);
-
-      return Number.isFinite(candidate) && candidate > 0 ? candidate : null;
-    } catch {
-      return null;
-    }
+    return this.authService.getStoredUserId();
   }
 
   private toBackendDate(date: Date): string {

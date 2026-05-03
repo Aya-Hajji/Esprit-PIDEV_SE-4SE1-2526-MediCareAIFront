@@ -33,9 +33,16 @@ export class AuthInterceptor implements HttpInterceptor {
 
     // Clone the request and add authorization header if token exists
     // But DON'T add token to login/register endpoints
-    const isAuthEndpoint = request.url.includes('/auth/login') || request.url.includes('/auth/register');
+    const url = request.url;
+    const isPublicAuthEndpoint =
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/verify-email') ||
+      url.includes('/auth/resend-verification') ||
+      url.includes('/auth/forgot-password') ||
+      url.includes('/auth/reset-password');
     
-    if (token && !isAuthEndpoint) {
+    if (token && !isPublicAuthEndpoint) {
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -58,10 +65,17 @@ export class AuthInterceptor implements HttpInterceptor {
 
         // Only a 401 should force a logout. A 403 usually means the backend
         // rejected the action for the current user, but the session is still valid.
+        if (error.status === 0) {
+          console.error(
+            'Cannot reach API — check that the base URL matches the backend (default http://localhost:8090/MediCareAI), the server is running, and that nothing is blocking the request (firewall, wrong port, or mixed content).',
+            error
+          );
+        }
+
         if (error.status === 401) {
           console.warn('Auth error detected, clearing tokens...');
           this.authService.logout();
-          if (!isAuthEndpoint) {
+          if (!isPublicAuthEndpoint) {
             this.router.navigate(['/login']);
           }
         } else if (error.status === 403) {

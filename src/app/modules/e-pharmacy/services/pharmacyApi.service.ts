@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 import {
   Medicine,
   SearchMedicinesParams,
@@ -23,7 +24,7 @@ import {
   providedIn: 'root'
 })
 export class PharmacyApiService {
-  private apiUrl = 'http://localhost:8089/MediCareAI/api/pharmacy';
+  private readonly apiUrl = `${environment.apiUrl.replace(/\/+$/, '')}/api/pharmacy`;
   private mockMedicinesStorageKey = 'pharmacy_mock_medicines';
 
   private defaultMockMedicines: Medicine[] = [

@@ -180,11 +180,19 @@ export class AuthService {
   }
 
   /**
+   * Numeric user id from login (`AuthResponse.user.id`) and `localStorage` only.
+   * Does not decode the JWT (payload `sub` is email, not id).
+   */
+  getStoredUserId(): number | null {
+    return this.getStoredNumericUserIdFromSession();
+  }
+
+  /**
    * Resolve the current authenticated user's numeric id.
-   * Tries the local session first, then falls back to the backend `/auth/user-id` endpoint.
+   * Tries stored login/session first, then `GET .../auth/user-id` with Bearer token.
    */
   getCurrentUserId(): Observable<number | null> {
-    const localUserId = this.getCurrentUserIdFromSession();
+    const localUserId = this.getStoredNumericUserIdFromSession();
     if (localUserId !== null) {
       return of(localUserId);
     }
@@ -217,6 +225,7 @@ export class AuthService {
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
     localStorage.removeItem('userGender');
+    localStorage.removeItem('userId');
     this.tokenSubject.next(null);
     this.currentUserSubject.next(null);
   }
@@ -375,7 +384,7 @@ export class AuthService {
     }
 
     this.setToken(response.token);
-    const resolvedUserId = this.extractPositiveUserId(response.user) ?? this.extractNumericUserIdFromToken(response.token);
+    const resolvedUserId = this.extractPositiveUserId(response.user);
     const existingUser = this.currentUserValue || this.getUserFromLocalStorage() || {};
     const resolvedGender = this.normalizeGenderValue(
       response.user?.gender || existingUser?.gender || existingUser?.user?.gender || localStorage.getItem('userGender')
@@ -427,6 +436,7 @@ export class AuthService {
     return (role || '').toString();
   }
 
+  /** JWT `sub` is the subject identifier (here: user email), not a numeric user id. */
   private extractEmailFromToken(token: string): string {
     const payload = this.decodeJwtPayload(token);
     if (!payload) {
@@ -487,7 +497,11 @@ export class AuthService {
     }
   }
 
-  private getCurrentUserIdFromSession(): number | null {
+  /**
+   * Resolves numeric id from in-memory user, `authUser`, or `userId` in storage.
+   * Intentionally does not read id from the JWT (backend uses `sub` = email).
+   */
+  private getStoredNumericUserIdFromSession(): number | null {
     const currentUserId = this.extractPositiveUserId(this.currentUserValue);
     if (currentUserId !== null) {
       return currentUserId;
@@ -504,7 +518,7 @@ export class AuthService {
       return persistedUserId;
     }
 
-    return this.extractNumericUserIdFromToken(this.tokenValue || this.getTokenFromLocalStorage());
+    return null;
   }
 
   private extractPositiveUserId(source: unknown): number | null {
@@ -551,26 +565,5 @@ export class AuthService {
     }
 
     return null;
-  }
-
-  private extractNumericUserIdFromToken(token: string | null): number | null {
-    if (!token || !token.includes('.')) {
-      return null;
-    }
-
-    try {
-      const payload = token.split('.')[1];
-      if (!payload) {
-        return null;
-      }
-
-      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-      const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
-      const decoded = atob(padded);
-      const parsed = JSON.parse(decoded);
-      return this.extractPositiveUserId(parsed);
-    } catch {
-      return null;
-    }
   }
 }

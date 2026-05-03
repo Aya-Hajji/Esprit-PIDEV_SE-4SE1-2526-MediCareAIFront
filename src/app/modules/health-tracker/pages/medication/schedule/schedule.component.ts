@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
+import { AuthService } from '../../../../../services/auth.service';
 import { HealthTrackerService } from '../../../../../shared/services/health-tracker.service';
 
 type ScheduleFormValue = {
@@ -31,6 +32,7 @@ type ScheduleItem = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ScheduleComponent {
+  private readonly authService = inject(AuthService);
   private readonly healthTrackerService = inject(HealthTrackerService);
   private readonly formBuilder = inject(FormBuilder);
 
@@ -181,50 +183,7 @@ export class ScheduleComponent {
   }
 
   private resolveUserId(): number | null {
-    const authUserRaw = localStorage.getItem('authUser');
-    if (authUserRaw) {
-      try {
-        const authUser = JSON.parse(authUserRaw) as { id?: number | string };
-        const authUserId = Number(authUser?.id);
-        if (Number.isFinite(authUserId) && authUserId > 0) {
-          return authUserId;
-        }
-      } catch {
-        // ignore invalid authUser JSON and fall back to other sources
-      }
-    }
-
-    const raw = localStorage.getItem('userId');
-    const parsed = Number(raw);
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return parsed;
-    }
-
-    const token = localStorage.getItem('authToken');
-    return this.extractNumericUserIdFromToken(token);
-  }
-
-  private extractNumericUserIdFromToken(token: string | null): number | null {
-    if (!token || !token.includes('.')) {
-      return null;
-    }
-
-    try {
-      const payload = token.split('.')[1];
-      if (!payload) {
-        return null;
-      }
-
-      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-      const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
-      const decoded = atob(padded);
-      const parsed = JSON.parse(decoded) as { userId?: number | string; id?: number | string; sub?: number | string };
-      const candidate = Number(parsed.userId ?? parsed.id ?? parsed.sub);
-
-      return Number.isFinite(candidate) && candidate > 0 ? candidate : null;
-    } catch {
-      return null;
-    }
+    return this.authService.getStoredUserId();
   }
 
   private toDateInputValue(value: string): string {
