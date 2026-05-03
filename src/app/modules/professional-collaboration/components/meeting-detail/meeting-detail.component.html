@@ -1,0 +1,194 @@
+<div class="meeting-detail-container" *ngIf="meeting">
+  <!-- Header Section -->
+  <div class="header-section">
+    <button class="btn-back" (click)="goBack()">← Retour</button>
+    <div class="header-content">
+      <h1>{{ meeting.title }}</h1>
+      <span [style.backgroundColor]="getStatusColor()" class="status-badge">
+        {{ getStatusDisplay() }}
+      </span>
+    </div>
+    <div class="header-actions" *ngIf="canEdit() || canDelete()">
+      <button *ngIf="canEdit()" class="btn-action edit" (click)="editMeeting()">
+        ✏️ Éditer
+      </button>
+      <button *ngIf="canDelete()" class="btn-action delete" (click)="deleteMeeting()">
+        🗑️ Supprimer
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>❌</span> {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span>✅</span> {{ successMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement de la réunion...</p>
+  </div>
+
+  <!-- Meeting Details -->
+  <div *ngIf="!isLoading" class="content-grid">
+    <!-- Main Info Card -->
+    <div class="info-card main-card">
+      <div class="meeting-header-info">
+        <div class="date-time">
+          <div class="date-icon">📅</div>
+          <div class="date-details">
+            <h3>{{ formatDateTime() }}</h3>
+            <p>{{ meeting.scheduledTime }} • Durée: {{ meeting.duration }}min</p>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="meeting-meta">
+        <div class="meta-item">
+          <span class="label">Organisateur:</span>
+          <span class="value">Dr. {{ meeting.organizerName || 'Inconnu' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Lieu:</span>
+          <span class="value">{{ meeting.venue || 'Virtuelle' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Participants:</span>
+          <span class="value">{{ meeting.participantCount || 0 }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="label">Enregistrement:</span>
+          <span class="value" [class.active]="meeting.isRecorded">
+            {{ meeting.isRecorded ? '🎥 Activé' : 'Non' }}
+          </span>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="meeting-description">
+        <h4>Description</h4>
+        <p>{{ meeting.description }}</p>
+      </div>
+
+      <!-- Join Button -->
+      <div class="action-buttons">
+        <button
+          *ngIf="canJoin()"
+          class="btn-join"
+          (click)="joinMeeting()"
+        >
+          🎥 Rejoindre la réunion
+        </button>
+        <button
+          *ngIf="!canJoin() && meeting.isUpcoming"
+          class="btn-disabled"
+          disabled
+        >
+          ⏱️ {{ getTimeUntilMeeting() }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar Cards -->
+    <div class="sidebar">
+      <!-- Time Status Card -->
+      <div class="info-card">
+        <h3>⏱️ Statut temporel</h3>
+        <div class="status-content">
+          <div *ngIf="meeting.isUpcoming" class="status-upcoming">
+            <p class="big-text">{{ getTimeUntilMeeting() }}</p>
+            <p class="small-text">Avant le début</p>
+          </div>
+          <div *ngIf="meeting.isOngoing" class="status-ongoing">
+            <div class="live-indicator">🔴 EN DIREKT</div>
+            <p>La réunion est actuellement en cours</p>
+          </div>
+          <div *ngIf="meeting.isPast" class="status-past">
+            <p class="small-text">Cette réunion est terminée</p>
+            <p *ngIf="meeting.isRecorded" class="recording-note">
+              L'enregistrement est disponible
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meeting Link Card -->
+      <div class="info-card">
+        <h3>🔗 Accès</h3>
+        <div class="link-content">
+          <a *ngIf="meeting.meetingLink" [href]="meeting.meetingLink" target="_blank" class="meeting-link">
+            {{ meeting.meetingLink }}
+          </a>
+          <p *ngIf="!meeting.meetingLink" class="no-link">Lien à définir</p>
+        </div>
+      </div>
+
+      <!-- Session Info Card -->
+      <div class="info-card">
+        <h3>📊 Informations</h3>
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="stat-number">{{ meeting.participantCount || 0 }}</div>
+            <div class="stat-label">Participants</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">{{ meeting.duration }}</div>
+            <div class="stat-label">Minutes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Participants Section (if available) -->
+  <div *ngIf="!isLoading" class="participants-section">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+      <h3 style="margin:0;">👥 Participants</h3>
+      <button *ngIf="canEdit()" class="btn-action edit" type="button" (click)="showInviteForm = !showInviteForm">
+        ➕ Ajouter un participant
+      </button>
+    </div>
+
+    <form *ngIf="showInviteForm && canEdit()" [formGroup]="inviteForm" (ngSubmit)="inviteParticipantByEmail()" style="margin-top:1rem;">
+      <div class="meta-item" style="background:#fff; padding:0; border:none;">
+        <span class="label">Email du professionnel *</span>
+        <input type="email" formControlName="email" placeholder="dr.martin@hopital.fr"
+               style="width:100%; padding:0.75rem; border:1px solid #e0e0e0; border-radius:0.5rem;" />
+      </div>
+      <div style="display:flex; gap:0.75rem; margin-top:0.75rem;">
+        <button class="btn-join" type="submit" [disabled]="inviteForm.invalid">✅ Inviter</button>
+        <button class="btn-disabled" type="button" (click)="showInviteForm=false">Annuler</button>
+      </div>
+    </form>
+
+    <div class="participants-grid">
+      <div *ngFor="let participant of (meeting.participants || [])" class="participant-badge">
+        <div class="avatar">{{ participant.name.charAt(0).toUpperCase() || '?' }}</div>
+        <div class="participant-info-mini">
+          <strong>{{ participant.name }}</strong>
+          <span class="status" [class]="'status-' + participant.status.toLowerCase()">
+            {{ participant.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!meeting.participants || meeting.participants.length === 0" style="margin-top:1rem; color:#666;">
+      Aucun participant pour le moment.
+    </div>
+  </div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="!meeting && !isLoading" class="error-container">
+  <div class="error-icon">⚠️</div>
+  <h2>Réunion non trouvée</h2>
+  <p>{{ errorMessage || 'La réunion demandée n\'existe pas ou a été supprimée.' }}</p>
+  <button class="btn-back" (click)="goBack()">← Retour</button>
+</div>

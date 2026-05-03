@@ -1,0 +1,33 @@
+<div class="module-dashboard collaboration">
+  <div class="dashboard-header">
+    <h2>Collaboration Overview</h2>
+    <p>Doctor consultations, team discussions, and virtual coordination.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Open Cases</h3>
+      <p class="stat-number">32</p>
+      <span class="stat-change">Awaiting review</span>
+    </div>
+    <div class="stat-card">
+      <h3>Meetings Today</h3>
+      <p class="stat-number">7</p>
+      <span class="stat-change positive">On schedule</span>
+    </div>
+    <div class="stat-card">
+      <h3>Shared Notes</h3>
+      <p class="stat-number">84</p>
+      <span class="stat-change positive">+14 this week</span>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-grid">
+      <button type="button" class="action-btn" [routerLink]="'/community/forums'">Case Discussions</button>
+      <button type="button" class="action-btn" [routerLink]="'/appointments/create'">Schedule Meeting</button>
+      <button type="button" class="action-btn" [routerLink]="'/community/events'">View Events</button>
+    </div>
+  </div>
+</div>

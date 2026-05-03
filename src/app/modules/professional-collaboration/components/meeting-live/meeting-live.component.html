@@ -1,0 +1,322 @@
+﻿<div class="mlc-root">
+
+  <!-- LOADING -->
+  <div *ngIf="isLoading" class="mlc-loading">
+    <div class="mlc-spinner"></div>
+    <p>Loading meeting…</p>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="!isLoading && errorMessage && !meeting" class="mlc-fullscreen-card">
+    <span class="mlc-card-icon">⚠️</span>
+    <h2>Meeting not found</h2>
+    <p>{{ errorMessage }}</p>
+    <button class="mlc-btn mlc-btn-secondary" (click)="goBack()">← Back</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       MEETING ENDED — PV GENERATION + PREVIEW
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div *ngIf="meetingEnded" class="mlc-ended-screen">
+
+    <!-- Progress -->
+    <div *ngIf="pvGenerating" class="mlc-pv-gen-card">
+      <h2>🤖 AI Generation of Meeting Minutes</h2>
+      <p class="mlc-pv-subtitle">Analyzing notes and discussion…</p>
+      <div class="mlc-pv-stages">
+        <div class="mlc-pv-stage" [class.done]="pvProgress >= 15">
+          <span class="mlc-stage-icon">📋</span><span>Collecting notes</span>
+          <span class="mlc-stage-check" *ngIf="pvProgress >= 15">✓</span>
+        </div>
+        <div class="mlc-pv-stage" [class.done]="pvProgress >= 30">
+          <span class="mlc-stage-icon">🔍</span><span>Extracting medical entities</span>
+          <span class="mlc-stage-check" *ngIf="pvProgress >= 30">✓</span>
+        </div>
+        <div class="mlc-pv-stage" [class.done]="pvProgress >= 50">
+          <span class="mlc-stage-icon">🧠</span><span>AI analysis — decisions & actions</span>
+          <span class="mlc-stage-check" *ngIf="pvProgress >= 50">✓</span>
+        </div>
+        <div class="mlc-pv-stage" [class.done]="pvProgress >= 70">
+          <span class="mlc-stage-icon">📝</span><span>Intelligent summary</span>
+          <span class="mlc-stage-check" *ngIf="pvProgress >= 70">✓</span>
+        </div>
+        <div class="mlc-pv-stage" [class.done]="pvProgress >= 100">
+          <span class="mlc-stage-icon">✍️</span><span>Official Meeting Minutes</span>
+          <span class="mlc-stage-check" *ngIf="pvProgress >= 100">✓</span>
+        </div>
+      </div>
+      <div class="mlc-progress-bar"><div class="mlc-progress-fill" [style.width.%]="pvProgress"></div></div>
+      <p class="mlc-pv-stage-label">{{ pvStage }}</p>
+    </div>
+
+    <!-- PV Preview -->
+    <div *ngIf="!pvGenerating && generatedPV" class="mlc-pv-preview-card">
+
+      <div class="mlc-pv-header">
+        <div class="mlc-pv-logo">🏥 MediCareAI</div>
+        <div class="mlc-pv-badge">✅ Official Meeting Minutes</div>
+      </div>
+
+      <h1 class="mlc-pv-title">{{ generatedPV.title }}</h1>
+
+      <div class="mlc-pv-meta-grid">
+        <div class="mlc-pv-meta-item">
+          <span class="mlc-meta-label">📅 Date</span>
+          <span class="mlc-meta-value">{{ generatedPV.date }}</span>
+        </div>
+        <div class="mlc-pv-meta-item">
+          <span class="mlc-meta-label">🕐 Time</span>
+          <span class="mlc-meta-value">{{ generatedPV.time }}</span>
+        </div>
+        <div class="mlc-pv-meta-item">
+          <span class="mlc-meta-label">⏱️ Duration</span>
+          <span class="mlc-meta-value">{{ generatedPV.duration }}</span>
+        </div>
+        <div class="mlc-pv-meta-item">
+          <span class="mlc-meta-label">🤖 AI Confidence</span>
+          <span class="mlc-meta-value mlc-confidence">{{ generatedPV.confidence }}%</span>
+        </div>
+      </div>
+
+      <!-- Participants -->
+      <div class="mlc-pv-section">
+        <h3>👥 Participants ({{ generatedPV.participants.length }})</h3>
+        <div class="mlc-pv-participants">
+          <span *ngFor="let p of generatedPV.participants" class="mlc-participant-chip">{{ p }}</span>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="mlc-pv-section">
+        <h3>📋 Meeting summary</h3>
+        <p class="mlc-pv-summary">{{ generatedPV.summary }}</p>
+      </div>
+
+      <!-- Decisions -->
+      <div class="mlc-pv-section" *ngIf="generatedPV.decisions">
+        <h3>✅ Decisions made</h3>
+        <ul class="mlc-pv-list mlc-decisions">
+          <li *ngFor="let d of generatedPV.decisions">{{ d }}</li>
+        </ul>
+      </div>
+
+      <!-- Actions -->
+      <div class="mlc-pv-section" *ngIf="generatedPV.actions">
+        <h3>🔜 Actions to take</h3>
+        <ul class="mlc-pv-list mlc-actions">
+          <li *ngFor="let a of generatedPV.actions">{{ a }}</li>
+        </ul>
+      </div>
+
+      <!-- Diagnoses -->
+      <div class="mlc-pv-section" *ngIf="generatedPV.diagnoses">
+        <h3>🩺 Diagnostic elements</h3>
+        <ul class="mlc-pv-list mlc-diagnoses">
+          <li *ngFor="let d of generatedPV.diagnoses">{{ d }}</li>
+        </ul>
+      </div>
+
+      <!-- Treatments -->
+      <div class="mlc-pv-section" *ngIf="generatedPV.treatments">
+        <h3>💊 Treatments mentioned</h3>
+        <ul class="mlc-pv-list mlc-treatments">
+          <li *ngFor="let t of generatedPV.treatments">{{ t }}</li>
+        </ul>
+      </div>
+
+      <!-- Full transcript -->
+      <div class="mlc-pv-section" *ngIf="generatedPV.fullTranscript?.length > 0">
+        <h3>🎙️ Full transcription ({{ generatedPV.totalLines }} interventions)</h3>
+        <div class="mlc-pv-transcript-scroll">
+          <div *ngFor="let line of generatedPV.fullTranscript" class="mlc-pv-transcript-line">
+            <span class="mlc-pv-t-time">{{ line.time }}</span>
+            <span class="mlc-pv-t-speaker">{{ line.speaker }}</span>
+            <span class="mlc-pv-t-text">{{ line.text }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- No content warning -->
+      <div *ngIf="generatedPV.totalLines === 0" class="mlc-pv-warning">
+        ⚠️ No notes entered during the meeting. For complete minutes, use the 📝 panel during the meeting to note important points.
+      </div>
+
+      <div class="mlc-pv-footer">
+        <span>{{ generatedPV.generatedBy }}</span>
+        <span>Meeting #{{ generatedPV.meetingId }}</span>
+      </div>
+
+      <div class="mlc-pv-actions">
+        <button class="mlc-btn mlc-btn-primary" (click)="navigateToPV()">📄 Voir le PV complet</button>
+        <button class="mlc-btn mlc-btn-secondary" (click)="goBack()">← Dashboard</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       LEFT — RE-JOIN
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div *ngIf="hasLeft && !meetingEnded" class="mlc-fullscreen-card">
+    <span class="mlc-card-icon">👋</span>
+    <h2>You left the meeting</h2>
+    <p>The meeting is still in progress. You can rejoin at any time.</p>
+    <div class="mlc-room-info">
+      <span class="mlc-room-label">Room:</span>
+      <code class="mlc-room-name">{{ roomName }}</code>
+    </div>
+    <div class="mlc-card-actions">
+      <button class="mlc-btn mlc-btn-primary mlc-btn-lg" (click)="rejoinMeeting()">🔄 Rejoin</button>
+      <button class="mlc-btn mlc-btn-secondary" (click)="goBack()">← Back</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       ACTIVE MEETING
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div *ngIf="!isLoading && meeting && !hasLeft && !meetingEnded" class="mlc-active">
+
+    <!-- Top bar -->
+    <div class="mlc-topbar">
+      <div class="mlc-topbar-left">
+        <span class="mlc-meeting-title">{{ meeting.title }}</span>
+        <span class="mlc-participants-badge">👥 {{ participantCount }} participant{{ participantCount > 1 ? 's' : '' }}</span>
+      </div>
+
+      <div class="mlc-topbar-center">
+        <div *ngIf="isRecording" class="mlc-rec-badge">
+          <span class="mlc-rec-dot"></span>
+          <span>REC {{ recordingDuration }}</span>
+        </div>
+      </div>
+
+      <div class="mlc-topbar-right">
+        <button class="mlc-icon-btn" [class.active]="showInvitePanel" title="Invite participants" (click)="toggleInvitePanel()">👥</button>
+        <button class="mlc-icon-btn" [class.active]="showChat" title="Chat" (click)="toggleChat()">
+          💬 <span *ngIf="unreadCount > 0" class="mlc-badge">{{ unreadCount }}</span>
+        </button>
+        <button class="mlc-icon-btn" [class.active]="showTranscript" title="Notes & Transcription" (click)="toggleTranscript()">📝</button>
+        <button class="mlc-btn mlc-btn-leave" (click)="leaveMeeting()">🚪 Leave</button>
+        <button class="mlc-btn mlc-btn-end" (click)="endMeetingForAll()">📞 End + Minutes</button>
+      </div>
+    </div>
+
+    <!-- Invite panel -->
+    <div *ngIf="showInvitePanel" class="mlc-invite-panel">
+      <div class="mlc-invite-header">
+        <h4>👥 Invite Participants</h4>
+        <button class="mlc-panel-close" (click)="toggleInvitePanel()">✕</button>
+      </div>
+      <p class="mlc-invite-desc">Share this link — participants join the same video room directly.</p>
+      <div class="mlc-invite-link-row">
+        <input type="text" class="mlc-invite-input" [value]="inviteLink" readonly />
+        <button class="mlc-btn mlc-btn-primary" (click)="copyRoomLink()">📋 Copy</button>
+      </div>
+      <div class="mlc-invite-tips">
+        <p>💡 <strong>How to join:</strong></p>
+        <ol>
+          <li>Send this link by email, WhatsApp or SMS</li>
+          <li>The participant clicks the link</li>
+          <li>They join the meeting directly with you</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="errorMessage" class="mlc-alert mlc-alert-error">❌ {{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="mlc-alert mlc-alert-success">{{ successMessage }}</div>
+
+    <!-- Main -->
+    <div class="mlc-main">
+
+      <!-- Jitsi iframe -->
+      <div #jitsiContainer id="jitsi-container" class="mlc-jitsi"></div>
+
+      <!-- Side panels -->
+      <div class="mlc-side" *ngIf="showChat || showTranscript">
+
+        <!-- Chat -->
+        <div *ngIf="showChat" class="mlc-panel mlc-chat-panel">
+          <div class="mlc-panel-header">
+            💬 Live Chat
+            <button class="mlc-panel-close" (click)="toggleChat()">✕</button>
+          </div>
+          <div class="mlc-chat-messages">
+            <div *ngIf="chatMessages.length === 0" class="mlc-panel-empty">No messages yet</div>
+            <div *ngFor="let msg of chatMessages" class="mlc-chat-msg" [class.mlc-chat-msg-me]="msg.isMe">
+              <div class="mlc-chat-meta">
+                <strong>{{ msg.isMe ? 'You' : msg.sender }}</strong>
+                <span class="mlc-chat-time">{{ msg.time }}</span>
+              </div>
+              <div class="mlc-chat-bubble">{{ msg.text }}</div>
+            </div>
+          </div>
+          <div class="mlc-chat-input">
+            <input type="text" [(ngModel)]="newChatMessage" placeholder="Your message…"
+                   (keyup.enter)="sendChatMessage()" class="mlc-chat-field" />
+            <button class="mlc-btn mlc-btn-send" (click)="sendChatMessage()">➤</button>
+          </div>
+        </div>
+
+        <!-- Notes / Transcript — AI auto-capture -->
+        <div *ngIf="showTranscript" class="mlc-panel mlc-transcript-panel">
+          <div class="mlc-panel-header">
+            📝 Live AI Transcription
+            <button class="mlc-panel-close" (click)="toggleTranscript()">✕</button>
+          </div>
+
+          <!-- STT status bar -->
+          <div class="mlc-stt-status" [class.active]="sttActive">
+            <div *ngIf="sttActive" class="mlc-stt-active">
+              <span class="mlc-stt-dot"></span>
+              <span *ngIf="sttMode === 'browser'">🎙️ Web Speech API — listening</span>
+              <span *ngIf="sttMode === 'mediarecorder'">🎙️ MediaRecorder — sending to backend STT</span>
+            </div>
+            <div *ngIf="!sttActive && !sttError" class="mlc-stt-waiting">
+              ⏳ Waiting for room connection…
+            </div>
+            <div *ngIf="sttError" class="mlc-stt-error">
+              ⚠️ {{ sttError }}
+            </div>
+          </div>
+
+          <div class="mlc-transcript-body">
+            <div *ngIf="transcriptLines.length === 0" class="mlc-panel-empty">
+              <p>🎙️ Transcription will appear here automatically.</p>
+              <p class="mlc-transcript-hint">
+                AI listens to the meeting and transcribes in real time.<br>
+                Minutes will be generated automatically at the end.
+              </p>
+            </div>
+            <div *ngFor="let line of transcriptLines"
+                 class="mlc-transcript-line"
+                 [class.mlc-system-line]="line.speaker === 'System'"
+                 [class.mlc-ai-line]="line.isAI">
+              <span class="mlc-transcript-time">{{ line.time }}</span>
+              <span class="mlc-transcript-speaker">
+                {{ line.speaker }}
+                <span *ngIf="line.isAI" class="mlc-ai-tag">IA</span>
+              </span>
+              <span class="mlc-transcript-text">{{ line.text }}</span>
+            </div>
+          </div>
+
+          <div class="mlc-transcript-footer">
+            <span class="mlc-transcript-count">
+              {{ transcriptLines.length }} lines
+            </span>
+            <span class="mlc-pv-hint">→ Auto minutes at the end</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="mlc-bottombar">
+      <small>🎥 Jitsi Meet • Room: <code>{{ roomName }}</code> • 🤖 AI Minutes generated at the end</small>
+    </div>
+
+  </div>
+
+</div>

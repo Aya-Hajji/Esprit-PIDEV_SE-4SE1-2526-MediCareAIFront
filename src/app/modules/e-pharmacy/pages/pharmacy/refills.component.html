@@ -1,0 +1,64 @@
+<div class="refills-container">
+  <div class="page-header">
+    <h1>Refill Requests</h1>
+    <p>Track and manage prescription refill requests</p>
+  </div>
+
+  @if (error) {
+    <div class="error-banner">{{ error }}</div>
+  }
+  @if (successMessage) {
+    <div class="success-banner">{{ successMessage }}</div>
+  }
+
+  <div class="top-bar">
+    <div class="filter-group">
+      <label>Status</label>
+      <select [(ngModel)]="selectedStatus" class="filter-select">
+        <option value="">All</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+    </div>
+
+    @if (isPatient()) {
+      <div class="request-box">
+        <input
+          type="text"
+          [(ngModel)]="prescriptionId"
+          placeholder="Prescription ID"
+          class="request-input"
+        />
+        <button class="request-btn" (click)="submitRefillRequest()">Request Refill</button>
+      </div>
+    }
+  </div>
+
+  @if (isLoading) {
+    <p class="loading">Loading refill requests...</p>
+  } @else if (filteredRefills.length === 0) {
+    <p class="empty">No refill requests found.</p>
+  } @else {
+    <div class="grid">
+      @for (refill of filteredRefills; track refill.id) {
+        <article class="card">
+          <div class="card-head">
+            <h3>Refill #{{ refill.id }}</h3>
+            <span [ngClass]="'status ' + getStatusClass(refill.status)">{{ refill.status }}</span>
+          </div>
+
+          <div class="row"><span>Prescription:</span><strong>{{ refill.prescriptionId }}</strong></div>
+          <div class="row"><span>Created:</span><strong>{{ formatDate(refill.createdDate) }}</strong></div>
+          <div class="row"><span>Processed:</span><strong>{{ formatDate(refill.processedDate) }}</strong></div>
+
+          <div class="actions">
+            <button class="delete-btn" (click)="deleteRefill(refill.id)">Delete</button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <a routerLink="/pharmacy/prescriptions" class="back-link">← Back to prescriptions</a>
+</div>

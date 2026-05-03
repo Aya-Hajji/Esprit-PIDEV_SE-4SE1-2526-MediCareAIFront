@@ -1,0 +1,157 @@
+<div class="meeting-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1>Professional Meetings</h1>
+      <p>Schedule and manage your virtual medical meetings</p>
+    </div>
+    <button class="btn-create" (click)="createNewMeeting()">
+      <span>📅</span> New Meeting
+    </button>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>❌</span> {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span>✅</span> {{ successMessage }}
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search by title or description..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        class="search-input"
+      />
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <div class="filter-controls">
+      <select [(ngModel)]="statusFilter" (change)="onStatusChange()" class="filter-select">
+        <option value="">All statuses</option>
+        <option value="SCHEDULED">Scheduled</option>
+        <option value="IN_PROGRESS">In progress</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+
+      <select [(ngModel)]="sortBy" (change)="onSortChange()" class="filter-select">
+        <option value="upcoming">Upcoming</option>
+        <option value="participants">Most participants</option>
+        <option value="name">Name (A-Z)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading meetings...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && filteredMeetings.length === 0" class="empty-state">
+    <div class="empty-icon">📅</div>
+    <h3>No meeting found</h3>
+    <p>Create a new meeting to get started</p>
+    <button class="btn-create" (click)="createNewMeeting()">
+      <span>📅</span> Create a meeting
+    </button>
+  </div>
+
+  <!-- Meetings Grid -->
+  <div *ngIf="!isLoading && filteredMeetings.length > 0" class="meetings-grid">
+    <div
+      *ngFor="let meeting of filteredMeetings"
+      class="meeting-card"
+      (click)="viewMeeting(meeting.id)"
+    >
+      <!-- Status Badge -->
+      <div class="card-header">
+        <span [class]="'status-badge ' + getStatusBadgeClass(meeting.status)">
+          {{ getStatusDisplay(meeting.status) }}
+        </span>
+        <div class="card-actions" (click)="$event.stopPropagation()">
+          <button
+            *ngIf="canEdit(meeting)"
+            class="btn-action"
+            (click)="editMeeting(meeting.id, $event)"
+            title="Edit"
+          >
+            ✏️
+          </button>
+          <button
+            *ngIf="canDelete(meeting)"
+            class="btn-action btn-danger"
+            (click)="deleteMeeting(meeting.id, $event)"
+            title="Delete"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <!-- Card Content -->
+      <div class="card-content">
+        <h3 class="meeting-title">{{ meeting.title }}</h3>
+
+        <div class="meeting-highlight">
+          <span *ngIf="meeting.organizerId === userId" class="organizer-badge">Organizer</span>
+          <span class="time-status">{{ getTimeDisplay(meeting) }}</span>
+        </div>
+
+        <p class="meeting-description">{{ meeting.description }}</p>
+
+        <!-- Meeting Date/Time -->
+        <div class="meeting-datetime">
+          <span class="datetime-icon">📅</span>
+          <div class="datetime-info">
+            <div class="date">{{ meeting.scheduledDate | date:'longDate' }}</div>
+            <div class="time">{{ meeting.scheduledTime }} • Duration: {{ meeting.duration }}min</div>
+          </div>
+        </div>
+
+        <!-- Meeting Stats -->
+        <div class="meeting-stats">
+          <div class="stat">
+            <span class="stat-icon">👥</span>
+            <span class="stat-value">{{ meeting.participantCount || 0 }}</span>
+            <span class="stat-label">Participants</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">📍</span>
+            <span class="stat-value">{{ meeting.venue || 'Virtual' }}</span>
+            <span class="stat-label">Location</span>
+          </div>
+          <div *ngIf="meeting.isRecorded" class="stat">
+            <span class="stat-icon">🎥</span>
+            <span class="stat-value">Recorded</span>
+            <span class="stat-label">History</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Footer with Join Button -->
+      <div class="card-footer">
+        <button
+          *ngIf="canJoin(meeting)"
+          class="btn-join"
+          (click)="joinMeeting(meeting, $event)"
+        >
+          {{ meeting.isOngoing ? '🎥 Join now' : '📞 Join' }}
+        </button>
+        <span class="view-link" *ngIf="!canJoin(meeting)">Voir plus →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Count -->
+  <div *ngIf="!isLoading && filteredMeetings.length > 0" class="results-count">
+    {{ filteredMeetings.length }} meeting(s) found
+  </div>
+</div>

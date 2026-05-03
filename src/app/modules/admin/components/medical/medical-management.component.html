@@ -1,0 +1,228 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Medical Data Management</h2>
+    <p>Manage specialties, diseases, symptoms, and complete patient medical records with teleconsultation context.</p>
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'specialties'" (click)="activeTab = 'specialties'">
+      Specialties
+    </button>
+    <button class="tab" [class.active]="activeTab === 'diseases'" (click)="activeTab = 'diseases'">
+      Diseases
+    </button>
+    <button class="tab" [class.active]="activeTab === 'symptoms'" (click)="activeTab = 'symptoms'">
+      Symptoms
+    </button>
+    <button class="tab" [class.active]="activeTab === 'records'" (click)="activeTab = 'records'">
+      Medical Records
+    </button>
+  </div>
+
+  <div *ngIf="activeTab === 'specialties'">
+    <div class="controls-bar">
+      <button class="btn btn-primary">Add Specialty</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let specialty of specialties">
+            <td>{{ specialty.id }}</td>
+            <td>{{ specialty.name }}</td>
+            <td>{{ specialty.description }}</td>
+            <td>
+              <button class="btn-icon">Edit</button>
+              <button class="btn-icon btn-danger" (click)="deleteSpecialty(specialty.id!)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'diseases'">
+    <div class="controls-bar">
+      <button class="btn btn-primary">Add Disease</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Specialty ID</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let disease of diseases">
+            <td>{{ disease.id }}</td>
+            <td>{{ disease.name }}</td>
+            <td>{{ disease.description }}</td>
+            <td>{{ disease.specialtyId }}</td>
+            <td>
+              <button class="btn-icon">Edit</button>
+              <button class="btn-icon btn-danger" (click)="deleteDisease(disease.id!)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'symptoms'">
+    <p class="info-text">Symptoms management coming soon...</p>
+  </div>
+
+  <div *ngIf="activeTab === 'records'" class="records-layout">
+    <section class="records-controls">
+      <h3>Patient Record Workspace</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="patientId">Patient</label>
+          <select id="patientId" [(ngModel)]="selectedPatientId" class="form-control">
+            <option [ngValue]="null">Select patient</option>
+            <option *ngFor="let patient of patients" [ngValue]="patient.id">
+              {{ patient.firstName }} {{ patient.lastName }} ({{ patient.email }})
+            </option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" (click)="loadRecordsByPatient()">Load Records</button>
+        </div>
+      </div>
+
+      <div class="record-create">
+        <h4>Create Medical Record</h4>
+        <div class="form-row">
+          <input class="form-control" placeholder="Blood Type" [(ngModel)]="newRecordBloodType" />
+          <input class="form-control" placeholder="Emergency Contact Name" [(ngModel)]="newRecordEmergencyContactName" />
+          <input class="form-control" placeholder="Emergency Contact Phone" [(ngModel)]="newRecordEmergencyContactPhone" />
+        </div>
+        <button class="btn btn-primary" (click)="createMedicalRecord()">Create Record</button>
+      </div>
+
+      <div class="record-list">
+        <h4>Medical Records</h4>
+        <div *ngFor="let record of records" class="record-item" [class.active]="record.id === selectedRecordId">
+          <div>
+            <strong>Record #{{ record.id }}</strong>
+            <div>Blood Type: {{ record.bloodType || 'N/A' }}</div>
+            <div>Status: {{ record.status || 'N/A' }}</div>
+          </div>
+          <div class="record-item-actions">
+            <button class="btn-icon" (click)="selectRecord(record)">Open</button>
+            <button class="btn-icon btn-danger" (click)="deleteMedicalRecord(record.id!)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="record-details" *ngIf="selectedRecordId">
+      <h3>Record Details #{{ selectedRecordId }}</h3>
+
+      <div class="data-card">
+        <h4>Medical History & Treatments</h4>
+        <div class="inline-form">
+          <input class="form-control" placeholder="Add history item" [(ngModel)]="newMedicalHistoryCondition" />
+          <button class="btn btn-secondary" (click)="addMedicalHistory()">Add History</button>
+        </div>
+        <div class="inline-form">
+          <input class="form-control" placeholder="Add treatment" [(ngModel)]="newTreatmentText" />
+          <button class="btn btn-secondary" (click)="addTreatment()">Add Treatment</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let item of selectedRecord?.medicalHistories">{{ item.type || 'HISTORY' }}: {{ item.condition }}</li>
+        </ul>
+      </div>
+
+      <div class="data-card">
+        <h4>e-Prescriptions</h4>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Medication" [(ngModel)]="newPrescriptionMedication" />
+          <input class="form-control" placeholder="Dosage" [(ngModel)]="newPrescriptionDosage" />
+          <input class="form-control" placeholder="Frequency" [(ngModel)]="newPrescriptionFrequency" />
+          <input class="form-control" placeholder="Duration" [(ngModel)]="newPrescriptionDuration" />
+          <input class="form-control" placeholder="Instructions" [(ngModel)]="newPrescriptionInstructions" />
+          <button class="btn btn-primary" (click)="createPrescription()">Create Prescription</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let p of prescriptions">{{ p.medicationName }} - {{ p.dosage }} - {{ p.frequency }}</li>
+        </ul>
+      </div>
+
+      <div class="data-card">
+        <h4>Lab Results</h4>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Test Name" [(ngModel)]="newLabName" />
+          <input class="form-control" placeholder="Result" [(ngModel)]="newLabResult" />
+          <input class="form-control" placeholder="Unit" [(ngModel)]="newLabUnit" />
+          <input class="form-control" placeholder="Reference Range" [(ngModel)]="newLabReferenceRange" />
+          <button class="btn btn-primary" (click)="createLabResult()">Create Lab Result</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let l of labResults">{{ l.testName }}: {{ l.result }} {{ l.unit }}</li>
+        </ul>
+      </div>
+
+      <div class="data-card">
+        <h4>Medical Imaging</h4>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Image Type" [(ngModel)]="newImageType" />
+          <input class="form-control" placeholder="Image URL" [(ngModel)]="newImageUrl" />
+          <input class="form-control" placeholder="Description" [(ngModel)]="newImageDescription" />
+          <button class="btn btn-primary" (click)="createMedicalImage()">Create Image</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let i of medicalImages">{{ i.imageType }} - {{ i.imageUrl }}</li>
+        </ul>
+      </div>
+
+      <div class="data-card">
+        <h4>Allergies</h4>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Allergen" [(ngModel)]="newAllergen" />
+          <input class="form-control" placeholder="Reaction" [(ngModel)]="newAllergyReaction" />
+          <input class="form-control" placeholder="Severity" [(ngModel)]="newAllergySeverity" />
+          <button class="btn btn-primary" (click)="createAllergy()">Create Allergy</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let a of allergies">{{ a.allergen }} - {{ a.severity }}</li>
+        </ul>
+      </div>
+
+      <div class="data-card">
+        <h4>Visit Notes</h4>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Visit note" [(ngModel)]="newVisitNote" />
+          <input class="form-control" placeholder="Diagnosis" [(ngModel)]="newVisitDiagnosis" />
+          <input class="form-control" placeholder="Treatment Plan" [(ngModel)]="newVisitTreatmentPlan" />
+          <button class="btn btn-primary" (click)="createVisitNote()">Create Visit Note</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let note of visitNotes">{{ note.note }} ({{ note.diagnosis || 'No diagnosis' }})</li>
+        </ul>
+      </div>
+
+      <div class="data-card">
+        <h4>Teleconsultation Session</h4>
+        <div class="inline-form">
+          <input class="form-control" type="number" placeholder="Appointment ID" [(ngModel)]="teleconsultationAppointmentId" />
+          <button class="btn btn-secondary" (click)="openTeleconsultationSession()">Open Teleconsultation Room</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

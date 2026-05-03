@@ -1,0 +1,102 @@
+@if (isOpen) {
+  <div class="modal-overlay" (click)="cancel()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="header-title-group">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+              [attr.stroke]="hasCriticalInteractions ? '#DC2626' : '#F59E0B'"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M12 8V12"
+              [attr.stroke]="hasCriticalInteractions ? '#DC2626' : '#F59E0B'"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <circle
+              cx="12"
+              cy="16"
+              r="0.5"
+              [attr.fill]="hasCriticalInteractions ? '#DC2626' : '#F59E0B'"
+            />
+          </svg>
+          <h2 class="modal-title">
+            {{ hasCriticalInteractions ? 'Critical Drug Interactions Found' : 'Drug Interactions Alert' }}
+          </h2>
+        </div>
+        <button class="close-btn" (click)="cancel()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M6 6L18 18" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <p class="warning-message">
+          {{ hasCriticalInteractions
+            ? 'The medicines in your cart have critical interactions. Please review carefully before proceeding.'
+            : 'The following medicines may interact with each other. Please review the details.' }}
+        </p>
+
+        <div class="interactions-list">
+          @for (interaction of interactions; track interaction.medicineId1 + interaction.medicineId2) {
+            <div [ngClass]="'interaction-card ' + getSeverityColor(interaction.severity)">
+              <div class="interaction-header">
+                <div class="severity-badge">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+                  </svg>
+                  <span class="severity-text">{{ interaction.severity }} Severity</span>
+                </div>
+              </div>
+              <div class="medicines-pair">
+                <span class="medicine-name">{{ interaction.medicineName1 }}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span class="medicine-name">{{ interaction.medicineName2 }}</span>
+              </div>
+              <p class="interaction-description">{{ interaction.description }}</p>
+            </div>
+          }
+        </div>
+
+        @if (hasCriticalInteractions) {
+          <div class="critical-warning">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+            </svg>
+            <span>Please consult with a pharmacist before proceeding with this order.</span>
+          </div>
+        }
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancel()">Cancel Order</button>
+        <button class="btn-primary" (click)="confirm()">
+          {{ hasCriticalInteractions ? 'Proceed Anyway' : 'Continue' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

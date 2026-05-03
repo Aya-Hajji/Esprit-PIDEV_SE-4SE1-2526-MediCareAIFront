@@ -1,0 +1,37 @@
+<div class="discussion-container">
+  <!-- Header -->
+  <div class="header-section">
+    <button class="btn-back" (click)="goBack()">← Retour</button>
+    <div class="header-content">
+      <h1>🎥 Réunion Live</h1>
+      <p>Connexion automatique à la réunion médicale de cette session</p>
+    </div>
+  </div>
+
+  <!-- Info Box -->
+  <div class="info-box" style="background: #e3f2fd; border-left: 4px solid #2196F3; padding: 1rem; margin: 1rem; border-radius: 0.5rem;">
+    <p style="margin: 0; font-size: 0.9rem; color: #1565c0;">
+      🚀 <strong>Préparation de la réunion live</strong> (création automatique si nécessaire), puis redirection vers Jitsi.
+    </p>
+  </div>
+
+  <!-- Alert -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>❌</span> {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>{{ redirectingMessage }}</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="empty-state">
+    <div class="empty-icon">⚠️</div>
+    <h3>Réunion live indisponible</h3>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-new-discussion" (click)="goBack()">
+      ← Retour à la session
+    </button>
+  </div>
+</div>

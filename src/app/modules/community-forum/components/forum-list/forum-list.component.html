@@ -1,0 +1,170 @@
+<div class="forum-list-container">
+  <!-- Header Section -->
+  <div class="forum-header">
+    <div class="header-content">
+      <div>
+        <h1>Discussion Forum</h1>
+        <p class="subtitle">Connect with patients and healthcare professionals</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" (click)="createNewPost()">
+          <span class="icon">+</span> New Discussion
+        </button>
+        <button class="btn btn-secondary" (click)="viewSubscriptions()" *ngIf="userHasSubscription">
+          <span class="icon">★</span> Premium Access
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search Section -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="onSearch()"
+        placeholder="Search a discussion..."
+        class="search-input"
+      />
+      <button class="search-btn" (click)="onSearch()">🔍</button>
+    </div>
+
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="category">Category:</label>
+        <select id="category" [(ngModel)]="selectedCategory" (change)="onFilterChange()" class="filter-select">
+          <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.name }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="sort">Sort by:</label>
+        <select id="sort" [(ngModel)]="sortBy" (change)="onSortChange()" class="filter-select">
+          <option value="newest">Most recent</option>
+          <option value="popular">Most popular</option>
+          <option value="mostReplies">Most replies</option>
+        </select>
+      </div>
+
+      <label class="checkbox-filter">
+        <input type="checkbox" [(ngModel)]="showPremiumOnly" (change)="onFilterChange()" />
+        Premium Content
+      </label>
+    </div>
+  </div>
+
+  <!-- Backend error banner -->
+  <div class="backend-error-banner" *ngIf="!loading && backendError">
+    <span class="error-icon">⚠️</span>
+    <div class="error-text">
+      <strong>Unable to load discussions</strong>
+      <span>The server returned an error (500). Make sure the backend is running.</span>
+    </div>
+    <button class="btn btn-retry" (click)="loadPosts()">🔄 Retry</button>
+  </div>
+
+  <!-- RECOMMENDATIONS SECTION -->
+  <div class="reco-section" *ngIf="showRecommendations || loadingReco">
+    <div class="reco-header">
+      <div class="reco-title-row">
+        <span class="reco-icon">✨</span>
+        <h2 class="reco-title">Recommended for you</h2>
+        <span class="reco-subtitle">Based on your tags, popularity & recency</span>
+      </div>
+      <button class="reco-close" (click)="showRecommendations = false" title="Hide">✕</button>
+    </div>
+
+    <!-- Loading skeleton -->
+    <div class="reco-grid" *ngIf="loadingReco">
+      <div class="reco-skeleton" *ngFor="let i of [1,2,3]">
+        <div class="sk-line sk-title"></div>
+        <div class="sk-line sk-meta"></div>
+        <div class="sk-tags"><div class="sk-tag"></div><div class="sk-tag"></div></div>
+      </div>
+    </div>
+
+    <!-- Recommendation cards -->
+    <div class="reco-grid" *ngIf="!loadingReco && recommendations.length > 0">
+      <div class="reco-card" *ngFor="let post of recommendations; let i = index" (click)="viewPost(post.id)">
+        <div class="reco-rank" [class.reco-rank-top]="i === 0">{{ i === 0 ? '🏆' : '#' + (i + 1) }}</div>
+        <div class="reco-score-bar">
+          <div class="reco-score-fill" [style.width.%]="i === 0 ? 100 : (100 - i * 18)"></div>
+        </div>
+        <div class="reco-card-body">
+          <div class="reco-author">
+            <div class="reco-avatar">{{ getInitial(post.authorName) }}</div>
+            <div>
+              <span class="reco-author-name">{{ post.authorName || 'Anonymous' }}</span>
+              <span class="reco-time">{{ getTimeAgo(post.createdAt) }}</span>
+            </div>
+          </div>
+          <h3 class="reco-post-title">{{ post.title }}</h3>
+          <div class="reco-tags" *ngIf="getMatchingTags(post).length > 0">
+            <span class="reco-tag" *ngFor="let tag of getMatchingTags(post)">#{{ tag }}</span>
+          </div>
+          <div class="reco-footer">
+            <div class="reco-stats">
+              <span>❤️ {{ post.likerCount || 0 }}</span>
+              <span>💬 {{ post.replyCount || 0 }}</span>
+              <span>👁️ {{ post.viewCount || post.viewsCount || 0 }}</span>
+            </div>
+            <span class="reco-score-label">{{ getScoreLabel(post) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading discussions...</p>
+  </div>
+
+  <!-- Posts List -->
+  <div class="posts-container" *ngIf="!loading && filteredPosts.length > 0">
+    <div class="post-card" *ngFor="let post of filteredPosts" (click)="viewPost(post.id)">
+      <div class="premium-badge" *ngIf="post.premiumOnly">
+        <span class="badge">PREMIUM</span>
+      </div>
+      <div class="post-header">
+        <div class="author-info">
+          <div class="avatar">{{ getInitial(post.authorName) }}</div>
+          <div class="author-details">
+            <h3 class="author-name">{{ post.authorName || 'Anonymous' }}</h3>
+            <p class="post-meta">{{ getTimeAgo(post.createdAt) }}</p>
+          </div>
+        </div>
+        <div class="post-category" *ngIf="post.category">{{ post.category }}</div>
+      </div>
+      <div class="post-content">
+        <h2 class="post-title">{{ post.title }}</h2>
+        <p class="post-excerpt">{{ post.content | slice: 0: 150 }}...</p>
+      </div>
+      <div class="post-tags" *ngIf="post.tags && post.tags.length > 0">
+        <span class="tag" *ngFor="let tag of post.tags | slice: 0: 3">#{{ tag }}</span>
+      </div>
+      <div class="post-footer">
+        <div class="post-stats">
+          <span class="stat"><span class="icon">💬</span> {{ post.replyCount || 0 }} replies</span>
+          <span class="stat"><span class="icon">👁️</span> {{ post.viewCount || 0 }} views</span>
+          <span class="stat"><span class="icon">❤️</span> {{ post.likerCount || 0 }} likes</span>
+        </div>
+        <div class="post-actions">
+          <button class="action-btn" title="View discussion" (click)="$event.stopPropagation(); viewPost(post.id)">
+            Read →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredPosts.length === 0 && !backendError">
+    <div class="empty-icon">📭</div>
+    <h3>No discussion found</h3>
+    <p>No discussion matches your filters. Be the first to create one!</p>
+    <button class="btn btn-primary" (click)="createNewPost()">Create a discussion</button>
+  </div>
+</div>

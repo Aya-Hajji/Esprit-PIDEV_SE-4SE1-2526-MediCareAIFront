@@ -1,0 +1,170 @@
+<div class="editor-container">
+
+  <!-- Header -->
+  <div class="editor-header">
+    <div class="header-content">
+      <h1>{{ isEditMode ? 'Edit Discussion' : 'Create a New Discussion' }}</h1>
+      <p class="subtitle">
+        {{ isEditMode
+            ? 'Update your existing discussion'
+            : 'Share your question or experience with the community'
+        }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading post...</p>
+  </div>
+
+  <!-- Editor Form -->
+  <div class="editor-form-wrapper" *ngIf="!loading">
+    <div class="editor-form">
+      <form [formGroup]="postForm" (ngSubmit)="onSubmit()">
+
+        <!-- Title -->
+        <div class="form-group">
+          <label for="title">Discussion Title <span class="required">*</span></label>
+          <input
+            type="text"
+            id="title"
+            formControlName="title"
+            placeholder="Enter a clear and descriptive title..."
+            class="form-input"
+            maxlength="150"
+          />
+          <div class="form-hint">
+            <span>{{ postForm.get('title')?.value?.length || 0 }}/150</span>
+          </div>
+          <div class="form-error" *ngIf="postForm.get('title')?.invalid && postForm.get('title')?.touched">
+            <span *ngIf="postForm.get('title')?.errors?.['required']">Title is required</span>
+            <span *ngIf="postForm.get('title')?.errors?.['minlength']">Title must be at least 5 characters</span>
+          </div>
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label for="category">Category <span class="required">*</span></label>
+          <select id="category" formControlName="category" class="form-select">
+            <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.name }}</option>
+          </select>
+        </div>
+
+        <!-- Content -->
+        <div class="form-group">
+          <label for="content">Content <span class="required">*</span></label>
+          <textarea
+            id="content"
+            formControlName="content"
+            placeholder="Write your message here... Be detailed and clear."
+            class="form-textarea"
+            maxlength="5000"
+            rows="12"
+          ></textarea>
+          <div class="character-counter">
+            <div class="counter-bar">
+              <div class="counter-progress"
+                   [style.width.%]="getProgressPercentage()"
+                   [style.background-color]="getProgressColor()">
+              </div>
+            </div>
+            <span class="counter-text">{{ charCount }}/5000</span>
+          </div>
+          <div class="form-error" *ngIf="postForm.get('content')?.invalid && postForm.get('content')?.touched">
+            <span *ngIf="postForm.get('content')?.errors?.['required']">Content is required</span>
+            <span *ngIf="postForm.get('content')?.errors?.['minlength']">Content must be at least 20 characters</span>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="form-group">
+          <label>Tags (Keywords)</label>
+          <div class="selected-tags" *ngIf="selectedTags.length > 0">
+            <span class="tag" *ngFor="let tag of selectedTags">
+              #{{ tag }}
+              <button type="button" (click)="removeTag(tag)" class="remove-tag">×</button>
+            </span>
+          </div>
+          <div class="suggested-tags">
+            <span
+              class="suggested-tag"
+              *ngFor="let tag of suggestedTags"
+              [class.selected]="selectedTags.includes(tag)"
+              (click)="toggleTag(tag)"
+            >#{{ tag }}</span>
+          </div>
+        </div>
+
+        <!-- Premium Toggle -->
+        <div class="form-group">
+          <label class="checkbox-group">
+            <input type="checkbox" formControlName="premiumOnly" />
+            <span class="checkbox-label">
+              <span class="icon">⭐</span>
+              Premium Content (subscribers only)
+            </span>
+          </label>
+          <p class="checkbox-hint">Reserve this content for premium users only</p>
+        </div>
+
+        <!-- Bad Words Error -->
+        <div *ngIf="badWordsError" class="bad-words-error">
+          <span class="bw-icon">🚫</span>
+          <div class="bw-text">
+            <strong>Inappropriate content detected</strong>
+            <p>{{ badWordsError }}</p>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="postForm.invalid || submitting || checkingBadWords"
+          >
+            <span *ngIf="checkingBadWords">🔍 Checking content…</span>
+            <span *ngIf="submitting && !checkingBadWords">⏳ Publishing…</span>
+            <span *ngIf="!submitting && !checkingBadWords">
+              {{ isEditMode ? '✓ Update discussion' : '✓ Publish discussion' }}
+            </span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancel()"
+            [disabled]="submitting || checkingBadWords"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tips Sidebar -->
+    <div class="tips-sidebar">
+      <div class="tips-card">
+        <h4>💡 Tips for a good discussion</h4>
+        <ul>
+          <li>Be clear and precise in your title</li>
+          <li>Provide relevant details</li>
+          <li>Use appropriate tags</li>
+          <li>Respect other users</li>
+          <li>Avoid sensitive information</li>
+        </ul>
+      </div>
+      <div class="tips-card">
+        <h4>📋 Community Rules</h4>
+        <ul>
+          <li>No spam or offensive content</li>
+          <li>No advertising</li>
+          <li>Respect medical confidentiality</li>
+          <li>Help other users</li>
+          <li>Report inappropriate content</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

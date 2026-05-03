@@ -1,0 +1,88 @@
+<div class="accept-invite-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>⏳ Vérification de l'invitation...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && errorMessage" class="error-state">
+    <div class="error-card">
+      <div class="error-icon">❌</div>
+      <h2>Erreur d'invitation</h2>
+      <p>{{ errorMessage }}</p>
+      <button class="btn-back" (click)="rejectInvitation()">
+        ← Retour au tableau de bord
+      </button>
+    </div>
+  </div>
+
+  <!-- Success State (After Accepting) -->
+  <div *ngIf="!isLoading && successMessage && !errorMessage" class="success-state">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h2>Invitation acceptée!</h2>
+      <p>{{ successMessage }}</p>
+      <p class="redirect-message">🔄 Redirection vers la session...</p>
+    </div>
+  </div>
+
+  <!-- Invitation Details (Awaiting Action) -->
+  <div *ngIf="!isLoading && invitation && !successMessage && !errorMessage" class="invitation-state">
+    <div class="invitation-card">
+      <div class="invitation-header">
+        <div class="invitation-icon">📧</div>
+        <h2>Invitation à une réunion professionnelle</h2>
+      </div>
+
+      <div class="invitation-details">
+        <div class="detail-group">
+          <label>Session:</label>
+          <p class="detail-value">ID #{{ invitation.sessionId }}</p>
+        </div>
+
+        <div class="detail-group">
+          <label>Email:</label>
+          <p class="detail-value">{{ invitation.email }}</p>
+        </div>
+
+        <div class="detail-group">
+          <label>Rôle:</label>
+          <p class="detail-value role-badge" [ngClass]="'role-' + invitation.role.toLowerCase()">
+            {{ invitation.role === 'EDITOR' ? '✏️ Éditeur' : '👁️ Spectateur' }}
+          </p>
+        </div>
+
+        <div class="detail-group">
+          <label>Valide jusqu'au:</label>
+          <p class="detail-value">{{ invitation.expiresAt | date:'short' }}</p>
+        </div>
+      </div>
+
+      <div class="invitation-actions">
+        <button 
+          class="btn-accept" 
+          (click)="acceptInvitation()"
+          [disabled]="isAccepting"
+        >
+          <span *ngIf="!isAccepting">✅ Accepter l'invitation</span>
+          <span *ngIf="isAccepting">⏳ Acceptation en cours...</span>
+        </button>
+        <button 
+          class="btn-reject" 
+          (click)="rejectInvitation()"
+          [disabled]="isAccepting"
+        >
+          ❌ Rejeter
+        </button>
+      </div>
+
+      <div class="invitation-hint">
+        <p>
+          📌 En acceptant cette invitation, vous pourrez accéder à la session,
+          voir les documents partagés, et participer aux discussions selon votre rôle.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

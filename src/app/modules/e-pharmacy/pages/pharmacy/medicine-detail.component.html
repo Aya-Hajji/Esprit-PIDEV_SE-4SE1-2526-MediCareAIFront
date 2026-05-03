@@ -1,0 +1,199 @@
+<div class="detail-container">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a routerLink="/pharmacy/medicines" class="breadcrumb-link">Medicines</a>
+    <span class="breadcrumb-separator">/</span>
+    @if (medicine) {
+      <span class="breadcrumb-current">{{ medicine.name }}</span>
+    } @else {
+      <span class="breadcrumb-current">Loading...</span>
+    }
+  </div>
+
+  <!-- Error Banner -->
+  @if (error) {
+    <div class="error-banner">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
+          fill="currentColor"
+        />
+      </svg>
+      {{ error }}
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading medicine details...</p>
+    </div>
+  }
+
+  <!-- Medicine Details -->
+  @if (!isLoading && medicine) {
+    <div class="detail-content">
+      <!-- Left: Image -->
+      <div class="image-section">
+        <div class="image-wrapper">
+          <img
+            src="https://via.placeholder.com/400x400?text={{ medicine.name }}"
+            alt="{{ medicine.name }}"
+            class="medicine-image"
+          />
+          @if (medicine.prescriptionRequired) {
+            <div class="rx-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 3C6.48 3 2 6.82 2 11.5C2 16.18 6.48 20 12 20C17.52 20 22 16.18 22 11.5C22 6.82 17.52 3 12 3ZM12 18C7.58 18 4 14.97 4 11.5C4 8.03 7.58 5 12 5C16.42 5 20 8.03 20 11.5C20 14.97 16.42 18 12 18Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span>Rx Required</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Right: Details -->
+      <div class="details-section">
+        <!-- Header -->
+        <div class="details-header">
+          <h1 class="medicine-title">{{ medicine.name }}</h1>
+          <div class="header-badges">
+            <span class="category-badge">{{ medicine.category }}</span>
+            <span [ngClass]="'stock-badge ' + getStockStatusClass()">
+              {{ getStockStatusText() }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Basic Info -->
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Strength</span>
+            <span class="info-value">{{ medicine.strength }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Form</span>
+            <span class="info-value">{{ medicine.dosageForm }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Manufacturer</span>
+            <span class="info-value">{{ medicine.manufacturer }}</span>
+          </div>
+        </div>
+
+        <!-- Price Section -->
+        <div class="price-section">
+          <span class="price-label">Price</span>
+          <span class="price-value">&#36;{{ medicine.price | number: '1.2-2' }}</span>
+        </div>
+
+        <!-- Description -->
+        @if (medicine.description) {
+          <div class="description-section">
+            <h3 class="section-title">Description</h3>
+            <p class="description-text">{{ medicine.description }}</p>
+          </div>
+        }
+
+        <!-- Side Effects -->
+        @if (medicine.sideEffects) {
+          <div class="info-section">
+            <h3 class="section-title">Side Effects</h3>
+            <p class="info-text">{{ medicine.sideEffects }}</p>
+          </div>
+        }
+
+        <!-- Contraindications -->
+        @if (medicine.contraindications) {
+          <div class="info-section">
+            <h3 class="section-title">Contraindications</h3>
+            <p class="info-text">{{ medicine.contraindications }}</p>
+          </div>
+        }
+
+        <!-- Interactions -->
+        @if (medicine.interactions && medicine.interactions.length > 0) {
+          <div class="info-section">
+            <h3 class="section-title">Known Interactions</h3>
+            <ul class="interactions-list">
+              @for (interaction of medicine.interactions; track interaction) {
+                <li>{{ interaction }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Add to Cart Section -->
+        @if (medicine.stock > 0) {
+          <div class="add-to-cart-section">
+            <div class="quantity-selector">
+              <label class="qty-label">Quantity</label>
+              <div class="qty-controls">
+                <button class="qty-btn" (click)="decreaseQuantity()" [disabled]="quantity <= 1">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+                <input
+                  #qtyInput
+                  type="number"
+                  class="qty-input"
+                  [value]="quantity"
+                  (change)="onQuantityChange(qtyInput.value)"
+                  min="1"
+                  [max]="medicine.stock"
+                />
+                <button class="qty-btn" (click)="increaseQuantity()" [disabled]="quantity >= medicine.stock">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button class="add-to-cart-btn" (click)="onAddToCart()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M1 1H5L7.68 14.39C7.77144 14.8504 8.02191 15.2602 8.38787 15.5583C8.75381 15.8565 9.2181 16.027 9.68 16H19.4C19.8619 16.027 20.3262 15.8565 20.6921 15.5583C21.0581 15.2602 21.3086 14.8504 21.4 14.39L23 6H6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Add to Cart
+            </button>
+
+            @if (addedToCart) {
+              <div class="success-message">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Added to cart!
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="out-of-stock-section">
+            <button class="out-of-stock-btn" disabled>Out of Stock</button>
+            <p class="out-of-stock-text">This medicine is currently unavailable. Please check back later.</p>
+          </div>
+        }
+
+        <!-- Back to Catalog -->
+        <a routerLink="/pharmacy/medicines" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Back to Medicines
+        </a>
+      </div>
+    </div>
+  }
+</div>

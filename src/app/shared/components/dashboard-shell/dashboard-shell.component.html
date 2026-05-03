@@ -1,0 +1,181 @@
+<div class="admin-container">
+  <aside class="sidebar" [class.sidebar-open]="isSidebarOpen">
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <img src="https://api.builder.io/api/v1/image/assets/TEMP/6b800d294244134f64b61d895da3707d78e30a74?width=80" alt="MediCareAI Logo" class="logo-image" />
+        <div class="logo-text">
+          <h1 class="brand-name">MediCareAI</h1>
+          <p class="brand-tagline">Smart Health</p>
+        </div>
+      </div>
+      <button class="close-sidebar-btn" (click)="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 5L5 15" stroke="#99A1AF" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 5L15 15" stroke="#99A1AF" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="navigation">
+      <a [routerLink]="dashboardRoute" routerLinkActive="nav-item-active" class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.5 2.5H3.33333C2.8731 2.5 2.5 2.8731 2.5 3.33333V9.16667C2.5 9.6269 2.8731 10 3.33333 10H7.5C7.96024 10 8.33333 9.6269 8.33333 9.16667V3.33333C8.33333 2.8731 7.96024 2.5 7.5 2.5Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16.6667 2.5H12.5C12.0398 2.5 11.6667 2.8731 11.6667 3.33333V5.83333C11.6667 6.29357 12.0398 6.66667 12.5 6.66667H16.6667C17.1269 6.66667 17.5 6.29357 17.5 5.83333V3.33333C17.5 2.8731 17.1269 2.5 16.6667 2.5Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16.6667 10H12.5C12.0398 10 11.6667 10.3731 11.6667 10.8333V16.6667C11.6667 17.1269 12.0398 17.5 12.5 17.5H16.6667C17.1269 17.5 17.5 17.1269 17.5 16.6667V10.8333C17.5 10.3731 17.1269 10 16.6667 10Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7.5 13.3333H3.33333C2.8731 13.3333 2.5 13.7063 2.5 14.1666V16.6666C2.5 17.1268 2.8731 17.4999 3.33333 17.4999H7.5C7.96024 17.4999 8.33333 17.1268 8.33333 16.6666V14.1666C8.33333 13.7063 7.96024 13.3333 7.5 13.3333Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+
+      @if (isPharmacistOrAdmin) {
+        <a routerLink="/pharmacy/dashboard" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.66667 2.5L3.33334 5.83333L8.33334 10.8333L11.6667 7.5L6.66667 2.5Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9.16666 11.6667L12.5 15L15.8333 11.6667L12.5 8.33337L9.16666 11.6667Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Pharmacy</span>
+        </a>
+      }
+
+      @if (isPatientOrAdmin) {
+        <a routerLink="/health-tracker/dashboard" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.5 10H6.25L8.75 6.66667L11.25 13.3333L13.75 10H17.5" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.66667"/>
+          </svg>
+          <span>Health Tracker</span>
+        </a>
+      }
+
+      @if (isDoctorOrAdmin || isPatientOrAdmin) {
+        <a routerLink="/symptom-ai/dashboard" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 2.5C5.85787 2.5 2.5 5.85787 2.5 10C2.5 14.1421 5.85787 17.5 10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85787 14.1421 2.5 10 2.5Z" stroke="currentColor" stroke-width="1.66667"/>
+            <path d="M10 6.66663V9.99996L12.5 11.6666" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Symptom AI</span>
+        </a>
+      }
+
+      @if (isDoctorOrAdmin) {
+        <a routerLink="/collaboration/dashboard" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.5 8.33337C8.88071 8.33337 10 7.21408 10 5.83337C10 4.45266 8.88071 3.33337 7.5 3.33337C6.11929 3.33337 5 4.45266 5 5.83337C5 7.21408 6.11929 8.33337 7.5 8.33337Z" stroke="currentColor" stroke-width="1.66667"/>
+            <path d="M15 9.16663C15.9205 9.16663 16.6667 8.42043 16.6667 7.49996C16.6667 6.57948 15.9205 5.83329 15 5.83329C14.0795 5.83329 13.3333 6.57948 13.3333 7.49996C13.3333 8.42043 14.0795 9.16663 15 9.16663Z" stroke="currentColor" stroke-width="1.66667"/>
+            <path d="M2.5 15.8333C2.5 13.9924 3.99238 12.5 5.83333 12.5H9.16667C11.0076 12.5 12.5 13.9924 12.5 15.8333" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+          </svg>
+          <span>Collaboration</span>
+        </a>
+      }
+
+      <a routerLink="/appointments/dashboard" routerLinkActive="nav-item-active" class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2.5" y="3.33333" width="15" height="15" rx="1.66667" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="13.3333" y1="1.66667" x2="13.3333" y2="5" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+          <line x1="6.66667" y1="1.66667" x2="6.66667" y2="5" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+          <line x1="2.5" y1="8.33333" x2="17.5" y2="8.33333" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+        </svg>
+        <span>Appointments</span>
+      </a>
+
+      @if (isDoctorOrAdmin) {
+        <a routerLink="/medical-record/dashboard" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.5 1.66675H5.00001C4.55798 1.66675 4.13406 1.84234 3.8215 2.1549C3.50894 2.46746 3.33334 2.89139 3.33334 3.33341V16.6667C3.33334 17.1088 3.50894 17.5327 3.8215 17.8453C4.13406 18.1578 4.55798 18.3334 5.00001 18.3334H15C15.442 18.3334 15.866 18.1578 16.1785 17.8453C16.4911 17.5327 16.6667 17.1088 16.6667 16.6667V5.83341L12.5 1.66675Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M11.6667 1.66675V5.00008C11.6667 5.44211 11.8423 5.86603 12.1548 6.17859C12.4674 6.49115 12.8913 6.66675 13.3333 6.66675H16.6667" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Medical Data</span>
+        </a>
+      }
+
+      <a routerLink="/community/events" routerLinkActive="nav-item-active" class="nav-item">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="10" cy="10" r="8.33333" stroke="currentColor" stroke-width="1.66667"/>
+          <polyline points="10 5 10 10 13.3333 11.6667" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round"/>
+        </svg>
+        <span>Health Events</span>
+      </a>
+
+      @if (isAdmin) {
+        <a routerLink="/community/subscriptions" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.6667 10.8333C16.6667 15 13.75 17.0833 10.2833 18.2916C10.1018 18.3531 9.90462 18.3502 9.72501 18.2833C6.25001 17.0833 3.33334 15 3.33334 10.8333V4.99997C3.33334 4.77895 3.42114 4.56699 3.57742 4.41071C3.7337 4.25443 3.94566 4.16663 4.16668 4.16663C5.83334 4.16663 7.91668 3.16663 9.36668 1.89997C9.54322 1.74913 9.7678 1.66626 10 1.66626C10.2322 1.66626 10.4568 1.74913 10.6333 1.89997C12.0917 3.17497 14.1667 4.16663 15.8333 4.16663C16.0544 4.16663 16.2663 4.25443 16.4226 4.41071C16.5789 4.56699 16.6667 4.77895 16.6667 4.99997V10.8333Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7.5 9.99992L9.16667 11.6666L12.5 8.33325" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Subscriptions</span>
+        </a>
+      }
+
+      @if (isDoctorOrAdmin || isAdmin) {
+        <a routerLink="/community/forums" routerLinkActive="nav-item-active" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Forum</span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.5 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H7.5" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13.3333 14.1666L17.5 9.99992L13.3333 5.83325" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17.5 10H7.5" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Log Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content-wrapper">
+    <header class="header">
+      <div class="header-left">
+        <button class="menu-btn" (click)="toggleSidebar()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12H20" stroke="#6A7282" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 6H20" stroke="#6A7282" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 18H20" stroke="#6A7282" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="header-title">
+          <h2>MediCareAI Workspace</h2>
+          <p class="header-subtitle">Unified dashboard shell across modules</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="header-icon-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 2.5C9.00544 3.49456 8.4467 4.84348 8.4467 6.25C8.4467 7.65652 9.00544 9.00544 10 10C10.9946 10.9946 12.3435 11.5533 13.75 11.5533C15.1565 11.5533 16.5054 10.9946 17.5 10C17.5 11.4834 17.0601 12.9334 16.236 14.1668C15.4119 15.4001 14.2406 16.3614 12.8701 16.9291C11.4997 17.4968 9.99168 17.6453 8.53683 17.3559C7.08197 17.0665 5.7456 16.3522 4.6967 15.3033C3.64781 14.2544 2.9335 12.918 2.64411 11.4632C2.35472 10.0083 2.50325 8.50032 3.07091 7.12987C3.63856 5.75943 4.59986 4.58809 5.83323 3.76398C7.0666 2.93987 8.51664 2.5 10 2.5Z" stroke="#6A7282" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <button class="header-icon-btn notification-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z" stroke="#6A7282" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="notification-badge"></span>
+        </button>
+
+        <button class="header-icon-btn notification-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8.55664 17.5C8.70293 17.7533 8.91332 17.9637 9.16668 18.11C9.42003 18.2563 9.70743 18.3333 9.99997 18.3333C10.2925 18.3333 10.5799 18.2563 10.8333 18.11C11.0866 17.9637 11.297 17.7533 11.4433 17.5" stroke="#6A7282" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.71833 12.7717C2.60947 12.8911 2.53763 13.0394 2.51155 13.1988C2.48547 13.3582 2.50627 13.5218 2.57142 13.6696C2.63658 13.8174 2.74328 13.943 2.87855 14.0313C3.01381 14.1196 3.17182 14.1666 3.33333 14.1667H16.6667C16.8282 14.1668 16.9862 14.1199 17.1216 14.0318C17.2569 13.9437 17.3637 13.8182 17.4291 13.6705C17.4944 13.5228 17.5154 13.3593 17.4895 13.1999C17.4637 13.0405 17.392 12.892 17.2833 12.7726C16.175 11.6301 15 10.4159 15 6.66675C15 5.34067 14.4732 4.0689 13.5355 3.13121C12.5979 2.19353 11.3261 1.66675 10 1.66675C8.67392 1.66675 7.40215 2.19353 6.46447 3.13121C5.52679 4.0689 5 5.34067 5 6.66675C5 10.4159 3.82417 11.6301 2.71833 12.7717Z" stroke="#6A7282" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="notification-badge notification-badge-alert"></span>
+        </button>
+
+        <div class="divider"></div>
+
+        <button class="user-avatar">
+          <img src="https://api.builder.io/api/v1/image/assets/TEMP/fd6db9b2c383e95e61f8f4f4519b17eb5ca9da2b?width=72" alt="Emma Admin" />
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

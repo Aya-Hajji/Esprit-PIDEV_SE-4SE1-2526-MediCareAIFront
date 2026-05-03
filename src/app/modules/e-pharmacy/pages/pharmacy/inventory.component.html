@@ -1,0 +1,105 @@
+<div class="inventory-container">
+  <div class="page-header">
+    <h1>Inventory Management</h1>
+    <p>Track stock and update warehouse quantities</p>
+  </div>
+
+  @if (!isPharmacist()) {
+    <div class="error-banner">You are not authorized to access inventory management.</div>
+  } @else {
+    @if (error) {
+      <div class="error-banner">{{ error }}</div>
+    }
+    @if (successMessage) {
+      <div class="success-banner">{{ successMessage }}</div>
+    }
+
+    <div class="add-card">
+      <h3>Add Medicine</h3>
+      <div class="add-grid">
+        <input type="text" [(ngModel)]="newMedicine.name" placeholder="Medicine name" class="text-input" />
+        <input type="text" [(ngModel)]="newMedicine.manufacturer" placeholder="Manufacturer" class="text-input" />
+        <input type="number" min="0" step="0.01" [(ngModel)]="newMedicine.price" placeholder="Price" class="text-input" />
+        <input type="number" min="0" [(ngModel)]="newMedicine.stock" placeholder="Stock" class="text-input" />
+        <input type="text" [(ngModel)]="newMedicine.category" placeholder="Category" class="text-input" />
+        <input type="text" [(ngModel)]="newMedicine.strength" placeholder="Strength (e.g. 500mg)" class="text-input" />
+        <input type="text" [(ngModel)]="newMedicine.dosageForm" placeholder="Dosage form" class="text-input" />
+        <label class="rx-check">
+          <input type="checkbox" [(ngModel)]="newMedicine.prescriptionRequired" />
+          Prescription required
+        </label>
+      </div>
+      <textarea [(ngModel)]="newMedicine.description" placeholder="Description" class="text-input description-input"></textarea>
+      <button class="reload-btn" (click)="addMedicine()" [disabled]="isSaving">Add Medicine</button>
+    </div>
+
+    <div class="filters">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search by medicine name or ID"
+        class="text-input"
+      />
+      <select [(ngModel)]="selectedLocation" class="select-input">
+        <option value="">All locations</option>
+        @for (location of uniqueLocations; track location) {
+          <option [value]="location">{{ location }}</option>
+        }
+      </select>
+      <button class="reload-btn" (click)="loadInventory()">Reload</button>
+    </div>
+
+    @if (isLoading) {
+      <p class="loading">Loading inventory...</p>
+    } @else if (filteredInventory.length === 0) {
+      <p class="empty">No inventory entries found.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Medicine</th>
+              <th>Medicine ID</th>
+              <th>Quantity</th>
+              <th>Warehouse</th>
+              <th>Last Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of filteredInventory; track entry.id) {
+              <tr>
+                <td>{{ entry.medicineName }}</td>
+                <td>{{ entry.medicineId }}</td>
+                <td>
+                  <input
+                    type="number"
+                    min="0"
+                    class="qty-input"
+                    [ngModel]="editModel[entry.medicineId]?.quantity ?? entry.quantity"
+                    (ngModelChange)="initEdit(entry); editModel[entry.medicineId].quantity = $event"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="warehouse-input"
+                    [ngModel]="editModel[entry.medicineId]?.warehouseLocation ?? entry.warehouseLocation"
+                    (ngModelChange)="initEdit(entry); editModel[entry.medicineId].warehouseLocation = $event"
+                  />
+                </td>
+                <td>{{ entry.lastUpdated | date: 'medium' }}</td>
+                <td class="actions">
+                  <button class="save-btn" (click)="saveEntry(entry.medicineId)" [disabled]="isSaving">Save</button>
+                  <button class="delete-btn" (click)="deleteEntry(entry.medicineId)">Delete</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <a routerLink="/pharmacy/medicines" class="back-link">← Back to medicines</a>
+  }
+</div>

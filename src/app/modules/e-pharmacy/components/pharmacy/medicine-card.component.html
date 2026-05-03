@@ -1,0 +1,82 @@
+<div class="medicine-card">
+  <!-- Image Section -->
+  <div class="image-section">
+    <img
+      src="https://placehold.co/200x200?text={{ medicine.name }}"
+      alt="{{ medicine.name }}"
+      class="medicine-image"
+    />
+    @if (medicine.prescriptionRequired) {
+      <div class="rx-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M12 3C6.48 3 2 6.82 2 11.5C2 16.18 6.48 20 12 20C17.52 20 22 16.18 22 11.5C22 6.82 17.52 3 12 3ZM12 18C7.58 18 4 14.97 4 11.5C4 8.03 7.58 5 12 5C16.42 5 20 8.03 20 11.5C20 14.97 16.42 18 12 18Z"
+            fill="currentColor"
+          />
+        </svg>
+        <span>Rx</span>
+      </div>
+    }
+    <div [ngClass]="'stock-badge ' + getStockStatusClass()">
+      {{ getStockStatusText() }}
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <div class="content-section">
+    <h3 class="medicine-name">{{ medicine.name }}</h3>
+    <p class="medicine-strength">{{ medicine.strength }} - {{ medicine.dosageForm }}</p>
+    
+    @if (medicine.manufacturer) {
+      <p class="manufacturer">By {{ medicine.manufacturer }}</p>
+    }
+
+    <div class="details-group">
+      @if (medicine.category) {
+        <span class="category-badge">{{ medicine.category }}</span>
+      }
+    </div>
+
+    @if (medicine.description) {
+      <p class="description">{{ medicine.description | slice: 0: 80 }}...</p>
+    }
+  </div>
+
+  <!-- Footer Section -->
+  <div class="footer-section">
+    <div class="price-section">
+      <span class="price-label">Price</span>
+      <span class="price-amount">&#36;{{ medicine.price | number: '1.2-2' }}</span>
+    </div>
+
+    @if (!canOrder) {
+      <a routerLink="/pharmacy/inventory" class="view-details-link">
+        Manage in Inventory
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+    } @else if (medicine.stock > 0) {
+      <button class="add-to-cart-btn" (click)="onAddToCart()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M9 2L6.46 9H2L7.07 13.59L5.25 21L12 16.88L18.75 21L16.93 13.59L22 9H17.54L15 2H9Z"
+            fill="currentColor"
+          />
+        </svg>
+        Add to Cart
+      </button>
+    } @else {
+      <button class="add-to-cart-btn disabled" disabled>Out of Stock</button>
+    }
+
+    <a [routerLink]="['/pharmacy/medicines', medicine.id]" class="view-details-link">
+      Details
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,148 @@
+<div class="collaboration-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1>Professional Collaborations</h1>
+      <p>Manage medical collaboration sessions and shared documents</p>
+    </div>
+    <button class="btn-create" (click)="createNewSession()">
+      <span>➕</span> New Session
+    </button>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>❌</span> {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span>✅</span> {{ successMessage }}
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search by title, case, or description..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        class="search-input"
+      />
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <div class="filter-controls">
+      <select [(ngModel)]="statusFilter" (change)="onStatusChange()" class="filter-select">
+        <option value="">All statuses</option>
+        <option value="ACTIVE">Active</option>
+        <option value="PENDING">Pending</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="ARCHIVED">Archived</option>
+      </select>
+
+      <select [(ngModel)]="sortBy" (change)="onSortChange()" class="filter-select">
+        <option value="recent">Most recent</option>
+        <option value="participants">Most participants</option>
+        <option value="name">Name (A-Z)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading sessions...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && filteredSessions.length === 0" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>No collaboration found</h3>
+    <p>Create a new collaboration session to get started</p>
+    <button class="btn-create" (click)="createNewSession()">
+      <span>➕</span> Create a session
+    </button>
+  </div>
+
+  <!-- Sessions Grid -->
+  <div *ngIf="!isLoading && filteredSessions.length > 0" class="sessions-grid">
+    <div
+      *ngFor="let session of filteredSessions"
+      class="session-card"
+      (click)="viewSession(session.id)"
+    >
+      <!-- Status Badge -->
+      <div class="card-header">
+        <span [class]="'status-badge ' + getStatusBadgeClass(session.status)">
+          {{ session.status }}
+        </span>
+        <div class="card-actions" (click)="$event.stopPropagation()">
+          <button
+            *ngIf="canEdit(session)"
+            class="btn-action"
+            (click)="editSession(session.id, $event)"
+            title="Edit"
+          >
+            ✏️
+          </button>
+          <button
+            *ngIf="canDelete(session)"
+            class="btn-action btn-danger"
+            (click)="deleteSession(session.id, $event)"
+            title="Delete"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <!-- Card Content -->
+      <div class="card-content">
+        <h3 class="session-title">{{ session.title }}</h3>
+
+        <div class="session-highlight">
+          <span class="case-number">📋 Cas #{{ session.caseNumber || 'N/A' }}</span>
+          <span *ngIf="isOrganizer(session)" class="organizer-badge">Organizer</span>
+        </div>
+
+        <p class="session-description">{{ session.description || 'No description' }}</p>
+
+        <!-- Session Stats -->
+        <div class="session-stats">
+          <div class="stat">
+            <span class="stat-icon">👥</span>
+            <span class="stat-value">{{ session.participants?.length || 0 }}</span>
+            <span class="stat-label">Participants</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">📄</span>
+            <span class="stat-value">{{ session.documentCount || 0 }}</span>
+            <span class="stat-label">Documents</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">⏱️</span>
+            <span class="stat-value">{{ session.createdAt | date:'short' }}</span>
+            <span class="stat-label">Created on</span>
+          </div>
+        </div>
+
+        <!-- Your Role -->
+        <div class="your-role">
+          Your role: <strong>{{ isOrganizer(session) ? 'Organizer' : 'Participant' }}</strong>
+        </div>
+      </div>
+
+      <!-- Max Participants Info -->
+      <div class="card-footer">
+        <span class="capacity">
+          Max. participants: {{ session.maxParticipants || '∞' }}
+        </span>        <span class="view-link">Voir plus →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Count -->
+  <div *ngIf="!isLoading && filteredSessions.length > 0" class="results-count">
+    {{ filteredSessions.length }} session(s) found
+  </div>
+</div>

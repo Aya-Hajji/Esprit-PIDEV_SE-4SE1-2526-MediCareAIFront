@@ -1,0 +1,242 @@
+<div class="document-detail-container">
+  <!-- Header -->
+  <div class="header-section">
+    <button class="btn-back" (click)="goBack()">← Retour</button>
+    <div class="header-content">
+      <h1>{{ document?.fileName || 'Document' }}</h1>
+      <p class="document-meta" *ngIf="document">
+        <span>{{ document.fileType }}</span>
+        <span>•</span>
+        <span>{{ document.fileSize | number }} bytes</span>
+        <span>•</span>
+        <span>Uploadé par: {{ document.uploadedBy || 'Inconnu' }}</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>❌</span> {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span>✅</span> {{ successMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Chargement du document...</p>
+    <p style="font-size: 0.9em; color: #999;">
+      Session ID: {{ sessionId }} | Document ID: {{ documentId }}
+    </p>
+  </div>
+
+  <!-- Debug Info -->
+  <div *ngIf="!isLoading && document && false" class="debug-info" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 0.85em;">
+    <p><strong>Debug Info:</strong></p>
+    <p>Document ID: {{ document.id }}</p>
+    <p>File Name: {{ document.fileName }}</p>
+    <p>File Type: {{ document.fileType }}</p>
+    <p>File Size: {{ document.fileSize }}</p>
+    <p>URL: {{ document.url }}</p>
+  </div>
+
+  <!-- Not Found / Error State -->
+  <div *ngIf="!isLoading && !document && errorMessage" class="empty-state">
+    <p>⚠️ {{ errorMessage }}</p>
+    <button class="btn-back" (click)="goBack()">← Retour</button>
+  </div>
+
+  <!-- Document Not Found -->
+  <div *ngIf="!isLoading && !document && !errorMessage" class="empty-state">
+    <p>Impossible d’afficher ce document.</p>
+    <button class="btn-back" (click)="goBack()">← Retour</button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && document" class="content-wrapper">
+    <!-- Document Preview Area -->
+    <div class="document-preview">
+      <div class="preview-container">
+        <!-- Image Document -->
+        <div *ngIf="isImageDocument(document.fileType)" class="image-viewer">
+          <img [src]="document.url" 
+               [alt]="document.fileName" 
+               class="document-image"
+               (load)="onDocumentImageLoad()">
+          <p *ngIf="!document.url" class="no-url">URL du document non disponible</p>
+        </div>
+
+        <!-- PDF Document -->
+        <div *ngIf="isPdfDocument(document.fileType)" class="pdf-viewer">
+          <iframe [src]="document.url" 
+                  class="document-iframe"
+                  title="PDF Viewer"></iframe>
+          <p *ngIf="!document.url" class="no-url">URL du document non disponible</p>
+        </div>
+
+        <!-- Other Document Types -->
+        <div *ngIf="!isImageDocument(document.fileType) && !isPdfDocument(document.fileType)" class="document-fallback">
+          <div class="file-icon-large">{{ getFileIcon(document.fileType) }}</div>
+          <h3>{{ document.fileName }}</h3>
+          <p>Type: {{ document.fileType }}</p>
+          <p>Taille: {{ document.fileSize | number }} bytes</p>
+          
+          <div *ngIf="document.url" class="download-section">
+            <p>Pour consulter ce document:</p>
+            <a [href]="document.url" target="_blank" class="btn-download-full">
+              ⬇️ Télécharger et ouvrir
+            </a>
+          </div>
+          
+          <div *ngIf="!document.url" class="no-url">
+            URL du document non disponible
+          </div>
+        </div>
+
+        <!-- Annotations Overlay -->
+        <div class="annotations-layer" *ngIf="annotations.length > 0 && isImageDocument(document.fileType)">
+          <div *ngFor="let annotation of annotations" 
+               class="annotation-marker"
+               [style.left.%]="annotation.x || 0"
+               [style.top.%]="annotation.y || 0"
+               [style.backgroundColor]="annotation.color"
+               [title]="annotation.content">
+            <span class="marker-icon">{{ getAnnotationIcon(annotation.type) }}</span>
+          </div>
+        </div>
+
+        <!-- Document Info -->
+        <div class="document-info-panel">
+          <div class="info-item">
+            <span class="label">Fichier:</span>
+            <span class="value">{{ document.fileName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Type:</span>
+            <span class="value">{{ document.fileType }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Taille:</span>
+            <span class="value">{{ document.fileSize | number }} bytes</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Uploadé par:</span>
+            <span class="value">{{ document.uploadedBy || 'Inconnu' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Date:</span>
+            <span class="value">{{ document.uploadedAt | date:'short' }}</span>
+          </div>
+          <div *ngIf="document.description" class="info-item">
+            <span class="label">Description:</span>
+            <span class="value">{{ document.description }}</span>
+          </div>
+        </div>
+      </div>
+
+    <!-- Annotations Panel -->
+    <div class="annotations-panel">
+      <div class="panel-header">
+        <h3>Annotations & Annotations ({{ annotations.length }})</h3>
+        <button class="btn-add-annotation" 
+                [class.active]="showAnnotationForm"
+                (click)="showAnnotationForm = !showAnnotationForm">
+          ➕ Ajouter une annotation
+        </button>
+      </div>
+
+      <!-- Add Annotation Form -->
+      <form *ngIf="showAnnotationForm" [formGroup]="annotationForm" (ngSubmit)="addAnnotation()" class="annotation-form">
+        <div class="form-group">
+          <label for="annotationType">Type d'annotation</label>
+          <div class="annotation-types">
+            <button type="button" 
+                    class="type-btn"
+                    [class.selected]="selectedAnnotationType === 'COMMENT'"
+                    (click)="selectedAnnotationType = 'COMMENT'">
+              COMMENT
+            </button>
+            <button type="button" 
+                    class="type-btn"
+                    [class.selected]="selectedAnnotationType === 'HIGHLIGHT'"
+                    (click)="selectedAnnotationType = 'HIGHLIGHT'">
+              HIGHLIGHT
+            </button>
+            <button type="button" 
+                    class="type-btn"
+                    [class.selected]="selectedAnnotationType === 'ARROW'"
+                    (click)="selectedAnnotationType = 'ARROW'">
+              ARROW
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Couleur</label>
+          <div class="color-picker">
+            <button *ngFor="let option of colorOptions"
+                    type="button"
+                    class="color-option"
+                    [style.backgroundColor]="option.color"
+                    [class.selected]="selectedColor === option.color"
+                    (click)="selectedColor = option.color"
+                    [title]="option.name">
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="pageNumber">Page #</label>
+          <input type="number" id="pageNumber" formControlName="pageNumber" class="input-small" />
+        </div>
+
+        <div class="form-group">
+          <label for="annotationContent">Contenu *</label>
+          <textarea id="annotationContent" 
+                    formControlName="content" 
+                    placeholder="Ajoutez votre annotation..."
+                    rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="annotationForm.invalid">
+          ✅ Ajouter
+        </button>
+        <button type="button" class="btn-cancel" (click)="showAnnotationForm = false">
+          ✖️ Annuler
+        </button>
+      </form>
+
+      <!-- Annotations List -->
+      <div *ngIf="annotations.length > 0" class="annotations-list">
+        <div *ngFor="let annotation of annotations" 
+             class="annotation-item"
+             [style.borderLeftColor]="annotation.color">
+          <div class="annotation-header">
+            <span class="annotation-type">{{ getAnnotationIcon(annotation.type) }} {{ annotation.type }}</span>
+            <span class="annotation-author">{{ annotation.userName || 'Anonyme' }}</span>
+            <span class="annotation-date">{{ annotation.createdAt | date:'short' }}</span>
+          </div>
+          
+          <p class="annotation-content">{{ annotation.content }}</p>
+          
+          <div *ngIf="annotation.pageNumber" class="annotation-page">
+            Page {{ annotation.pageNumber }}
+          </div>
+
+          <div class="annotation-actions" *ngIf="canEditAnnotation(annotation)">
+            <button class="btn-delete" (click)="deleteAnnotation(annotation.id!)">
+              🗑️ Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="annotations.length === 0" class="empty-state">
+        <p>Aucune annotation pour le moment</p>
+        <p class="empty-hint">Commencez par ajouter une annotation pour ce document</p>
+      </div>
+    </div>
+  </div>
+</div>

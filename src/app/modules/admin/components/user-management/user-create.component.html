@@ -1,0 +1,179 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Create New User</h2>
+    <p>Add a new user to the platform</p>
+  </div>
+
+  <div *ngIf="success" class="success-message">
+    User created successfully! Redirecting...
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="username">Username *</label>
+        <input
+          type="text"
+          id="username"
+          formControlName="username"
+          placeholder="Enter username"
+          class="form-control"
+          [class.is-invalid]="f['username'].invalid && f['username'].touched"
+        />
+        <small class="error-text" *ngIf="f['username'].invalid && f['username'].touched">
+          <span *ngIf="f['username'].errors?.['required']">Username is required</span>
+          <span *ngIf="f['username'].errors?.['minlength']">Username must be at least 3 characters</span>
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Enter email"
+          class="form-control"
+          [class.is-invalid]="f['email'].invalid && f['email'].touched"
+        />
+        <small class="error-text" *ngIf="f['email'].invalid && f['email'].touched">
+          <span *ngIf="f['email'].errors?.['required']">Email is required</span>
+          <span *ngIf="f['email'].errors?.['email']">Please enter a valid email</span>
+        </small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="firstName">First Name *</label>
+        <input
+          type="text"
+          id="firstName"
+          formControlName="firstName"
+          placeholder="Enter first name"
+          class="form-control"
+          [class.is-invalid]="f['firstName'].invalid && f['firstName'].touched"
+        />
+        <small class="error-text" *ngIf="f['firstName'].invalid && f['firstName'].touched">
+          First name is required
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Last Name *</label>
+        <input
+          type="text"
+          id="lastName"
+          formControlName="lastName"
+          placeholder="Enter last name"
+          class="form-control"
+          [class.is-invalid]="f['lastName'].invalid && f['lastName'].touched"
+        />
+        <small class="error-text" *ngIf="f['lastName'].invalid && f['lastName'].touched">
+          Last name is required
+        </small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="password">Password *</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Enter password"
+          class="form-control"
+          [class.is-invalid]="f['password'].invalid && f['password'].touched"
+        />
+        <small class="error-text" *ngIf="f['password'].invalid && f['password'].touched">
+          <span *ngIf="f['password'].errors?.['required']">Password is required</span>
+          <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 6 characters</span>
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="phoneNumber">Phone Number *</label>
+        <input
+          type="tel"
+          id="phoneNumber"
+          formControlName="phoneNumber"
+          placeholder="Enter phone number"
+          class="form-control"
+          [class.is-invalid]="f['phoneNumber'].invalid && f['phoneNumber'].touched"
+        />
+        <small class="error-text" *ngIf="f['phoneNumber'].invalid && f['phoneNumber'].touched">
+          Phone number is required
+        </small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="role">Role *</label>
+        <select
+          id="role"
+          formControlName="role"
+          class="form-control"
+          [class.is-invalid]="f['role'].invalid && f['role'].touched"
+        >
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+        <small class="error-text" *ngIf="f['role'].invalid && f['role'].touched">
+          Role is required
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="gender">Gender *</label>
+        <select
+          id="gender"
+          formControlName="gender"
+          class="form-control"
+          [class.is-invalid]="f['gender'].invalid && f['gender'].touched"
+        >
+          <option value="">Select gender</option>
+          <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
+        </select>
+        <small class="error-text" *ngIf="f['gender'].invalid && f['gender'].touched">
+          Gender is required
+        </small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group checkbox-group">
+        <label for="premium">
+          <input
+            type="checkbox"
+            id="premium"
+            formControlName="premium"
+          />
+          Premium User
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="userForm.invalid || loading"
+      >
+        {{ loading ? 'Creating...' : 'Create User' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="onCancel()"
+        [disabled]="loading"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

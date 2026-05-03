@@ -1,0 +1,447 @@
+<div class="subscription-container">
+  <!-- Header -->
+  <div class="subscription-header">
+    <div class="header-content">
+      <h1>💎 Premium Subscription Plans</h1>
+      <p class="subtitle">Unlock full access to exclusive content and advanced features</p>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-alert" *ngIf="error">
+    <div class="error-content">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="close-btn" (click)="closeError()">✕</button>
+    </div>
+  </div>
+
+  <!-- Current Subscription Info -->
+  <div class="current-subscription-section" *ngIf="userHasSubscription && currentSubscription">
+    <div class="subscription-card">
+      <div class="subscription-header-content">
+        <div class="badge-group">
+          <span class="badge active">✓ ACTIVE</span>
+          <span class="badge-status" [class]="'status-' + getStatusBadge()">
+            {{ getStatusBadge() | uppercase }}
+          </span>
+        </div>
+        <h2>{{ currentSubscription.planName || 'Premium Plan' }}</h2>
+      </div>
+
+      <div class="subscription-details">
+        <div class="detail-item">
+          <span class="detail-label">📅 Expiration Date:</span>
+          <span class="detail-value">{{ currentSubscription.endDate | date: 'MM/dd/yyyy' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">⏱️ Days Remaining:</span>
+          <span class="detail-value remaining" [class.ending]="getDaysRemaining() < 7">
+            {{ getDaysRemaining() }} days
+          </span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">🔄 Auto-Renew:</span>
+          <span class="detail-value">{{ autoRenewEnabled ? '✓ Enabled' : '✗ Disabled' }}</span>
+        </div>
+      </div>
+
+      <div class="subscription-actions">
+        <button class="btn btn-primary" (click)="toggleAutoRenew()">
+          {{ autoRenewEnabled ? '🔄 Disable Auto-Renew' : '🔄 Enable Auto-Renew' }}
+        </button>
+        <button class="btn btn-success" (click)="renewSubscription()">
+          ✓ Renew Now
+        </button>
+        <button class="btn btn-danger" (click)="cancelSubscription()">
+          ✕ Cancel Subscription
+        </button>
+      </div>
+
+      <!-- History Toggle -->
+      <button class="btn-history" (click)="toggleHistory()">
+        📚 {{ showHistory ? 'Hide History' : 'Show History' }}
+      </button>
+    </div>
+
+    <!-- Subscription History -->
+    <div class="subscription-history" *ngIf="showHistory">
+      <h3>Subscription History</h3>
+      
+      <div class="loading" *ngIf="loadingHistory">
+        <div class="spinner-small"></div>
+        <span>Loading...</span>
+      </div>
+
+      <div class="history-list" *ngIf="!loadingHistory && subscriptionHistory.length > 0">
+        <div class="history-item" *ngFor="let sub of subscriptionHistory">
+          <div class="history-date">{{ sub.startDate | date: 'MM/dd/yyyy' }}</div>
+          <div class="history-plan">{{ sub.planName }}</div>
+          <div class="history-status" [class]="'status-' + (sub.status | lowercase)">
+            {{ sub.status }}
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-history" *ngIf="!loadingHistory && subscriptionHistory.length === 0">
+        <p>No subscription history available</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Subscription Message -->
+  <div class="no-subscription-alert" *ngIf="!userHasSubscription">
+    <div class="alert-content">
+      <span class="alert-icon">🎯</span>
+      <div>
+        <h3>No Active Subscription</h3>
+        <p>Choose a plan below to access premium features and exclusive content.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading subscription plans...</p>
+  </div>
+
+  <!-- Plans Grid -->
+  <div class="plans-section" *ngIf="!loading && plans.length > 0">
+    <h2 class="plans-title">🎁 Choose Your Plan</h2>
+    <p class="plans-subtitle">Compare features and find the perfect plan for you</p>
+    
+    <div class="plans-grid">
+      <div class="plan-card" 
+        *ngFor="let plan of plans" 
+        [class.current-plan]="isCurrentPlan(plan)"
+        [class.popular]="plan.name.includes('Annual')"
+        [class.basic]="!plan.name.includes('Premium')">
+        
+        <!-- Popular Badge -->
+        <div class="popular-badge" *ngIf="plan.name.includes('Annual')">
+          <span>⭐ BEST VALUE</span>
+        </div>
+
+        <!-- Plan Header -->
+        <div class="plan-header">
+          <h3 class="plan-name">{{ plan.name }}</h3>
+          
+          <!-- Price Display -->
+          <div class="plan-price-section">
+            <div class="plan-price">
+              <span class="currency">€</span>
+              <span class="amount">{{ plan.price || '0' }}</span>
+              <span class="period">
+                /{{ plan.durationDays === 365 ? 'year' : 'month' }}
+              </span>
+            </div>
+            <div class="price-note" *ngIf="plan.name.includes('Annual')">
+              <span class="savings">Save 30%!</span>
+            </div>
+          </div>
+
+          <p class="plan-description">{{ plan.description }}</p>
+          
+          <!-- Plan Type Badge -->
+          <div class="plan-type">
+            <span *ngIf="!plan.name.includes('Premium')" class="type-badge basic-badge">
+              📖 Basic Plan
+            </span>
+            <span *ngIf="plan.name.includes('Premium')" class="type-badge premium-badge">
+              💎 Premium Plan
+            </span>
+          </div>
+        </div>
+
+        <!-- Premium Features Highlight -->
+        <div class="premium-features" *ngIf="plan.name.includes('Premium')">
+          <h4>🚀 Advanced Features:</h4>
+          <ul class="advanced-features-list">
+            <li *ngIf="plan.name.includes('Monthly')">
+              <span class="feature-icon">💬</span>
+              <span class="feature-text">Unlimited discussions</span>
+            </li>
+            <li *ngIf="plan.name.includes('Monthly')">
+              <span class="feature-icon">⚡</span>
+              <span class="feature-text">Priority expert responses</span>
+            </li>
+            <li *ngIf="plan.name.includes('Annual')">
+              <span class="feature-icon">📹</span>
+              <span class="feature-text">Video consultations with professionals</span>
+            </li>
+            <li *ngIf="plan.name.includes('Annual')">
+              <span class="feature-icon">🎓</span>
+              <span class="feature-text">Access to exclusive webinars</span>
+            </li>
+            <li *ngIf="plan.name.includes('Annual')">
+              <span class="feature-icon">📊</span>
+              <span class="feature-text">Advanced health analysis (AI)</span>
+            </li>
+            <li *ngIf="plan.name.includes('Annual')">
+              <span class="feature-icon">🔔</span>
+              <span class="feature-text">Priority support 24/7</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Standard Features -->
+        <div class="standard-features">
+          <h4>✓ Included in this plan:</h4>
+          <ul class="features-list">
+            <li *ngFor="let feature of getFeatures(plan.name)" class="feature-item">
+              <span class="check-icon">✓</span>
+              {{ feature }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="plan-actions">
+          <button 
+            class="btn btn-subscribe" 
+            *ngIf="!isCurrentPlan(plan)"
+            (click)="subscribeToPlan(plan)"
+            [disabled]="subscribing">
+            <span class="btn-icon">✓</span>
+            {{ subscribing && selectedPlan?.id === plan.id ? 'Processing...' : 'Subscribe Now' }}
+          </button>
+          <button 
+            class="btn btn-current" 
+            *ngIf="isCurrentPlan(plan)"
+            disabled>
+            ✓ Current Plan
+          </button>
+        </div>
+
+        <!-- Info Footer -->
+        <div class="plan-footer">
+          <p class="no-commitment">✓ No commitment • Cancel anytime</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="comparison-section">
+      <h3>📊 Feature Comparison</h3>
+      <div class="comparison-table">
+        <div class="table-header">
+          <div class="table-feature">Features</div>
+          <div class="table-plan" *ngFor="let plan of plans">{{ plan.name }}</div>
+        </div>
+
+        <div class="table-row">
+          <div class="table-feature">Unlimited discussions</div>
+          <div class="table-plan"><span class="check">✓</span></div>
+          <div class="table-plan"><span class="check premium">✓✓</span></div>
+          <div class="table-plan"><span class="check premium">✓✓✓</span></div>
+        </div>
+
+        <div class="table-row">
+          <div class="table-feature">Expert responses</div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="check">✓</span></div>
+          <div class="table-plan"><span class="check premium">✓ Priority</span></div>
+        </div>
+
+        <div class="table-row">
+          <div class="table-feature">Video consultations</div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="check premium">✓</span></div>
+        </div>
+
+        <div class="table-row">
+          <div class="table-feature">Priority support</div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="check">✓</span></div>
+          <div class="table-plan"><span class="check premium">✓ 24/7</span></div>
+        </div>
+
+        <div class="table-row">
+          <div class="table-feature">Exclusive webinars</div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="check premium">✓</span></div>
+        </div>
+
+        <div class="table-row">
+          <div class="table-feature">Advanced AI analysis</div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="check premium">✓</span></div>
+        </div>
+
+        <div class="table-row">
+          <div class="table-feature">No ads</div>
+          <div class="table-plan"><span class="times">✗</span></div>
+          <div class="table-plan"><span class="check">✓</span></div>
+          <div class="table-plan"><span class="check premium">✓</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && plans.length === 0">
+    <div class="empty-icon">📋</div>
+    <h3>No plans available</h3>
+    <p>Subscription plans will be available soon. Please try again later.</p>
+  </div>
+
+  <!-- Footer Info -->
+  <div class="info-footer">
+    <div class="info-item">
+      <span class="info-icon">🔒</span>
+      <p><strong>Secure:</strong> Your payment data is protected by SSL encryption</p>
+    </div>
+    <div class="info-item">
+      <span class="info-icon">✓</span>
+      <p><strong>Flexible:</strong> Cancel or modify your subscription anytime</p>
+    </div>
+    <div class="info-item">
+      <span class="info-icon">💬</span>
+      <p><strong>Support:</strong> Contact us with any questions about your subscription</p>
+    </div>
+  </div>
+
+  <!-- Why Premium Section -->
+  <div class="why-premium-section">
+    <h3>💡 Why Go Premium?</h3>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon">💬</div>
+        <h4>Unlimited Discussions</h4>
+        <p>Ask as many questions as you want without limits. The Basic plan restricts the number of discussions.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">⚡</div>
+        <h4>Quick Responses</h4>
+        <p>Get expert answers in hours instead of days.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">📹</div>
+        <h4>Video Consultations</h4>
+        <p>Talk directly with a qualified healthcare professional (Annual Plan only).</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">📊</div>
+        <h4>Advanced Analysis</h4>
+        <p>Benefit from comprehensive health analysis using artificial intelligence.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">🎓</div>
+        <h4>Exclusive Webinars</h4>
+        <p>Access monthly webinars with the best health experts.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">🔔</div>
+        <h4>Support 24/7</h4>
+        <p>Immediate access to customer support available 24 hours a day, 7 days a week.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div class="faq-section">
+    <h3>❓ Frequently Asked Questions</h3>
+    
+    <div class="faq-container">
+      <div class="faq-item">
+        <div class="faq-question" (click)="toggleFaq('q1')">
+          <span class="faq-icon">▶</span>
+          <span>What is the difference between Basic and Premium plans?</span>
+        </div>
+        <div class="faq-answer" id="q1">
+          <p><strong>Basic Plan (Free):</strong></p>
+          <ul>
+            <li>Access to public forum</li>
+            <li>Responses limited to 5 per month</li>
+            <li>No priority support</li>
+            <li>No access to premium resources</li>
+          </ul>
+          <p><strong>Premium Plan:</strong></p>
+          <ul>
+            <li>Unlimited discussions</li>
+            <li>Priority expert responses</li>
+            <li>Priority support</li>
+            <li>Access to all exclusive content</li>
+            <li>Annual Plan: Video consultations + Webinars</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" (click)="toggleFaq('q2')">
+          <span class="faq-icon">▶</span>
+          <span>Can I cancel my subscription anytime?</span>
+        </div>
+        <div class="faq-answer" id="q2">
+          <p>Yes! You can cancel your subscription anytime without penalty. Your access will end immediately at the end of the current billing period. No questions asked!</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" (click)="toggleFaq('q3')">
+          <span class="faq-icon">▶</span>
+          <span>Is there a free trial period?</span>
+        </div>
+        <div class="faq-answer" id="q3">
+          <p>We offer 7 days of free access to the Premium Plan for new users. During this period, you can cancel free of charge if you are not satisfied.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" (click)="toggleFaq('q4')">
+          <span class="faq-icon">▶</span>
+          <span>Can I change plans anytime?</span>
+        </div>
+        <div class="faq-answer" id="q4">
+          <p>Yes! You can upgrade or downgrade your plan anytime. If you switch to a cheaper plan, your credit will be applied to your next invoice.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" (click)="toggleFaq('q5')">
+          <span class="faq-icon">▶</span>
+          <span>What payment methods are accepted?</span>
+        </div>
+        <div class="faq-answer" id="q5">
+          <p>We accept:</p>
+          <ul>
+            <li>Credit cards (Visa, Mastercard, American Express)</li>
+            <li>PayPal</li>
+            <li>Bank transfers</li>
+          </ul>
+          <p>All payments are secure and encrypted.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" (click)="toggleFaq('q6')">
+          <span class="faq-icon">▶</span>
+          <span>Does the premium plan really include video consultations?</span>
+        </div>
+        <div class="faq-answer" id="q6">
+          <p><strong>Yes!</strong> The Annual Premium Plan includes:</p>
+          <ul>
+            <li>✓ Up to 4 video consultations per year (1 per quarter)</li>
+            <li>✓ Duration: 30 minutes each</li>
+            <li>✓ With qualified doctors or specialists</li>
+            <li>✓ Flexible scheduling based on your availability</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" (click)="toggleFaq('q7')">
+          <span class="faq-icon">▶</span>
+          <span>How does auto-renewal work?</span>
+        </div>
+        <div class="faq-answer" id="q7">
+          <p>Auto-renewal is <strong>enabled by default</strong> when you purchase a subscription. Your subscription will automatically renew at the end of each billing period. You can disable it anytime from your account, and we'll remind you before renewal.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

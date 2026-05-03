@@ -1,0 +1,234 @@
+<div class="pv-display-container">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement du Procès-Verbal...</p>
+  </div>
+
+  <!-- Errors -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-error">
+    <span>❌</span> {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span>✅</span> {{ successMessage }}
+  </div>
+
+  <!-- PV Content -->
+  <div *ngIf="!isLoading && pv" class="pv-content">
+    <!-- Header -->
+    <div class="pv-header">
+      <h1>📄 Procès-Verbal</h1>
+      <div class="pv-meta">
+        <span class="badge" [ngClass]="getStatusClass(pv.status)">{{ pv.status | uppercase }}</span>
+        <span class="generated-by">Généré par {{ pv.generatedBy }}</span>
+        <span class="generated-at">{{ pv.generatedAt | date:'short' }}</span>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="pv-toolbar">
+      <button (click)="exportPDF()" class="btn btn-secondary">
+        📥 Télécharger PDF
+      </button>
+      <button (click)="sendEmail()" class="btn btn-secondary">
+        📧 Envoyer Email
+      </button>
+      <button *ngIf="pv.status === 'draft'" (click)="approvePV()" class="btn btn-primary">
+        ✅ Approuver
+      </button>
+      <button *ngIf="pv.status === 'approved'" (click)="signPV()" class="btn btn-primary">
+        🖊️ Signer
+      </button>
+      <button (click)="goBack()" class="btn btn-secondary">
+        ← Retour
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="pv-main">
+      <!-- Header Section -->
+      <section class="pv-section">
+        <h2>📋 Informations de la Réunion</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <strong>Titre:</strong> {{ pv.content.header.meetingTitle }}
+          </div>
+          <div class="info-item">
+            <strong>Date:</strong> {{ pv.content.header.date }}
+          </div>
+          <div class="info-item">
+            <strong>Heure:</strong> {{ pv.content.header.startTime }} - {{ pv.content.header.endTime }}
+          </div>
+          <div class="info-item">
+            <strong>Durée:</strong> {{ pv.content.header.durationMinutes }} minutes
+          </div>
+          <div class="info-item">
+            <strong>Lieu:</strong> {{ pv.content.header.location }}
+          </div>
+        </div>
+      </section>
+
+      <!-- Participants -->
+      <section class="pv-section">
+        <h2>👥 Participants</h2>
+        <div class="participants-table">
+          <div class="participant-header">
+            <div class="col-name">Nom</div>
+            <div class="col-spec">Spécialité</div>
+            <div class="col-status">Statut</div>
+            <div class="col-time">Temps Parole</div>
+          </div>
+          <div *ngFor="let p of pv.content.participants" class="participant-row">
+            <div class="col-name">{{ p.name }}</div>
+            <div class="col-spec">{{ p.specialization }}</div>
+            <div class="col-status">
+              <span class="badge" [class.present]="p.status === 'present'">
+                {{ p.status === 'present' ? '✓ Présent' : '✗ Absent' }}
+              </span>
+            </div>
+            <div class="col-time">{{ p.speakingTime || '-' }}</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Executive Summary -->
+      <section class="pv-section">
+        <h2>📝 Résumé Exécutif</h2>
+        <p class="executive-summary">{{ pv.content.executiveSummary }}</p>
+      </section>
+
+      <!-- Discussion Points -->
+      <section class="pv-section">
+        <h2>💬 Points Discutés</h2>
+        <ul class="discussion-list">
+          <li *ngFor="let point of pv.content.discussionPoints">{{ point }}</li>
+        </ul>
+      </section>
+
+      <!-- Diagnosis -->
+      <section class="pv-section" *ngIf="pv.content.diagnosis">
+        <h2>🏥 Diagnostic</h2>
+        <div class="diagnosis-box">
+          <div class="info-item">
+            <strong>Diagnostic Principal:</strong> {{ pv.content.diagnosis.main }}
+          </div>
+          <div class="info-item">
+            <strong>Code ICD-10:</strong> <code>{{ pv.content.diagnosis.icd10 }}</code>
+          </div>
+          <div class="info-item" *ngIf="pv.content.diagnosis.severity">
+            <strong>Sévérité:</strong> {{ pv.content.diagnosis.severity }}
+          </div>
+          <div class="info-item" *ngIf="pv.content.diagnosis.comorbidities.length > 0">
+            <strong>Comorbidités:</strong> {{ pv.content.diagnosis.comorbidities.join(', ') }}
+          </div>
+          <p class="diagnosis-details">{{ pv.content.diagnosis.details }}</p>
+        </div>
+      </section>
+
+      <!-- Decisions Made -->
+      <section class="pv-section">
+        <h2>✔️ Décisions Prises</h2>
+        <div class="decisions-list">
+          <div *ngFor="let decision of pv.content.decisionsMade" class="decision-item">
+            <div class="decision-header">
+              <span class="decision-text">{{ decision.decision }}</span>
+              <span class="badge" [ngClass]="getPriorityClass(decision.priority)">
+                {{ decision.priority | uppercase }}
+              </span>
+            </div>
+            <div class="decision-details">
+              <span class="responsible">👤 {{ decision.responsible }}</span>
+              <span class="deadline">📅 {{ decision.deadline }}</span>
+              <span class="status">{{ decision.status }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Treatments Recommended -->
+      <section class="pv-section" *ngIf="pv.content.treatmentsRecommended.length > 0">
+        <h2>💊 Traitements Recommandés</h2>
+        <div class="treatments-table">
+          <div class="treatment-header">
+            <div class="col-med">Médicament</div>
+            <div class="col-dos">Dosage</div>
+            <div class="col-freq">Fréquence</div>
+            <div class="col-dur">Durée</div>
+            <div class="col-ind">Indication</div>
+          </div>
+          <div *ngFor="let treatment of pv.content.treatmentsRecommended" class="treatment-row">
+            <div class="col-med"><strong>{{ treatment.medication }}</strong></div>
+            <div class="col-dos">{{ treatment.dosage }}</div>
+            <div class="col-freq">{{ treatment.frequency }}</div>
+            <div class="col-dur">{{ treatment.duration || '-' }}</div>
+            <div class="col-ind">{{ treatment.indication }}</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Items -->
+      <section class="pv-section">
+        <h2>⚡ Actions à Faire</h2>
+        <div class="actions-list">
+          <div *ngFor="let action of pv.content.actionItems" class="action-item">
+            <input type="checkbox" [checked]="action.status === 'completed'" disabled />
+            <div class="action-details">
+              <span class="action-text">{{ action.task }}</span>
+              <span class="assigned">👤 {{ action.assignedTo }}</span>
+              <span class="due-date">📅 {{ action.dueDate }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Important Notes -->
+      <section class="pv-section" *ngIf="pv.content.importantNotes">
+        <h2>⚠️ Notes Importantes</h2>
+        <div class="notes-box">{{ pv.content.importantNotes }}</div>
+      </section>
+
+      <!-- Confidence Scores -->
+      <section class="pv-section" *ngIf="pv.confidenceScores">
+        <h2>🔍 Qualité de Génération IA</h2>
+        <div class="scores-grid">
+          <div class="score-item">
+            <strong>Transcription:</strong>
+            <div class="score-bar">
+              <div class="score-fill" [style.width.%]="pv.confidenceScores.transcript * 100"></div>
+            </div>
+            <span class="percentage">{{ (pv.confidenceScores.transcript * 100).toFixed(0) }}%</span>
+          </div>
+          <div class="score-item">
+            <strong>Diagnostic:</strong>
+            <div class="score-bar">
+              <div class="score-fill" [style.width.%]="pv.confidenceScores.diagnosisExtraction * 100"></div>
+            </div>
+            <span class="percentage">{{ (pv.confidenceScores.diagnosisExtraction * 100).toFixed(0) }}%</span>
+          </div>
+          <div class="score-item">
+            <strong>Décisions:</strong>
+            <div class="score-bar">
+              <div class="score-fill" [style.width.%]="pv.confidenceScores.decisionsExtraction * 100"></div>
+            </div>
+            <span class="percentage">{{ (pv.confidenceScores.decisionsExtraction * 100).toFixed(0) }}%</span>
+          </div>
+          <div class="score-item">
+            <strong>Traitements:</strong>
+            <div class="score-bar">
+              <div class="score-fill" [style.width.%]="pv.confidenceScores.treatmentsExtraction * 100"></div>
+            </div>
+            <span class="percentage">{{ (pv.confidenceScores.treatmentsExtraction * 100).toFixed(0) }}%</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <div class="pv-footer">
+      <p class="confidentiality">🔐 Document confidentiel - Usage médical exclusif</p>
+      <p class="signature" *ngIf="pv.signatureData">
+        ✍️ Signé par {{ pv.signatureData.signedBy }} le {{ pv.signatureData.timestamp | date:'short' }}
+      </p>
+    </div>
+  </div>
+</div>
