@@ -1,0 +1,50 @@
+@import '../user-management/user-list.component.css';
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.plan-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+.plan-price {
+  font-size: 36px;
+  font-weight: 700;
+  color: #008236;
+  margin-bottom: 8px;
+}
+
+.plan-duration {
+  font-size: 14px;
+  color: #6a7282;
+  margin-bottom: 16px;
+}
+
+.plan-description {
+  font-size: 14px;
+  color: #6a7282;
+  margin-bottom: 20px;
+  min-height: 60px;
+}
+
+.plan-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}

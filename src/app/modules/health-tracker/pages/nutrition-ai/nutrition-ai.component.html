@@ -1,0 +1,155 @@
+<section class="nutrition-ai-shell">
+  <header class="nutrition-ai-hero">
+    <div>
+      <span class="nutrition-ai-kicker">AI Nutrition</span>
+      <h2>Instant food analysis from a single image</h2>
+      <p>
+        Upload a food photo, let the AI estimate calories, and keep a lightweight history of your recent analyses.
+      </p>
+    </div>
+
+  </header>
+
+  @if (errorMessage()) {
+    <div class="nutrition-ai-alert" role="alert">{{ errorMessage() }}</div>
+  }
+
+  <div class="nutrition-ai-grid">
+    <section class="nutrition-ai-card nutrition-ai-card--upload" aria-label="Food image upload">
+      <div class="nutrition-ai-card__heading">
+        <div>
+          <span class="nutrition-ai-tag">Upload</span>
+          <h3>Drop a meal photo</h3>
+        </div>
+        <p>PNG, JPG, WebP, or GIF. Keep it clear for the best result.</p>
+      </div>
+
+      <div class="nutrition-ai-dropzone" [class.nutrition-ai-dropzone--active]="hasSelectedFile()">
+        @if (previewUrl()) {
+          <img
+            class="nutrition-ai-preview"
+            [src]="previewUrl()!"
+            [alt]="getSelectedFoodAlt()"
+          />
+        } @else {
+          <div class="nutrition-ai-dropzone__empty">
+            <span class="nutrition-ai-dropzone__icon">📷</span>
+            <p>No image selected yet</p>
+          </div>
+        }
+
+        <input
+          #imageInput
+          class="nutrition-ai-input"
+          type="file"
+          accept="image/*"
+          id="nutrition-ai-image"
+          (change)="onFileSelected($event)"
+          aria-hidden="true"
+          tabindex="-1"
+        />
+
+        <div class="nutrition-ai-actions">
+          <button class="nutrition-ai-btn nutrition-ai-btn--secondary" type="button" (click)="imageInput.click()">
+            Browse image
+          </button>
+          <button class="nutrition-ai-btn nutrition-ai-btn--ghost" type="button" (click)="clearSelection()" [disabled]="!hasSelectedFile()">
+            Clear
+          </button>
+        </div>
+
+        @if (selectedFile()) {
+          <p class="nutrition-ai-file-name">{{ selectedFile()!.name }}</p>
+        } @else {
+          <p class="nutrition-ai-file-name nutrition-ai-file-name--placeholder">No file chosen yet</p>
+        }
+      </div>
+
+      <button class="nutrition-ai-btn nutrition-ai-btn--primary nutrition-ai-btn--full" type="button" (click)="analyzeImage()" [disabled]="loading() || !hasSelectedFile()">
+        @if (loading()) {
+          <span class="nutrition-ai-spinner" aria-hidden="true"></span>
+          Analyzing...
+        } @else {
+          Analyze image
+        }
+      </button>
+    </section>
+
+    <aside class="nutrition-ai-card nutrition-ai-card--result" aria-label="Analysis result">
+      <div class="nutrition-ai-card__heading">
+        <div>
+          <span class="nutrition-ai-tag nutrition-ai-tag--accent">Result</span>
+          <h3>Latest AI estimate</h3>
+        </div>
+        <p>Calories are color coded by intensity: low, medium, high.</p>
+      </div>
+
+      @if (analysis(); as result) {
+        <article class="nutrition-ai-result-card" [class.nutrition-ai-result-card--low]="getCalorieBand(result.calories) === 'low'" [class.nutrition-ai-result-card--medium]="getCalorieBand(result.calories) === 'medium'" [class.nutrition-ai-result-card--high]="getCalorieBand(result.calories) === 'high'">
+          <div class="nutrition-ai-result-card__top">
+            <div>
+              <span class="nutrition-ai-result-card__emoji">🍽️</span>
+              <h4>{{ result.foodName }}</h4>
+            </div>
+            <span class="nutrition-ai-result-card__confidence">{{ formatConfidence(result.confidence) }}</span>
+          </div>
+
+          <div class="nutrition-ai-result-card__meta">
+            <div>
+              <span>Calories</span>
+              <strong>{{ formatCalories(result.calories) }}</strong>
+            </div>
+            <div>
+              <span>Confidence</span>
+              <strong>{{ formatConfidence(result.confidence) }}</strong>
+            </div>
+          </div>
+
+          <p class="nutrition-ai-result-card__time">Analyzed {{ formatAnalysisTime(result.analyzedAt) }}</p>
+        </article>
+      } @else {
+        <div class="nutrition-ai-empty-state">
+          <p>Upload an image and run the analysis to see calories and confidence here.</p>
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="nutrition-ai-loader" role="status" aria-live="polite">
+          <span class="nutrition-ai-spinner" aria-hidden="true"></span>
+          <span>AI is inspecting the image...</span>
+        </div>
+      }
+    </aside>
+  </div>
+
+  <section class="nutrition-ai-card nutrition-ai-card--history" aria-label="Analysis history">
+    <div class="nutrition-ai-card__heading nutrition-ai-card__heading--split">
+      <div>
+        <span class="nutrition-ai-tag nutrition-ai-tag--soft">History</span>
+        <h3>Recent analyses</h3>
+      </div>
+      @if (hasHistory()) {
+        <button class="nutrition-ai-btn nutrition-ai-btn--ghost" type="button" (click)="clearHistory()">Clear history</button>
+      }
+    </div>
+
+    @if (hasHistory()) {
+      <div class="nutrition-ai-history-grid">
+        @for (item of historyItems(); track trackByHistoryItem($index, item)) {
+          <article class="nutrition-ai-history-card" [class.nutrition-ai-history-card--low]="item.calorieBand === 'low'" [class.nutrition-ai-history-card--medium]="item.calorieBand === 'medium'" [class.nutrition-ai-history-card--high]="item.calorieBand === 'high'">
+            <div class="nutrition-ai-history-card__header">
+              <h4>{{ item.foodName }}</h4>
+              <span>{{ formatConfidence(item.confidence) }}</span>
+            </div>
+            <p>{{ formatCalories(item.calories) }}</p>
+            <small>{{ formatAnalysisTime(item.analyzedAt) }}</small>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="nutrition-ai-empty-state nutrition-ai-empty-state--compact">
+        <p>No analysis history yet. Your latest scans will appear here.</p>
+      </div>
+    }
+  </section>
+</section>

@@ -1,0 +1,147 @@
+<div class="patient-dashboard">
+  <!-- Welcome Section -->
+  <section class="welcome-section">
+    <div class="welcome-content">
+      <div class="welcome-text">
+        <h1>Welcome back, {{ userName }}</h1>
+        <p>Here's your health overview and next steps</p>
+      </div>
+      <div class="quick-actions">
+        <button class="action-btn primary" (click)="scheduleAppointment()">
+          📅 Schedule Appointment
+        </button>
+        <button class="action-btn secondary" (click)="navigateTo('messages')">
+          💬 Messages <span class="badge" *ngIf="unreadMessages > 0">{{ unreadMessages }}</span>
+        </button>
+        <button class="action-btn secondary" (click)="navigateTo('health-records')">
+          📋 Health Records
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Health Metrics Grid -->
+  <section class="health-metrics">
+    <h2>Your Health Metrics</h2>
+    <div class="metrics-grid">
+      <div class="metric-card" *ngFor="let metric of healthMetrics">
+        <div class="metric-icon">{{ metric.icon }}</div>
+        <div class="metric-info">
+          <p class="metric-label">{{ metric.label }}</p>
+          <div class="metric-value">
+            {{ metric.value }}
+            <span class="metric-unit" *ngIf="metric.unit">{{ metric.unit }}</span>
+          </div>
+          <span class="metric-status" [ngClass]="'status-' + metric.status.toLowerCase()">
+            {{ metric.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upcoming Appointments -->
+  <section class="appointments-section">
+    <div class="section-header">
+      <h2>Upcoming Appointments</h2>
+      <a href="javascript:void(0)" (click)="navigateTo('appointments')" class="view-all-link">View all →</a>
+    </div>
+    
+    <div class="appointments-list" *ngIf="upcomingAppointments.length > 0">
+      <div class="appointment-card" *ngFor="let appointment of upcomingAppointments">
+        <div class="appointment-header">
+          <div class="appointment-doctor">
+            <h3>{{ appointment.doctor }}</h3>
+            <p class="specialty">{{ appointment.specialty }}</p>
+          </div>
+          <span class="appointment-status" [ngClass]="'status-' + appointment.status.toLowerCase()">
+            {{ appointment.status }}
+          </span>
+        </div>
+        <div class="appointment-details">
+          <div class="detail-item">
+            <span class="icon">📅</span>
+            <span>{{ appointment.date | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="icon">⏰</span>
+            <span>{{ appointment.time }}</span>
+          </div>
+        </div>
+        <button class="btn-secondary">Reschedule</button>
+      </div>
+    </div>
+    
+    <div class="empty-state" *ngIf="upcomingAppointments.length === 0">
+      <p>No upcoming appointments</p>
+      <button class="action-btn primary" (click)="scheduleAppointment()">Schedule one now</button>
+    </div>
+  </section>
+
+  <!-- Recent Prescriptions -->
+  <section class="prescriptions-section">
+    <div class="section-header">
+      <h2>Your Prescriptions</h2>
+      <a href="javascript:void(0)" (click)="navigateTo('prescriptions')" class="view-all-link">View all →</a>
+    </div>
+
+    <div class="prescriptions-list" *ngIf="recentPrescriptions.length > 0">
+      <div class="prescription-card" *ngFor="let prescription of recentPrescriptions">
+        <div class="prescription-header">
+          <div>
+            <h3>{{ prescription.medicine }}</h3>
+            <p class="prescribed-by">Prescribed by {{ prescription.doctor }}</p>
+          </div>
+          <span class="prescription-status" [ngClass]="'status-' + prescription.status.toLowerCase()">
+            {{ prescription.status }}
+          </span>
+        </div>
+        <div class="prescription-details">
+          <span class="detail">📅 {{ prescription.date | date:'MMM d, yyyy' }}</span>
+          <span class="detail">🔄 Refills left: {{ prescription.refillsLeft }}</span>
+        </div>
+        <div class="prescription-actions">
+          <button class="action-btn primary" 
+                  *ngIf="prescription.status === 'Active' && prescription.refillsLeft > 0"
+                  (click)="refillPrescription(prescription.id)">
+            Refill Now
+          </button>
+          <button class="btn-secondary" (click)="goToPharmacy()">
+            Order Medicines
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="recentPrescriptions.length === 0">
+      <p>No prescriptions yet</p>
+    </div>
+  </section>
+
+  <!-- Quick Access Cards -->
+  <section class="quick-access">
+    <h2>Quick Access</h2>
+    <div class="access-grid">
+      <div class="access-card" (click)="navigateTo('health-profile')">
+        <div class="card-icon">👤</div>
+        <h3>Health Profile</h3>
+        <p>View and manage your health information</p>
+      </div>
+      <div class="access-card" (click)="navigateTo('medical-history')">
+        <div class="card-icon">📊</div>
+        <h3>Medical History</h3>
+        <p>Review your complete medical history</p>
+      </div>
+      <div class="access-card" (click)="navigateTo('insurance')">
+        <div class="card-icon">🛡️</div>
+        <h3>Insurance Info</h3>
+        <p>Manage insurance details and claims</p>
+      </div>
+      <div class="access-card" (click)="navigateTo('health-records')">
+        <div class="card-icon">📁</div>
+        <h3>Health Records</h3>
+        <p>Download lab reports and documents</p>
+      </div>
+    </div>
+  </section>
+</div>

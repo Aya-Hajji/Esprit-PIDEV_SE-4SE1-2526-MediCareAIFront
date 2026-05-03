@@ -1,0 +1,25 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Subscription Plans</h2>
+    <p>Manage premium subscription plans and pricing</p>
+  </div>
+
+  <div class="controls-bar">
+    <button class="btn btn-primary">Create Plan</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading plans...</div>
+
+  <div class="plans-grid">
+    <div class="plan-card" *ngFor="let plan of plans">
+      <h3>{{ plan.name }}</h3>
+      <div class="plan-price">${{ plan.price }}</div>
+      <p class="plan-duration">{{ plan.durationDays }} days</p>
+      <p class="plan-description">{{ plan.description }}</p>
+      <div class="plan-actions">
+        <button class="btn-icon">Edit</button>
+        <button class="btn-icon btn-danger" (click)="deletePlan(plan.id!)">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

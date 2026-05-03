@@ -1,0 +1,66 @@
+<div class="pharmacy-commerce-home">
+  <section class="commerce-hero">
+    <div class="hero-copy">
+      <span class="hero-chip">Fast Delivery • Trusted Pharmacies</span>
+      <h1>Order medicines in minutes</h1>
+      <p>
+        Discover top products, refill prescriptions, and checkout quickly with an e-commerce flow.
+      </p>
+
+      <div class="hero-search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <a routerLink="/pharmacy/medicines">Search medicines, brands, vitamins...</a>
+      </div>
+
+      <div class="hero-cta">
+        <a routerLink="/pharmacy/medicines" class="cta-primary">Shop now</a>
+        <a routerLink="/pharmacy/cart" class="cta-secondary">Cart ({{ cartItems }})</a>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-tile">
+        <p class="tile-label">Role</p>
+        <p class="tile-value">{{ roleLabel }}</p>
+      </div>
+      <div class="stat-tile">
+        <p class="tile-label">Cart</p>
+        <p class="tile-value">{{ cartItems }} items</p>
+      </div>
+      <div class="stat-tile">
+        <p class="tile-label">Actions</p>
+        <p class="tile-value">{{ quickActions.length }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="category-strip">
+    <a routerLink="/pharmacy/medicines" class="category-pill">Pain Relief</a>
+    <a routerLink="/pharmacy/medicines" class="category-pill">Cold & Flu</a>
+    <a routerLink="/pharmacy/medicines" class="category-pill">Vitamins</a>
+    <a routerLink="/pharmacy/medicines" class="category-pill">First Aid</a>
+    <a routerLink="/pharmacy/prescriptions" class="category-pill">Prescriptions</a>
+    <a routerLink="/pharmacy/refills" class="category-pill">Refills</a>
+  </section>
+
+  <section class="quick-actions-card">
+    <div class="section-head">
+      <h3>Continue shopping</h3>
+      <a routerLink="/pharmacy/medicines">See all products</a>
+    </div>
+    <div class="action-grid">
+      @for (action of quickActions; track action.route) {
+        <a [routerLink]="action.route" class="action-tile">
+          <div class="tile-icon">{{ action.icon }}</div>
+          <div>
+            <p class="tile-title">{{ action.title }}</p>
+            <p class="tile-desc">{{ action.description }}</p>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+</div>

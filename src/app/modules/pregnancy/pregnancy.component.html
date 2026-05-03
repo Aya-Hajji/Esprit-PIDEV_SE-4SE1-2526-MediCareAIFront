@@ -1,0 +1,36 @@
+<section class="ht-form-page ht-form-page--pregnancy-home">
+  <header class="ht-page-header">
+    <h2>Pregnancy Care</h2>
+    <p>Manage your full pregnancy journey with a unified green workspace for tracking and checkups.</p>
+  </header>
+
+  <div class="ht-pregnancy-preview">
+    <app-pregnancy-week-viewer></app-pregnancy-week-viewer>
+  </div>
+
+  <div class="ht-entry-grid">
+    <article class="ht-entry-card">
+      <h4>Pregnancy Tracking</h4>
+      <p>Log start date, current week, due date, and clinical notes in a DTO-aligned form.</p>
+      <div class="ht-card-actions">
+        <a class="ht-btn ht-btn--primary" routerLink="/pregnancy/tracking">Open Tracking</a>
+      </div>
+    </article>
+
+    <article class="ht-entry-card">
+      <h4>Pregnancy Checkups</h4>
+      <p>Capture checkup observations, weight, symptoms, fetal movements, and tracking link.</p>
+      <div class="ht-card-actions">
+        <a class="ht-btn ht-btn--primary" routerLink="/pregnancy/checkup">Open Checkups</a>
+      </div>
+    </article>
+
+    <article class="ht-entry-card">
+      <h4>Quick Flow</h4>
+      <p>Recommended sequence: create tracking first, then add checkups tied to tracking IDs.</p>
+      <div class="ht-card-actions">
+        <a class="ht-btn ht-btn--ghost" routerLink="/pregnancy/tracking">Start Now</a>
+      </div>
+    </article>
+  </div>
+</section>

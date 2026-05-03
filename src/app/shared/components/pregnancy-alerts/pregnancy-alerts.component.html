@@ -1,0 +1,68 @@
+<div class="pregnancy-alerts" [class.pregnancy-alerts--empty]="!hasAnomalies() && !loading()">
+  <!-- Loading State -->
+  <div class="pregnancy-alerts__loading" *ngIf="loading()">
+    <p>Analyzing checkups for anomalies...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="pregnancy-alerts__error" *ngIf="errorMessage()">
+    <span class="alert-icon">❌</span>
+    <p>{{ errorMessage() }}</p>
+  </div>
+
+  <!-- Success Message -->
+  <div class="pregnancy-alerts__success" *ngIf="successMessage() && !hasAnomalies()">
+    <span class="alert-icon">✅</span>
+    <p>{{ successMessage() }}</p>
+  </div>
+
+  <!-- Alerts List -->
+  <div class="pregnancy-alerts__list" *ngIf="hasAnomalies() && !loading()">
+    <h3 class="pregnancy-alerts__title">
+      <span class="alert-icon">📋</span>
+      Checkup Analysis Results
+    </h3>
+
+    <div
+      class="pregnancy-alert-item"
+      [ngClass]="getAlertClass(alert.severity)"
+      *ngFor="let alert of alerts(); let i = index"
+    >
+      <div class="pregnancy-alert-item__header">
+        <span class="alert-icon">{{ getAlertIcon(alert.severity) }}</span>
+        <span class="alert-type">{{ formatAlertType(alert.type) }}</span>
+        <span class="alert-severity" [class]="'severity--' + alert.severity.toLowerCase()">
+          {{ alert.severity }}
+        </span>
+      </div>
+
+      <p class="pregnancy-alert-item__message">{{ alert.message }}</p>
+
+      <div class="pregnancy-alert-item__recommendation">
+        <strong>📌 Recommendation:</strong>
+        <p>{{ alert.recommendation }}</p>
+      </div>
+
+      <div class="pregnancy-alert-item__actions" *ngIf="alert.severity === 'URGENT'">
+        <button
+          class="btn btn--escalate"
+          (click)="escalateAlert(alert)"
+          [disabled]="escalating()"
+        >
+          {{ escalating() ? 'Escalating...' : '🚀 Escalate to Provider' }}
+        </button>
+        <button class="btn btn--dismiss" (click)="dismissAlert(i)">✕ Dismiss</button>
+      </div>
+
+      <div class="pregnancy-alert-item__actions" *ngIf="alert.severity !== 'URGENT'">
+        <button class="btn btn--dismiss" (click)="dismissAlert(i)">✕ Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="pregnancy-alerts__empty" *ngIf="!hasAnomalies() && !loading() && !errorMessage()">
+    <p>No anomalies detected in recent checkups.</p>
+    <small>Regular monitoring indicates healthy pregnancy progression.</small>
+  </div>
+</div>

@@ -1,0 +1,102 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h2>System Overview</h2>
+    <p>Platform analytics and key metrics</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon users">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Total Users</h3>
+        <p class="stat-number">{{ stats.totalUsers }}</p>
+        <span class="stat-change positive">+12% from last month</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon appointments">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Appointments</h3>
+        <p class="stat-number">{{ stats.totalAppointments }}</p>
+        <span class="stat-change positive">+8% from last month</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon events">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Active Events</h3>
+        <p class="stat-number">{{ stats.activeEvents }}</p>
+        <span class="stat-change">Ongoing</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon forum">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <h3>Forum Posts</h3>
+        <p class="stat-number">{{ stats.forumPosts }}</p>
+        <span class="stat-change positive">+15% engagement</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-grid">
+      <button class="action-btn" routerLink="/admin/users">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+          <path d="M13.3333 17.5V15.8333C13.3333 14.9493 12.9821 14.1014 12.357 13.4763C11.7319 12.8512 10.884 12.5 9.99999 12.5H4.99999C4.11593 12.5 3.26809 12.8512 2.64297 13.4763C2.01785 14.1014 1.66666 14.9493 1.66666 15.8333V17.5"/>
+          <circle cx="7.5" cy="5.83333" r="4.16667"/>
+        </svg>
+        <span>Manage Users</span>
+      </button>
+      <button class="action-btn" routerLink="/admin/appointments">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+          <rect x="2.5" y="3.33333" width="15" height="15" rx="1.66667"/>
+          <line x1="13.3333" y1="1.66667" x2="13.3333" y2="5"/>
+          <line x1="6.66667" y1="1.66667" x2="6.66667" y2="5"/>
+          <line x1="2.5" y1="8.33333" x2="17.5" y2="8.33333"/>
+        </svg>
+        <span>View Appointments</span>
+      </button>
+      <button class="action-btn" routerLink="/admin/events">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+          <circle cx="10" cy="10" r="8.33333"/>
+          <polyline points="10 5 10 10 13.3333 11.6667"/>
+        </svg>
+        <span>Health Events</span>
+      </button>
+      <button class="action-btn" routerLink="/admin/forum">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+          <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z"/>
+        </svg>
+        <span>Forum Management</span>
+      </button>
+    </div>
+  </div>
+</div>

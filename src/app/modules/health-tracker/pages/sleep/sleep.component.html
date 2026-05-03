@@ -1,0 +1,145 @@
+<section class="ht-form-page ht-form-page--sleep">
+  <header class="ht-page-header">
+    <div class="ht-page-header__icon">😴</div>
+    <h2>Sleep Tracker</h2>
+    <p>Monitor your sleep quality and duration. Better sleep leads to better health and wellness.</p>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="ht-alert" role="alert">
+      <svg class="ht-alert__icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <form class="ht-form-card ht-form-card--sleep" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="ht-form-header">
+      <h3>{{ isEditing() ? 'Update Sleep Entry' : 'Log Your Sleep' }}</h3>
+      <span class="ht-form-badge">Rest & Recovery</span>
+    </div>
+
+    <div class="ht-form-grid">
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          Hours Slept
+        </span>
+        <input id="hours" type="number" formControlName="hours" min="0" max="24" step="0.5" class="ht-field__input" placeholder="e.g. 7.5" />
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Sleep Quality (1-10)
+        </span>
+        <div class="ht-sleep-quality-slider">
+          <input id="quality" type="range" formControlName="quality" min="1" max="10" class="ht-mood-input" />
+          <div class="ht-sleep-display">
+            <span class="ht-sleep-value">{{ form.get('quality')?.value || 5 }}/10</span>
+            <span class="ht-sleep-label">
+              @if ((form.get('quality')?.value || 5) <= 3) { Poor }
+              @if ((form.get('quality')?.value || 5) > 3 && (form.get('quality')?.value || 5) <= 6) { Fair }
+              @if ((form.get('quality')?.value || 5) > 6) { Excellent }
+            </span>
+          </div>
+        </div>
+      </label>
+
+      <label class="ht-field">
+        <span class="ht-field__label">
+          <svg class="ht-field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          Date
+        </span>
+        <input id="date" type="date" formControlName="date" class="ht-field__input" />
+      </label>
+    </div>
+
+    <div class="ht-actions">
+      <button class="ht-btn ht-btn--primary ht-btn--large" type="submit" [disabled]="submitting() || form.invalid">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        {{ submitting() ? 'Saving...' : isEditing() ? 'Update Sleep' : 'Save Sleep Log' }}
+      </button>
+      @if (isEditing()) {
+        <button class="ht-btn ht-btn--secondary" type="button" (click)="cancelEdit()">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+          </svg>
+          Cancel
+        </button>
+      }
+    </div>
+  </form>
+
+  @if (loading()) {
+    <div class="ht-loading">
+      <div class="ht-loading__spinner"></div>
+      <p>Loading your sleep records...</p>
+    </div>
+  } @else if (!hasSleeps()) {
+    <article class="ht-empty-state">
+      <div class="ht-empty-state__icon">🛏️</div>
+      <h3>No Sleep Records Yet</h3>
+      <p>Start tracking your sleep tonight. Your rest patterns will help us understand your wellness.</p>
+    </article>
+  } @else {
+    <section class="ht-history-section">
+      <h3 class="ht-history-title">
+        <svg class="ht-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Sleep History
+      </h3>
+      <div class="ht-entry-grid ht-entry-grid--sleep">
+        @for (item of sleeps(); track trackBySleepId($index, item)) {
+          <article class="ht-entry-card ht-entry-card--sleep">
+            <div class="ht-entry-header">
+              <span class="ht-entry-emoji">
+                @if (item.hours >= 8) { 😴 }
+                @if (item.hours >= 6 && item.hours < 8) { 😊 }
+                @if (item.hours < 6) { 😴 }
+              </span>
+              <div class="ht-entry-meta">
+                <h4>{{ item.hours }} hours slept</h4>
+                <time class="ht-entry-date">{{ item.date | date: 'shortDate' }}</time>
+              </div>
+              <span class="ht-entry-badge" [class.ht-entry-badge--positive]="item.quality >= 7">
+                {{ item.quality }}/10 quality
+              </span>
+            </div>
+            <div class="ht-entry-stats">
+              <div class="ht-stat">
+                <span class="ht-stat__label">Duration</span>
+                <span class="ht-stat__value">{{ item.hours }}h</span>
+              </div>
+              <div class="ht-stat">
+                <span class="ht-stat__label">Quality</span>
+                <span class="ht-stat__value">{{ item.quality }}/10</span>
+              </div>
+            </div>
+            <div class="ht-card-actions">
+              <button class="ht-btn ht-btn--icon" type="button" (click)="startEditSleep(item)" title="Edit entry">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/><path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              </button>
+              <button class="ht-btn ht-btn--icon ht-btn--danger" type="button" (click)="deleteSleep(item.id)" title="Delete entry">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-9l-1 1H5v2h14V4z"/></svg>
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</section>

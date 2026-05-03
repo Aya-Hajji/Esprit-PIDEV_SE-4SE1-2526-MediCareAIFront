@@ -1,0 +1,69 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>User Management</h2>
+    <p>Manage all platform users and their roles</p>
+  </div>
+
+  <div class="controls-bar">
+    <div class="search-box">
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search users..." />
+    </div>
+    <div class="filter-group">
+      <select [(ngModel)]="selectedRole">
+        <option value="ALL">All Roles</option>
+        <option value="ADMIN">Admin</option>
+        <option value="DOCTOR">Doctor</option>
+        <option value="PATIENT">Patient</option>
+        <option value="PHARMACIST">Pharmacist</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" (click)="addNewUser()">Add New User</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading users...</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Premium</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers">
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td><span class="badge badge-{{user.role}}">{{ user.role }}</span></td>
+          <td>
+            <span class="status-badge" [class.active]="user.premium">
+              {{ user.premium ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td>
+            <button class="btn-icon" (click)="editUser(user)" title="Edit">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M11.5 2.5l2 2L6 12H4v-2l7.5-7.5z"/>
+              </svg>
+            </button>
+            <button class="btn-icon btn-danger" (click)="deleteUser(user.id!)" title="Delete">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M5.5 1v1H2v1h12V2h-3.5V1h-5zM3 4v10a1 1 0 001 1h8a1 1 0 001-1V4H3z"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="filteredUsers.length === 0 && !loading" class="no-data">
+    No users found
+  </div>
+</div>

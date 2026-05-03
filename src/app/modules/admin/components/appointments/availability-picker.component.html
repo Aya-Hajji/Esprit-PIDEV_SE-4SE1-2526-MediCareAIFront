@@ -1,0 +1,53 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Availability Slot Picker</h2>
+    <p>Find available doctor slots and prefill appointment booking.</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div class="search-card">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="doctorId">Doctor</label>
+        <select id="doctorId" [(ngModel)]="selectedDoctorId" class="form-control" [disabled]="loadingDoctors">
+          <option [ngValue]="null">Select doctor</option>
+          <option *ngFor="let doctor of doctors" [ngValue]="doctor.id">
+            {{ doctor.firstName }} {{ doctor.lastName }} ({{ doctor.email }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="date">Date</label>
+        <input id="date" type="date" [(ngModel)]="selectedDate" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label for="type">Consultation Type</label>
+        <select id="type" [(ngModel)]="selectedConsultationType" class="form-control">
+          <option value="VIDEO">Video</option>
+          <option value="IN_PERSON">In Person</option>
+          <option value="PHONE">Phone</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="search-actions">
+      <button class="btn btn-primary" (click)="loadAvailableSlots()" [disabled]="loadingSlots || loadingDoctors">
+        {{ loadingSlots ? 'Loading...' : 'Load Available Slots' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="slots-grid" *ngIf="!loadingSlots">
+    <div class="slot-card" *ngFor="let slot of availableSlots">
+      <div class="slot-time">{{ slot.startTime | date:'shortTime' }} - {{ slot.endTime | date:'shortTime' }}</div>
+      <div class="slot-meta">Max patients: {{ slot.maxAppointments || 1 }}</div>
+      <button class="btn btn-primary" (click)="bookSlot(slot)">Book This Slot</button>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loadingSlots">Loading available slots...</div>
+  <div class="empty" *ngIf="!loadingSlots && selectedDoctorId && availableSlots.length === 0">No available slots for selected date.</div>
+</div>

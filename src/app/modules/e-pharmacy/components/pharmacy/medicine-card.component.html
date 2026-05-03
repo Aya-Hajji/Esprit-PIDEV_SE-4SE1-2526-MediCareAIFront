@@ -1,0 +1,42 @@
+<div class="medicine-card">
+  <div class="image-section">
+    <img
+      src="https://placehold.co/260x180?text={{ medicine.name }}"
+      alt="{{ medicine.name }}"
+      class="medicine-image"
+    />
+
+    @if (medicine.prescriptionRequired) {
+      <div class="rx-badge">Rx required</div>
+    }
+
+    <div [ngClass]="'stock-badge ' + getStockStatusClass()">
+      {{ getStockStatusText() }}
+    </div>
+  </div>
+
+  <div class="content-section">
+    <p class="category-mini">{{ medicine.category || 'General Care' }}</p>
+    <h3 class="medicine-name">{{ medicine.name }}</h3>
+    <p class="medicine-strength">{{ medicine.strength }} • {{ medicine.dosageForm }}</p>
+
+    @if (medicine.manufacturer) {
+      <p class="manufacturer">{{ medicine.manufacturer }}</p>
+    }
+
+    <div class="price-row">
+      <span class="price-amount">&#36;{{ medicine.price | number: '1.2-2' }}</span>
+      <a [routerLink]="['/pharmacy/medicines', medicine.id]" class="view-details-link">Details</a>
+    </div>
+  </div>
+
+  <div class="footer-section">
+    @if (!canOrder) {
+      <a routerLink="/pharmacy/inventory" class="action-btn secondary">Manage in Inventory</a>
+    } @else if (medicine.stock > 0) {
+      <button class="action-btn primary" (click)="onAddToCart()">Add to cart</button>
+    } @else {
+      <button class="action-btn disabled" disabled>Out of stock</button>
+    }
+  </div>
+</div>
