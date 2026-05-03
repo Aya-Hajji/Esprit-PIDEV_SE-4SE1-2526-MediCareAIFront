@@ -1,0 +1,69 @@
+@import '../user-management/user-list.component.css';
+
+.status-SCHEDULED { background: #dbeafe; color: #1e40af; }
+.status-COMPLETED { background: #dcfce7; color: #166534; }
+.status-CANCELLED { background: #fee2e2; color: #dc2626; }
+.status-NO_SHOW { background: #f3f4f6; color: #6a7282; }
+
+.action-row {
+	display: flex;
+	gap: 8px;
+}
+
+.table-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.success-message {
+	margin: 12px 0;
+	padding: 12px;
+	border-radius: 10px;
+	background: #e8fbe8;
+	color: #166534;
+	border: 1px solid #bbf7d0;
+}
+
+.panel {
+	margin-top: 16px;
+	padding: 16px;
+	border: 1px solid #dbe3ef;
+	border-radius: 12px;
+	background: #f8fbff;
+}
+
+.panel h3 {
+	margin: 0 0 12px;
+	color: #1f2937;
+}
+
+.panel-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 12px;
+}
+
+.form-group {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.form-group label {
+	font-weight: 600;
+	color: #374151;
+}
+
+.form-control {
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+	padding: 10px;
+	font: inherit;
+}
+
+.panel-actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}

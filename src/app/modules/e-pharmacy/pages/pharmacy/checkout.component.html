@@ -1,0 +1,228 @@
+<div class="checkout-container">
+  <!-- Header -->
+  <div class="checkout-header">
+    <h1 class="checkout-title">Checkout</h1>
+    <p class="checkout-subtitle">Complete your order</p>
+  </div>
+
+  <!-- Error Banner -->
+  @if (error) {
+    <div class="error-banner">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
+          fill="currentColor"
+        />
+      </svg>
+      {{ error }}
+    </div>
+  }
+
+  <div class="checkout-content">
+    <!-- Shipping Form Section -->
+    <div class="form-section">
+      <h2 class="section-title">Shipping Address</h2>
+
+      <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" class="checkout-form">
+        <!-- Full Name -->
+        <div class="form-field">
+          <label class="field-label" for="fullName">Full Name *</label>
+          <input
+            id="fullName"
+            type="text"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('fullName')"
+            placeholder="John Doe"
+            formControlName="fullName"
+          />
+          @if (isFieldInvalid('fullName')) {
+            <span class="field-error">{{ getFieldError('fullName') }}</span>
+          }
+        </div>
+
+        <!-- Phone Number -->
+        <div class="form-field">
+          <label class="field-label" for="phoneNumber">Phone Number *</label>
+          <input
+            id="phoneNumber"
+            type="tel"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('phoneNumber')"
+            placeholder="1234567890"
+            formControlName="phoneNumber"
+          />
+          @if (isFieldInvalid('phoneNumber')) {
+            <span class="field-error">{{ getFieldError('phoneNumber') }}</span>
+          }
+        </div>
+
+        <!-- Street -->
+        <div class="form-field">
+          <label class="field-label" for="street">Street Address *</label>
+          <input
+            id="street"
+            type="text"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('street')"
+            placeholder="123 Main St"
+            formControlName="street"
+          />
+          @if (isFieldInvalid('street')) {
+            <span class="field-error">{{ getFieldError('street') }}</span>
+          }
+        </div>
+
+        <!-- City -->
+        <div class="form-field">
+          <label class="field-label" for="city">City *</label>
+          <input
+            id="city"
+            type="text"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('city')"
+            placeholder="New York"
+            formControlName="city"
+          />
+          @if (isFieldInvalid('city')) {
+            <span class="field-error">{{ getFieldError('city') }}</span>
+          }
+        </div>
+
+        <!-- State -->
+        <div class="form-field">
+          <label class="field-label" for="state">State *</label>
+          <input
+            id="state"
+            type="text"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('state')"
+            placeholder="NY"
+            formControlName="state"
+          />
+          @if (isFieldInvalid('state')) {
+            <span class="field-error">{{ getFieldError('state') }}</span>
+          }
+        </div>
+
+        <!-- ZIP Code -->
+        <div class="form-field">
+          <label class="field-label" for="zipCode">ZIP Code *</label>
+          <input
+            id="zipCode"
+            type="text"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('zipCode')"
+            placeholder="10001"
+            formControlName="zipCode"
+          />
+          @if (isFieldInvalid('zipCode')) {
+            <span class="field-error">{{ getFieldError('zipCode') }}</span>
+          }
+        </div>
+
+        <!-- Country -->
+        <div class="form-field">
+          <label class="field-label" for="country">Country *</label>
+          <select id="country" class="form-input" formControlName="country">
+            <option value="United States">United States</option>
+            <option value="Canada">Canada</option>
+            <option value="Mexico">Mexico</option>
+          </select>
+        </div>
+
+        <!-- Terms & Conditions -->
+        <div class="checkbox-field">
+          <input
+            id="terms"
+            type="checkbox"
+            formControlName="terms"
+            [class.invalid]="isFieldInvalid('terms')"
+          />
+          <label for="terms">
+            I agree to the terms and conditions and privacy policy *
+          </label>
+        </div>
+        @if (isFieldInvalid('terms')) {
+          <span class="field-error">You must accept the terms and conditions</span>
+        }
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="!checkoutForm.valid || isSubmitting || isLoading"
+        >
+          @if (isSubmitting || isLoading) {
+            <span class="spinner"></span>
+            Processing...
+          } @else {
+            Review Order & Proceed
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          }
+        </button>
+      </form>
+    </div>
+
+    <!-- Order Summary Section -->
+    <div class="summary-section">
+      <div class="summary-card">
+        <h3 class="summary-title">Order Summary</h3>
+
+        <div class="items-preview">
+          @for (item of cartItems; track item.medicineId) {
+            <div class="item-preview">
+              <span class="item-name">{{ item.medicineName }}</span>
+              <span class="item-qty">x{{ item.quantity }}</span>
+              <span class="item-price">&#36;{{ (item.price * item.quantity) | number: '1.2-2' }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row">
+          <span>Subtotal:</span>
+          <span>&#36;{{ totalPrice | number: '1.2-2' }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping:</span>
+          <span>Free</span>
+        </div>
+        <div class="summary-row">
+          <span>Tax:</span>
+          <span>Calculated</span>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row total">
+          <span>Total:</span>
+          <span>&#36;{{ totalPrice | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="security-info">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 1L3 5V11C3 16.55 8.16 21.74 12 23C15.82 21.74 21 16.55 21 11V5L12 1Z"
+              fill="#10B981"
+            />
+            <path d="M8 12L11 15L16 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>Secure & encrypted checkout</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drug Interaction Modal -->
+<app-drug-interaction-modal
+  [isOpen]="showInteractionModal"
+  [interactions]="interactions"
+  [hasCriticalInteractions]="hasCriticalInteractions"
+  (onConfirm)="onInteractionConfirm()"
+  (onCancel)="onInteractionCancel()"
+></app-drug-interaction-modal>

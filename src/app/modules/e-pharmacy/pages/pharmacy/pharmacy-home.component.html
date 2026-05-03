@@ -1,0 +1,45 @@
+<div class="module-dashboard pharmacy-dashboard">
+  <div class="dashboard-header">
+    <h2>Pharmacy Dashboard</h2>
+    <p>Browse medicines, manage prescriptions, and handle pharmacy workflows from one place.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Current Role</h3>
+      <p class="stat-number">{{ roleLabel }}</p>
+      <span class="stat-change">Access-based features enabled</span>
+    </div>
+
+    <div class="stat-card">
+      <h3>Cart Items</h3>
+      <p class="stat-number">{{ cartItems }}</p>
+      <span class="stat-change">Ready for checkout</span>
+    </div>
+
+    <div class="stat-card">
+      <h3>Available Actions</h3>
+      <p class="stat-number">{{ quickActions.length }}</p>
+      <span class="stat-change positive">Module ready</span>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="action-grid">
+      @for (action of quickActions; track action.route) {
+        <a [routerLink]="action.route" class="action-btn">
+          <span class="action-icon">{{ action.icon }}</span>
+          <span class="action-title">{{ action.title }}</span>
+          <span class="action-desc">{{ action.description }}</span>
+        </a>
+      }
+    </div>
+  </div>
+
+  <div class="primary-links">
+    <a routerLink="/pharmacy/medicines" class="primary-link">Browse Catalog</a>
+    <a routerLink="/pharmacy/prescriptions" class="primary-link">My Prescriptions</a>
+    <a routerLink="/pharmacy/cart" class="primary-link">Open Cart</a>
+  </div>
+</div>

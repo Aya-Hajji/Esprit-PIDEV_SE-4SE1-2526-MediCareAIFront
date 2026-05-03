@@ -1,0 +1,121 @@
+<div class="confirmation-container">
+  <div class="confirmation-card">
+    <!-- Success Icon -->
+    <div class="success-icon">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="2" />
+        <path d="M8 12.5L11 15.5L16 8.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+
+    <!-- Title and Message -->
+    <h1 class="confirmation-title">Order Confirmed!</h1>
+    <p class="confirmation-message">Thank you for your order. Your medicines are being prepared.</p>
+
+    <!-- Order ID -->
+    @if (orderId) {
+      <div class="order-id-card">
+        <span class="order-id-label">Order ID</span>
+        <span class="order-id-value">{{ orderId }}</span>
+        <button class="copy-btn" (click)="copyToClipboard(orderId!)" title="Copy order ID">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H14M19 3H9C7.89543 3 7 3.89543 7 5V19C7 20.1046 7.89543 21 9 21H19C20.1046 21 21 20.1046 21 19V9M17 7V11"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+    }
+
+    <!-- Delivery Info -->
+    <div class="delivery-info">
+      <div class="info-item">
+        <div class="info-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M12 1C6.48 1 2 5.48 2 11C2 16.52 6.48 21 12 21C17.52 21 22 16.52 22 11C22 5.48 17.52 1 12 1ZM13 16H11V14H13V16ZM13 12H11C11 9.67 13 8.5 13 7.5C13 6.12 12.12 5 11 5C9.88 5 9 5.88 9 7H7C7 4.67 8.67 3 11 3C13.33 3 15 4.67 15 7C15 9.33 13 10.5 13 12Z"
+              fill="#0369A1"
+            />
+          </svg>
+        </div>
+        <div class="info-content">
+          <h4>Estimated Delivery</h4>
+          <p>{{ getFormattedDate(estimatedDeliveryDate) }}</p>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M21 10C21 17 12 23 12 23S3 17 3 10C3 5.58 6.58 2 12 2C17.42 2 21 5.58 21 10Z"
+              fill="#0369A1"
+            />
+            <circle cx="12" cy="10" r="3" fill="white" />
+          </svg>
+        </div>
+        <div class="info-content">
+          <h4>Shipping Address</h4>
+          <p>You'll receive a tracking number via email</p>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M3 9L12 2L21 9V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V9Z"
+              stroke="#0369A1"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M9 22V12H15V22" stroke="#0369A1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="info-content">
+          <h4>Secure Delivery</h4>
+          <p>Your medicines will be delivered in tamper-proof packaging</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="next-steps">
+      <h3 class="steps-title">What's Next?</h3>
+      <ol class="steps-list">
+        <li>You'll receive a confirmation email with your order details</li>
+        <li>Your order will be processed and prepared by our pharmacy</li>
+        <li>You'll receive a tracking number once your order ships</li>
+        <li>Your medicines will arrive at your address within {{ estimatedDeliveryDays }} business days</li>
+      </ol>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <a routerLink="/pharmacy/orders" class="view-order-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        View Your Orders
+      </a>
+      <a routerLink="/pharmacy/medicines" class="continue-shopping-btn">
+        Continue Shopping
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+    </div>
+
+    <!-- Support -->
+    <div class="support-section">
+      <p class="support-text">Have questions? Contact us at support&#64;medicare.com or call 1-800-MEDCARE</p>
+    </div>
+  </div>
+</div>

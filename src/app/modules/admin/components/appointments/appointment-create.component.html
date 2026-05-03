@@ -1,0 +1,170 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Schedule Appointment</h2>
+    <p>Create a new appointment for a patient</p>
+    <button type="button" class="btn btn-secondary" (click)="navigateToAvailability()">
+      Open Availability Picker
+    </button>
+  </div>
+
+  <div *ngIf="success" class="success-message">
+    Appointment scheduled successfully! Redirecting...
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loadingUsers" class="loading">
+    Loading doctors and patients...
+  </div>
+
+  <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="appointment-form" *ngIf="!loadingUsers">
+    <div class="form-section">
+      <h3>Appointment Details</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="doctorId">Doctor *</label>
+          <select
+            id="doctorId"
+            formControlName="doctorId"
+            class="form-control"
+            [class.is-invalid]="f['doctorId'].invalid && f['doctorId'].touched"
+          >
+            <option value="">Select a doctor</option>
+            <option *ngFor="let doctor of doctors" [value]="doctor.id">
+              {{ doctor.firstName }} {{ doctor.lastName }} ({{ doctor.username }})
+            </option>
+          </select>
+          <small class="error-text" *ngIf="f['doctorId'].invalid && f['doctorId'].touched">
+            Please select a doctor
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="patientId">Patient *</label>
+          <select
+            id="patientId"
+            formControlName="patientId"
+            class="form-control"
+            [class.is-invalid]="f['patientId'].invalid && f['patientId'].touched"
+          >
+            <option value="">Select a patient</option>
+            <option *ngFor="let patient of patients" [value]="patient.id">
+              {{ patient.firstName }} {{ patient.lastName }} ({{ patient.username }})
+            </option>
+          </select>
+          <small class="error-text" *ngIf="f['patientId'].invalid && f['patientId'].touched">
+            Please select a patient
+          </small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startTime">Start Date & Time *</label>
+          <input
+            type="datetime-local"
+            id="startTime"
+            formControlName="startTime"
+            class="form-control"
+            (change)="onStartTimeChange()"
+            [class.is-invalid]="f['startTime'].invalid && f['startTime'].touched"
+          />
+          <small class="error-text" *ngIf="f['startTime'].invalid && f['startTime'].touched">
+            Start time is required
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="endTime">End Date & Time *</label>
+          <input
+            type="datetime-local"
+            id="endTime"
+            formControlName="endTime"
+            class="form-control"
+            [class.is-invalid]="f['endTime'].invalid && f['endTime'].touched"
+          />
+          <small class="error-text" *ngIf="f['endTime'].invalid && f['endTime'].touched">
+            End time is required
+          </small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="consultationType">Consultation Type *</label>
+          <select
+            id="consultationType"
+            formControlName="consultationType"
+            class="form-control"
+            [class.is-invalid]="f['consultationType'].invalid && f['consultationType'].touched"
+          >
+            <option *ngFor="let type of consultationTypes" [value]="type">
+              {{ type.replace('_', ' ') }}
+            </option>
+          </select>
+          <small class="error-text" *ngIf="f['consultationType'].invalid && f['consultationType'].touched">
+            Consultation type is required
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="timeZone">Time Zone</label>
+          <input
+            type="text"
+            id="timeZone"
+            formControlName="timeZone"
+            placeholder="e.g., UTC, America/New_York"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label for="reasonForVisit">Reason for Visit</label>
+          <textarea
+            id="reasonForVisit"
+            formControlName="reasonForVisit"
+            rows="4"
+            placeholder="Enter reason for visit..."
+            class="form-control"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group checkbox-group">
+          <label for="urgent">
+            <input
+              type="checkbox"
+              id="urgent"
+              formControlName="urgent"
+            />
+            Mark as Urgent
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="appointmentForm.invalid || loading"
+      >
+        {{ loading ? 'Scheduling...' : 'Schedule Appointment' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="onCancel()"
+        [disabled]="loading"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

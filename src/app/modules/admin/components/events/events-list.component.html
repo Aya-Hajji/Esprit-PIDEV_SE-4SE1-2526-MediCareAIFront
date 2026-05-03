@@ -1,0 +1,338 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Health Events</h2>
+    <p *ngIf="isAdmin">Manage health awareness events and campaigns</p>
+    <p *ngIf="!isAdmin">Explore upcoming health events and join as participant</p>
+  </div>
+
+  <!-- Search bar -->
+  <div class="search-bar-wrapper">
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input
+        id="event-search"
+        name="eventSearch"
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Search events by title..."
+        autocomplete="off"
+        class="search-input"
+      />
+      <button *ngIf="searchQuery" class="search-clear" (click)="clearSearch()" type="button">✕</button>
+    </div>
+    <span *ngIf="searchQuery" class="search-results-count">
+      {{ filteredEvents.length }} result{{ filteredEvents.length !== 1 ? 's' : '' }} found
+    </span>
+  </div>
+
+  <div class="controls-bar" *ngIf="isAdmin">
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="adminViewTab === 'events'" (click)="setAdminViewTab('events')">
+        🎪 Health Events
+      </button>
+      <button class="tab-btn" [class.active]="adminViewTab === 'feedbacks'" (click)="setAdminViewTab('feedbacks')">
+        💬 Feedback
+      </button>
+    </div>
+    <button *ngIf="adminViewTab === 'events'" class="btn btn-primary" (click)="openCreateModal()">Create Event</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading events...</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <div *ngIf="!isAdmin && isPatient" class="recommendation-toolbar">
+    <button class="btn btn-primary" type="button" [disabled]="recommendationsLoading" (click)="loadRecommendations()">
+      {{ recommendationsLoading ? 'Sorting list...' : 'Sort by Interests' }}
+    </button>
+    <button *ngIf="showRecommendations" class="btn btn-secondary" type="button" (click)="hideRecommendations()">
+      Restore Default Order
+    </button>
+    <div *ngIf="showRecommendations" class="recommendation-info-badge" style="display:inline-block; margin-left: 10px;">
+      ✨ List ordered by your preferences
+    </div>
+  </div>
+
+  <!-- Remove the recommendation-section entirely to use the main grid below -->
+
+  <div *ngIf="showReminderPopup && activeReminders.length > 0" class="modal-overlay reminder-overlay" (click)="closeReminderPopup()">
+    <div class="modal-panel reminder-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📌 Event Reminders</h3>
+        <button class="btn-icon" type="button" (click)="closeReminderPopup()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="activeReminders.length > 0" class="reminder-list">
+          <div class="reminder-item" *ngFor="let reminder of activeReminders">
+            <h4>{{ reminder.eventTitle || 'Event Reminder' }}</h4>
+            <p *ngIf="reminder.eventDate"><strong>📅 Date:</strong> {{ reminder.eventDate | date:'medium' }}</p>
+            <p *ngIf="reminder.recipientEmail"><strong>📧 Recipient:</strong> {{ reminder.recipientEmail }}</p>
+            <p *ngIf="reminder.message" class="reminder-message"><strong>💬 Message:</strong> {{ reminder.message }}</p>
+          </div>
+        </div>
+        <div *ngIf="activeReminders.length === 0" class="empty-reminder">
+          <p>No reminders available.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" (click)="closeReminderPopup()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isAdmin && adminViewTab === 'events'" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Participants</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let event of filteredEvents; trackBy: trackByEventId">
+          <td>{{ event.id }}</td>
+          <td>{{ event.title }}</td>
+          <td><span class="category-badge">{{ event.category || 'OTHER' }}</span></td>
+          <td>{{ event.eventDate | date:'medium' }}</td>
+          <td>{{ event.location || '—' }}</td>
+          <td class="participants-cell">
+            <span class="participants-count">
+              👥 {{ getParticipantsCount(event) }}
+            </span>
+            <div *ngIf="getParticipantsList(event).length > 0" class="participants-names">
+              <span *ngFor="let p of getParticipantsList(event); let last = last" class="participant-tag">
+                {{ p.fullName || p.email || ('User #' + p.id) }}<span *ngIf="!last">, </span>
+              </span>
+            </div>
+            <span *ngIf="getParticipantsCount(event) === 0" class="no-participants">—</span>
+          </td>
+          <td class="actions-cell">
+            <button class="btn-icon" (click)="openEditModal(event)">Edit</button>
+            <button class="btn-icon btn-danger" (click)="deleteEvent(event.id!)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredEvents.length === 0">
+          <td colspan="7" class="empty-cell">No events found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="isAdmin && adminViewTab === 'feedbacks'" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Event</th>
+          <th>User</th>
+          <th>Rating</th>
+          <th>Comment</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let feedback of feedbacks">
+          <td>{{ feedback.id }}</td>
+          <td>{{ getFeedbackEventTitle(feedback) }}</td>
+          <td>{{ feedback.userName || '—' }}</td>
+          <td>{{ feedback.rating }}/5</td>
+          <td>{{ feedback.comment || '—' }}</td>
+          <td>{{ feedback.createdAt | date:'medium' }}</td>
+          <td class="actions-cell">
+            <button class="btn-icon btn-danger" (click)="deleteFeedback(feedback)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="feedbacks.length === 0">
+          <td colspan="7" class="empty-cell">No feedbacks found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-container *ngIf="!isAdmin">
+    <div *ngIf="selectedFeedbackEvent" class="publication-view">
+      <article class="publication-card">
+        <div class="publication-head">
+          <button class="btn btn-secondary" type="button" (click)="closeEventFeedbackPanel()">← Back to events</button>
+          <span class="category-badge">{{ selectedFeedbackEvent.category || 'OTHER' }}</span>
+        </div>
+
+        <h3 class="publication-title">{{ selectedFeedbackEvent.title }}</h3>
+        <p class="publication-description">{{ selectedFeedbackEvent.description || 'No description available.' }}</p>
+
+        <div class="event-meta publication-meta">
+          <span>📅 {{ selectedFeedbackEvent.eventDate | date:'fullDate' }}</span>
+          <span>📍 {{ selectedFeedbackEvent.location || '—' }}</span>
+          <span>👥 {{ getParticipantsCount(selectedFeedbackEvent) }} participants</span>
+          <span *ngIf="isAlreadyJoined(selectedFeedbackEvent)" class="joined-badge">✅ You joined this event</span>
+        </div>
+
+        <!-- Participants list -->
+        <div *ngIf="getParticipantsCount(selectedFeedbackEvent) > 0" class="participants-section">
+          <h4>👥 Participants ({{ getParticipantsCount(selectedFeedbackEvent) }})</h4>
+          <ul class="participants-list">
+            <li *ngFor="let p of getParticipantsList(selectedFeedbackEvent)" class="participant-item">
+              <span class="participant-avatar">{{ getParticipantInitials(p) }}</span>
+              <span class="participant-name">{{ p.fullName || p.email || ('User #' + p.id) }}</span>
+              <span *ngIf="p.id === currentUserId" class="you-badge">You</span>
+            </li>
+          </ul>
+        </div>
+        <div *ngIf="getParticipantsCount(selectedFeedbackEvent) === 0" class="participants-section participants-empty">
+          <p>No participants yet. Be the first to join!</p>
+        </div>
+
+        <div class="event-actions publication-actions">
+          <button *ngIf="!isAlreadyJoined(selectedFeedbackEvent)" class="btn btn-primary" [disabled]="!canJoin(selectedFeedbackEvent)" (click)="joinEvent(selectedFeedbackEvent)">
+            {{ isJoinInProgress(selectedFeedbackEvent) ? 'Joining...' : 'Join Event' }}
+          </button>
+          <button *ngIf="isAlreadyJoined(selectedFeedbackEvent)" class="btn btn-danger" (click)="leaveEvent(selectedFeedbackEvent)">
+            Remove Join
+          </button>
+        </div>
+      </article>
+
+      <section class="event-feedback-thread publication-thread">
+        <div class="thread-header">
+          <div>
+            <h4>Comments</h4>
+            <p>All feedbacks for this event.</p>
+          </div>
+        </div>
+
+        <div *ngIf="feedbackLoading" class="loading thread-loading">Loading feedbacks...</div>
+
+        <div *ngIf="!feedbackLoading" class="thread-list">
+          <div class="thread-comment" *ngFor="let feedback of feedbacks">
+            <div class="comment-top">
+              <div class="comment-author">{{ feedback.userName || 'Anonymous' }}</div>
+              <div class="comment-meta">
+                <span class="comment-rating">★ {{ feedback.rating }}/5</span>
+                <span>{{ feedback.createdAt | date:'medium' }}</span>
+              </div>
+            </div>
+            <p class="comment-body">{{ feedback.comment || '—' }}</p>
+            <div class="comment-actions" *ngIf="isMyFeedback(feedback)">
+              <button class="btn-icon" type="button" (click)="startEditMyFeedback(feedback)">Edit</button>
+              <button class="btn-icon btn-danger" type="button" (click)="deleteFeedback(feedback)">Delete</button>
+            </div>
+          </div>
+
+          <div *ngIf="feedbacks.length === 0" class="empty-cell thread-empty">No comments yet. Be the first to react.</div>
+        </div>
+
+        <div class="thread-composer">
+          <div class="composer-head">
+            <strong>{{ feedbackMode === 'edit' ? 'Edit your comment' : 'Write a comment' }}</strong>
+            <button class="btn btn-secondary" type="button" (click)="startCreateFeedback(selectedFeedbackEvent)">New comment</button>
+          </div>
+
+          <div class="form-group">
+            <label for="feedback-user-selected">User</label>
+            <input id="feedback-user-selected" name="feedbackUserSelected" type="text" [(ngModel)]="feedbackForm.userName" class="form-control" readonly />
+          </div>
+
+          <div class="form-group">
+            <label for="feedback-rating-selected">Rating</label>
+            <input id="feedback-rating-selected" name="feedbackRatingSelected" type="number" min="1" max="5" [(ngModel)]="feedbackForm.rating" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="feedback-comment-selected">Comment</label>
+            <textarea id="feedback-comment-selected" name="feedbackCommentSelected" rows="4" [(ngModel)]="feedbackForm.comment" class="form-control" placeholder="Write your comment..."></textarea>
+          </div>
+
+          <div class="composer-actions">
+            <button class="btn btn-primary" type="button" (click)="submitFeedback()">
+              {{ feedbackMode === 'edit' ? 'Update Comment' : 'Post Comment' }}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div *ngIf="!selectedFeedbackEvent" class="events-grid">
+      <div class="event-card clickable-card" *ngFor="let event of filteredEvents; trackBy: trackByEventId" (click)="openEventFeedbackPanel(event)" (keydown.enter)="openEventFeedbackPanel(event)" (keydown.space)="openEventFeedbackPanel(event)" tabindex="0" role="button">
+        <div class="event-head">
+          <h3>{{ event.title }}</h3>
+          <span class="category-badge">{{ event.category || 'OTHER' }}</span>
+        </div>
+        <p>{{ event.description }}</p>
+        <div class="event-meta">
+          <span>📅 {{ event.eventDate | date:'mediumDate' }}</span>
+          <span>📍 {{ event.location }}</span>
+          <span>👥 {{ getParticipantsCount(event) }} participants</span>
+          <span *ngIf="isAlreadyJoined(event)" class="joined-badge">✅ Joined</span>
+        </div>
+
+        <div class="event-actions">
+          <button class="btn btn-secondary" (click)="$event.stopPropagation(); openEventFeedbackPanel(event)">Open Post</button>
+          <button *ngIf="!isAlreadyJoined(event)" class="btn btn-primary" [disabled]="!canJoin(event)" (click)="$event.stopPropagation(); joinEvent(event)">
+            {{ isJoinInProgress(event) ? 'Joining...' : 'Join Event' }}
+          </button>
+          <button *ngIf="isAlreadyJoined(event)" class="btn btn-danger" (click)="$event.stopPropagation(); leaveEvent(event)">
+            Remove Join
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty state when search returns no results -->
+      <div *ngIf="filteredEvents.length === 0" class="no-results-state">
+        <span class="no-results-icon">🔍</span>
+        <p>No events found for "<strong>{{ searchQuery }}</strong>"</p>
+        <button class="btn btn-secondary" (click)="clearSearch()">Clear search</button>
+      </div>
+    </div>
+  </ng-container>
+
+  <div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ modalMode === 'add' ? 'Create Event' : 'Edit Event' }}</h3>
+        <button class="btn-icon" (click)="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="event-title">Title</label>
+          <input id="event-title" name="eventTitle" type="text" [(ngModel)]="eventForm.title" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="event-category">Category</label>
+          <select id="event-category" name="eventCategory" [(ngModel)]="eventForm.category" class="form-control">
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="event-date">Event Date</label>
+          <input id="event-date" name="eventDate" type="datetime-local" [(ngModel)]="eventForm.eventDate" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="event-location">Location</label>
+          <input id="event-location" name="eventLocation" type="text" [(ngModel)]="eventForm.location" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label for="event-description">Description</label>
+          <textarea id="event-description" name="eventDescription" [(ngModel)]="eventForm.description" rows="4" class="form-control"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="submitEvent()">{{ modalMode === 'add' ? 'Create' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+
+</div>

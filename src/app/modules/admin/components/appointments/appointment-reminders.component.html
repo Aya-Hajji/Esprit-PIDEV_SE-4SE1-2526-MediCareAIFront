@@ -1,0 +1,37 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Reminder Center</h2>
+    <p>Automated reminder workspace for upcoming teleconsultations.</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading reminders...</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div class="table-container" *ngIf="!loading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Appointment</th>
+          <th>Doctor</th>
+          <th>Patient</th>
+          <th>Start</th>
+          <th>Type</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let appointment of appointments">
+          <td>#{{ appointment.id }}</td>
+          <td>{{ appointment.doctorId }}</td>
+          <td>{{ appointment.patientId }}</td>
+          <td>{{ appointment.startTime | date:'short' }}</td>
+          <td>{{ appointment.consultationType }}</td>
+          <td>
+            <button class="btn-icon" (click)="quickSendReminder(appointment)">Send Reminder</button>
+            <button class="btn-icon" (click)="openDetails(appointment)">Open Details</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
