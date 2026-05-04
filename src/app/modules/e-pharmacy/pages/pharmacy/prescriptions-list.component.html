@@ -1,0 +1,108 @@
+<div class="prescriptions-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Prescriptions</h1>
+    <p class="page-subtitle">Manage your prescriptions and refill requests</p>
+  </div>
+
+  <!-- Error Banner -->
+  @if (error) {
+    <div class="error-banner">
+      {{ error }}
+    </div>
+  }
+
+  <!-- Actions Bar -->
+  <div class="actions-bar">
+    <div class="filter-group">
+      <label class="filter-label">Filter by Status</label>
+      <select class="filter-select" [(ngModel)]="selectedStatus">
+        <option value="">All Statuses</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+    </div>
+
+    @if (isDoctor()) {
+      <a routerLink="/pharmacy/prescriptions/create" class="create-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Create Prescription
+      </a>
+    }
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading prescriptions...</p>
+    </div>
+  }
+
+  <!-- Prescriptions List -->
+  @if (!isLoading && filteredPrescriptions.length > 0) {
+    <div class="prescriptions-grid">
+      @for (prescription of filteredPrescriptions; track prescription.id) {
+        <div class="prescription-card">
+          <div class="card-header">
+            <div>
+              <h3 class="prescription-id">Rx #{{ prescription.id }}</h3>
+              <p class="prescription-date">{{ formatDate(prescription.createdDate) }}</p>
+            </div>
+            <span [ngClass]="'status-badge ' + getStatusColor(prescription.status)">
+              {{ prescription.status }}
+            </span>
+          </div>
+
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Items</span>
+              <span class="value">{{ prescription.items.length }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Expires</span>
+              <span class="value">{{ formatDate(prescription.expiryDate) }}</span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <a [routerLink]="['/pharmacy/prescriptions', prescription.id]" class="view-details-btn">
+              View Details
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading && filteredPrescriptions.length === 0) {
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2Z"
+          stroke="#D1D5DB"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path d="M14 2V8H20" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <h3>No prescriptions found</h3>
+      <p>You don't have any prescriptions yet</p>
+      @if (!isDoctor()) {
+        <a routerLink="/pharmacy/prescriptions/upload" class="upload-btn">
+          Upload Prescription
+        </a>
+      }
+    </div>
+  }
+</div>

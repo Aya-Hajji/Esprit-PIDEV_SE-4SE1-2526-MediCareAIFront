@@ -1,0 +1,79 @@
+@import '../user-management/user-list.component.css';
+
+.reminder-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.reminder-toolbar-primary {
+  align-items: center;
+}
+
+.reminder-toolbar-secondary {
+  padding-top: 4px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.quick-row-primary {
+  margin-bottom: 10px;
+}
+
+.form-group-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group-inline label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.reminder-cell {
+  max-width: 280px;
+  font-size: 0.85rem;
+}
+
+.reminder-summary {
+  display: block;
+  margin-bottom: 8px;
+  color: #475569;
+}
+
+.schedule-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.schedule-row .compact {
+  min-width: 180px;
+}
+
+.quick-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge-tele {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.empty-hint {
+  margin: 16px 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}

@@ -1,0 +1,604 @@
+<div class="module-container medical-module">
+  <header class="medical-hero">
+    <div class="medical-hero-inner">
+      <div class="medical-hero-text">
+        <p class="hero-kicker">Clinical workspace</p>
+        <h1>Patient records</h1>
+        <p>Prescriptions, imaging, labs, history, allergies, visit notes — and <strong>teleconsultation</strong> linked to appointments.</p>
+      </div>
+      <div class="medical-hero-chips" role="list">
+        <span class="chip" role="listitem">E‑prescribing</span>
+        <span class="chip" role="listitem">Labs &amp; imaging</span>
+        <span class="chip" role="listitem">AI risk &amp; chat</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="medical-metier-panel" aria-label="Advanced medical module features">
+    <h2 class="medical-metier-title">Module capabilities</h2>
+    <ul class="medical-metier-list">
+      <li><strong>Intake</strong> — pick patient, load dossiers, open the active file.</li>
+      <li><strong>Encounter</strong> — allergies first, then problems, visit note, labs/imaging, e‑prescribing (aligned with hospital CDS).</li>
+      <li><strong>Coordination</strong> — telehealth slot, AI risk, referrals, assistant chat.</li>
+      <li><strong>Admin catalog</strong> — specialties → diseases → symptoms for terminology control.</li>
+    </ul>
+  </section>
+
+  <div *ngIf="successMessage" class="alert-banner alert-banner-success" role="status">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert-banner alert-banner-error" role="alert">{{ errorMessage }}</div>
+
+  <nav class="tabs medical-tabs" aria-label="Sections">
+    <button type="button" class="tab tab-primary" [class.active]="activeTab === 'records'" (click)="activeTab = 'records'">Patient records</button>
+    <button type="button" class="tab" [class.active]="activeTab !== 'records'" (click)="openReferencesTab()">Reference data</button>
+  </nav>
+
+  <div class="references-shell" *ngIf="activeTab !== 'records'">
+    <p class="ref-scenario">
+      <strong>Administrator scenario:</strong> maintain <em>specialties</em> first, then <em>diseases</em> linked to a specialty, then <em>symptoms</em> for structured triage vocabulary. This mirrors how hospitals onboard terminology before clinical coding.
+    </p>
+    <div class="ref-subtabs">
+      <button type="button" class="subtab" [class.active]="activeTab === 'specialties'" (click)="activeTab = 'specialties'" [disabled]="!specialtiesAvailable">Specialties</button>
+      <button type="button" class="subtab" [class.active]="activeTab === 'diseases'" (click)="activeTab = 'diseases'" [disabled]="!diseasesAvailable">Diseases</button>
+      <button type="button" class="subtab" [class.active]="activeTab === 'symptoms'" (click)="activeTab = 'symptoms'" [disabled]="!symptomsAvailable">Symptoms</button>
+    </div>
+
+  <div *ngIf="activeTab === 'specialties'">
+    <div class="controls-bar">
+      <div class="form-grid compact">
+        <input class="form-control" placeholder="Specialty name" [(ngModel)]="newSpecialtyName" [disabled]="!specialtiesAvailable" />
+        <input class="form-control" placeholder="Description" [(ngModel)]="newSpecialtyDescription" [disabled]="!specialtiesAvailable" />
+        <input
+          class="form-control"
+          placeholder="Match tags (comma-separated, optional — improves doctor prediction)"
+          [(ngModel)]="newSpecialtyMatchTags"
+          [disabled]="!specialtiesAvailable"
+        />
+      </div>
+      <div class="action-row">
+        <button type="button" class="btn btn-primary" (click)="saveSpecialty()" [disabled]="!specialtiesAvailable">
+          {{ editingSpecialtyId ? 'Update Specialty' : 'Add Specialty' }}
+        </button>
+        <button type="button" class="btn btn-secondary" *ngIf="editingSpecialtyId" (click)="cancelEditSpecialty()">Cancel Edit</button>
+      </div>
+    </div>
+    <p *ngIf="!specialtiesAvailable" class="info-text panel-message">Specialties endpoint is not exposed by backend OpenAPI.</p>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Routing tags</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let specialty of specialties">
+            <td>{{ specialty.name }}</td>
+            <td>{{ specialty.description }}</td>
+            <td class="specialty-tags-cell">{{ specialty.matchTags || '—' }}</td>
+            <td>
+              <button type="button" class="btn-icon" (click)="startEditSpecialty(specialty)">Edit</button>
+              <button type="button" class="btn-icon btn-danger" (click)="deleteSpecialty(specialty.id!)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'diseases'">
+    <div class="controls-bar">
+      <div class="form-grid compact">
+        <input class="form-control" placeholder="Disease name" [(ngModel)]="newDiseaseName" [disabled]="!diseasesAvailable" />
+        <input class="form-control" placeholder="Description" [(ngModel)]="newDiseaseDescription" [disabled]="!diseasesAvailable" />
+        <select class="form-control" [(ngModel)]="newDiseaseSpecialtyId" [disabled]="!diseasesAvailable">
+          <option [ngValue]="null">Select specialty</option>
+          <option *ngFor="let specialty of specialties" [ngValue]="specialty.id">{{ specialty.name }}</option>
+        </select>
+      </div>
+      <div class="action-row">
+        <button type="button" class="btn btn-primary" (click)="saveDisease()" [disabled]="!diseasesAvailable">
+          {{ editingDiseaseId ? 'Update Disease' : 'Add Disease' }}
+        </button>
+        <button type="button" class="btn btn-secondary" *ngIf="editingDiseaseId" (click)="cancelEditDisease()">Cancel Edit</button>
+      </div>
+    </div>
+    <p *ngIf="!diseasesAvailable" class="info-text panel-message">Diseases endpoint is not exposed by backend OpenAPI.</p>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Specialty</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let disease of diseases">
+            <td>{{ disease.name }}</td>
+            <td>{{ getSpecialtyLabelForDisease(disease.specialtyId) }}</td>
+            <td>{{ disease.description }}</td>
+            <td>
+              <button type="button" class="btn-icon" (click)="startEditDisease(disease)">Edit</button>
+              <button type="button" class="btn-icon btn-danger" (click)="deleteDisease(disease.id!)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'symptoms'">
+    <div class="controls-bar">
+      <div class="form-grid compact">
+        <input class="form-control" placeholder="Symptom name" [(ngModel)]="newSymptomName" [disabled]="!symptomsAvailable" />
+        <input class="form-control" placeholder="Description" [(ngModel)]="newSymptomDescription" [disabled]="!symptomsAvailable" />
+      </div>
+      <div class="action-row">
+        <button type="button" class="btn btn-primary" (click)="saveSymptom()" [disabled]="!symptomsAvailable">
+          {{ editingSymptomId ? 'Update Symptom' : 'Add Symptom' }}
+        </button>
+        <button type="button" class="btn btn-secondary" *ngIf="editingSymptomId" (click)="cancelEditSymptom()">Cancel Edit</button>
+      </div>
+    </div>
+    <p *ngIf="!symptomsAvailable" class="info-text panel-message">Symptoms endpoint is not exposed by backend OpenAPI.</p>
+    <div class="table-container" *ngIf="symptomsAvailable">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let symptom of symptoms">
+            <td>{{ symptom.name }}</td>
+            <td>{{ symptom.description }}</td>
+            <td>
+              <button type="button" class="btn-icon" (click)="startEditSymptom(symptom)">Edit</button>
+              <button type="button" class="btn-icon btn-danger" (click)="deleteSymptom(symptom.id!)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  </div>
+
+  <div *ngIf="activeTab === 'records'" class="records-layout">
+    <div class="stats-bar stats-bar-compact records-stats">
+      <div class="stat-item">
+        <div class="stat-value">{{ medicalRecordStats.total }}</div>
+        <div class="stat-label">Records (patient)</div>
+      </div>
+      <div class="stat-item stat-active">
+        <div class="stat-value">{{ medicalRecordStats.active }}</div>
+        <div class="stat-label">Active</div>
+      </div>
+      <div class="stat-item stat-archived">
+        <div class="stat-value">{{ medicalRecordStats.archived }}</div>
+        <div class="stat-label">Archived</div>
+      </div>
+      <button type="button" class="btn btn-outline-secondary stats-reset" (click)="resetTestData()" title="Reset demo data">↻ Reset</button>
+    </div>
+
+    <section class="records-controls workspace-panel">
+      <div class="panel-heading">
+        <h3>Patient record workspace</h3>
+        <p class="panel-subtitle">Follow the intake steps: choose the beneficiary, load their dossiers from the server, then open or create a medical record.</p>
+      </div>
+
+      <aside class="intake-journey" aria-label="Intake checklist">
+        <div class="intake-journey-title">Intake checklist</div>
+        <ol class="intake-journey-steps">
+          <li [class.intake-done]="journeyPatientSelected">
+            <span class="intake-step-num">1</span>
+            Select patient
+          </li>
+          <li [class.intake-done]="journeyRecordsFetched">
+            <span class="intake-step-num">2</span>
+            Load dossiers
+          </li>
+          <li [class.intake-done]="journeyDossierActive">
+            <span class="intake-step-num">3</span>
+            Open or create a dossier
+          </li>
+        </ol>
+      </aside>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="patientId">Patient</label>
+          <select id="patientId" [(ngModel)]="selectedPatientId" (ngModelChange)="onPatientSelectionChange()" class="form-control">
+            <option [ngValue]="null">Select patient</option>
+            <option *ngFor="let patient of patients" [ngValue]="patient.id">
+              {{ patient.firstName }} {{ patient.lastName }} ({{ patient.email }})
+            </option>
+          </select>
+          <p *ngIf="patients.length === 0" class="text-muted small">
+            No patients in the directory. Load the patient list (admin) or check your connection.
+          </p>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-primary" (click)="loadRecordsByPatient()" [disabled]="!selectedPatientId || recordsLoading">
+            {{ recordsLoading ? 'Loading…' : 'Load Records' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="record-create">
+        <h4>New dossier registration</h4>
+        <p class="card-lead intake-lead">Use this when the patient has <strong>no file yet</strong>. Identity minimum: blood group when known and emergency contact.</p>
+        <p class="info-text">Current role: {{ currentUserRole || 'UNKNOWN' }}</p>
+        <p class="info-text" *ngIf="canWriteMedicalRecords() && !medicalRecordCreateBlocked">Create status: enabled</p>
+        <p class="info-text" *ngIf="!canWriteMedicalRecords()">Create status: disabled for this role (backend currently allows DOCTOR only)</p>
+        <p class="info-text" *ngIf="canWriteMedicalRecords() && medicalRecordCreateBlocked">Create status: blocked by backend authorization (403)</p>
+        <div class="form-row">
+          <input class="form-control" placeholder="Blood Type *" [(ngModel)]="newRecordBloodType" maxlength="5" />
+          <small class="info-text">{{ (newRecordBloodType || '').length }}/5</small>
+          <small class="error-text" *ngIf="newRecordBloodType && !isValidBloodType(newRecordBloodType)">Use A+, A-, B+, B-, AB+, AB-, O+, or O-.</small>
+        </div>
+        <div class="form-row">
+          <input class="form-control" placeholder="Emergency Contact Name" [(ngModel)]="newRecordEmergencyContactName" maxlength="100" />
+          <small class="info-text">{{ (newRecordEmergencyContactName || '').length }}/100</small>
+          <small class="error-text" *ngIf="newRecordEmergencyContactName && !isValidContactName(newRecordEmergencyContactName)">Name must be 2-100 letters (spaces, apostrophes, dashes allowed).</small>
+        </div>
+        <div class="form-row">
+          <input class="form-control" placeholder="Emergency Contact Phone" [(ngModel)]="newRecordEmergencyContactPhone" maxlength="20" />
+          <small class="error-text" *ngIf="newRecordEmergencyContactPhone && !isValidPhone(newRecordEmergencyContactPhone)">Phone must have 7-15 digits (e.g., +216 55 123 456)</small>
+        </div>
+        <button type="button" class="btn btn-primary" (click)="createMedicalRecord()" [disabled]="!canCreateMedicalRecord()">Create Record</button>
+        <p *ngIf="medicalRecordCreateBlocked" class="info-text">
+          Create is disabled because backend returned 403 for this token on POST /medical-records.
+        </p>
+      </div>
+
+      <div class="record-list">
+        <h4>Dossiers for this patient</h4>
+        <p class="card-lead intake-lead">Open one dossier to enter the <strong>clinical encounter workflow</strong> (allergies → history → visit → labs → imaging → prescriptions).</p>
+        <div *ngFor="let record of records" class="record-item" [class.active]="record.id === selectedRecordId">
+          <div>
+            <strong>Medical Record</strong>
+            <div>Blood Type: {{ record.bloodType || 'N/A' }}</div>
+            <div>Status: {{ record.status || 'N/A' }}</div>
+          </div>
+          <div class="record-item-actions">
+            <button type="button" class="btn-icon" (click)="selectRecord(record)">Open</button>
+            <button type="button" class="btn-icon btn-danger" (click)="deleteMedicalRecord(record.id!)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="record-details workspace-panel workspace-panel-detail" *ngIf="selectedRecordId">
+      <div class="panel-heading">
+        <h3>Clinical encounter</h3>
+        <p class="panel-subtitle">Same sequence as production EHRs: demographics → allergy safety → narrative → orders → prescribing → coordination.</p>
+      </div>
+
+      <div class="workflow-scenario" role="region" aria-label="Recommended clinical sequence">
+        <div class="workflow-scenario-title">Ambulatory scenario (reference)</div>
+        <ol class="workflow-scenario-list">
+          <li><strong>Identity</strong> — contacts and dossier lifecycle (active / archived).</li>
+          <li><strong>Allergies</strong> — documented before any medication (alert generation).</li>
+          <li><strong>Problems &amp; treatments</strong> — longitudinal conditions.</li>
+          <li><strong>Encounter note</strong> — SOAP-style documentation of this visit.</li>
+          <li><strong>Labs &amp; imaging</strong> — biological and morphological evidence.</li>
+          <li><strong>E‑prescribing</strong> — after allergy reconciliation.</li>
+          <li><strong>Telehealth</strong> — synchronous session when scheduled.</li>
+          <li><strong>Decision support</strong> — risk, referrals, assistant.</li>
+        </ol>
+      </div>
+
+      <nav class="clinical-step-nav" aria-label="Encounter steps">
+        <button
+          type="button"
+          class="clinical-step-btn"
+          *ngFor="let step of clinicalWorkflowSteps"
+          [class.active]="activeClinicalStep === step.id"
+          (click)="scrollToClinicalSection(step.id)"
+          [title]="step.hint"
+        >
+          <span class="clinical-step-short">{{ step.short }}</span>
+          {{ step.label }}
+        </button>
+      </nav>
+
+      <p *ngIf="recordChildrenLoading" class="info-text workflow-loading" role="status">Synchronizing prescriptions, labs, imaging, allergies, and visit notes…</p>
+
+      <section id="clinical-demographics" class="workflow-section data-card">
+        <header class="workflow-section-head">
+          <span class="workflow-badge">1</span>
+          <div>
+            <h4>Demographics &amp; dossier status</h4>
+            <p class="card-lead">Administrative identity: blood group, emergency contact, record status.</p>
+          </div>
+        </header>
+        <div class="form-grid">
+          <div>
+            <input class="form-control" placeholder="Blood Type *" [(ngModel)]="editRecordBloodType" maxlength="5" />
+            <small class="info-text">{{ (editRecordBloodType || '').length }}/5</small>
+            <small class="error-text" *ngIf="editRecordBloodType && !isValidBloodType(editRecordBloodType)">Use A+, A-, B+, B-, AB+, AB-, O+, or O-.</small>
+          </div>
+          <div>
+            <input class="form-control" placeholder="Emergency Contact Name" [(ngModel)]="editRecordEmergencyContactName" maxlength="100" />
+            <small class="info-text">{{ (editRecordEmergencyContactName || '').length }}/100</small>
+            <small class="error-text" *ngIf="editRecordEmergencyContactName && !isValidContactName(editRecordEmergencyContactName)">Name must be 2-100 letters (spaces, apostrophes, dashes allowed).</small>
+          </div>
+          <div>
+            <input class="form-control" placeholder="Emergency Contact Phone" [(ngModel)]="editRecordEmergencyContactPhone" maxlength="20" />
+            <small class="error-text" *ngIf="editRecordEmergencyContactPhone && !isValidPhone(editRecordEmergencyContactPhone)">Phone must have 7-15 digits (e.g., +216 55 123 456)</small>
+          </div>
+          <select class="form-control" [(ngModel)]="editRecordStatus">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="ARCHIVED">ARCHIVED</option>
+          </select>
+          <button type="button" class="btn btn-primary" (click)="saveRecordDetails()" [disabled]="!canUpdateMedicalRecord()">Save demographics</button>
+        </div>
+      </section>
+
+      <section id="clinical-allergies" class="workflow-section data-card data-card-clinical workflow-section-safety">
+        <header class="workflow-section-head">
+          <span class="workflow-badge workflow-badge-safety">2</span>
+          <div>
+            <h4>Allergies &amp; intolerances</h4>
+            <p class="card-lead">Safety profile — reconcile <strong>before</strong> prescribing (alert &amp; interaction checks).</p>
+          </div>
+        </header>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Allergen" [(ngModel)]="newAllergen" />
+          <input class="form-control" placeholder="Reaction" [(ngModel)]="newAllergyReaction" />
+          <input class="form-control" placeholder="Severity" [(ngModel)]="newAllergySeverity" />
+          <button type="button" class="btn btn-primary" (click)="createAllergy()" [disabled]="!selectedRecordId || !newAllergen.trim() || !newAllergySeverity.trim()">Add allergy</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let a of allergies">
+            {{ a.allergen }} — {{ a.severity }}
+            <button type="button" class="btn-icon btn-danger" *ngIf="a.id" (click)="deleteAllergy(a.id!)">Remove</button>
+          </li>
+        </ul>
+      </section>
+
+      <section id="clinical-history" class="workflow-section data-card data-card-clinical">
+        <header class="workflow-section-head">
+          <span class="workflow-badge">3</span>
+          <div>
+            <h4>Medical history &amp; active treatments</h4>
+            <p class="card-lead">Problem-oriented entries (past events vs ongoing treatment lines).</p>
+          </div>
+        </header>
+        <div class="inline-form">
+          <input class="form-control" placeholder="History item (condition / event)" [(ngModel)]="newMedicalHistoryCondition" />
+          <button type="button" class="btn btn-secondary" (click)="addMedicalHistory()" [disabled]="!selectedRecordId || !newMedicalHistoryCondition.trim()">Add history</button>
+        </div>
+        <div class="inline-form">
+          <input class="form-control" placeholder="Treatment line" [(ngModel)]="newTreatmentText" />
+          <button type="button" class="btn btn-secondary" (click)="addTreatment()" [disabled]="!selectedRecordId || !newTreatmentText.trim()">Add treatment</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let item of selectedRecord?.medicalHistories">{{ item.type || 'HISTORY' }}: {{ item.condition }}</li>
+        </ul>
+      </section>
+
+      <section id="clinical-encounter" class="workflow-section data-card data-card-clinical">
+        <header class="workflow-section-head">
+          <span class="workflow-badge">4</span>
+          <div>
+            <h4>Visit note (encounter)</h4>
+            <p class="card-lead">Document this episode: clinical note, working diagnosis, treatment plan.</p>
+          </div>
+        </header>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Clinical note" [(ngModel)]="newVisitNote" />
+          <input class="form-control" placeholder="Diagnosis" [(ngModel)]="newVisitDiagnosis" />
+          <input class="form-control" placeholder="Treatment plan" [(ngModel)]="newVisitTreatmentPlan" />
+          <button type="button" class="btn btn-primary" (click)="createVisitNote()" [disabled]="!selectedRecordId || !newVisitNote.trim()">Save visit note</button>
+        </div>
+
+        <div class="visit-search-panel">
+          <div class="visit-search-title">Search across notes (audit / medico-legal)</div>
+          <div class="visit-search-grid">
+            <input class="form-control" placeholder="Patient keyword" [(ngModel)]="visitNoteSearchPatientKeyword" />
+            <input class="form-control" placeholder="Clinician keyword" [(ngModel)]="visitNoteSearchDoctorKeyword" />
+            <input class="form-control" placeholder="Clinical keyword" [(ngModel)]="visitNoteSearchClinicalKeyword" />
+          </div>
+          <div class="visit-search-actions">
+            <button type="button" class="btn btn-secondary" (click)="searchVisitNotes()">Search</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="clearVisitNotesSearch()">Clear</button>
+            <span class="micro-info" *ngIf="visitNoteSearchActive">API search results</span>
+          </div>
+        </div>
+
+        <ul class="simple-list">
+          <li *ngFor="let note of visitNotes">
+            {{ note.note }} ({{ note.diagnosis || 'No diagnosis' }})
+            <button type="button" class="btn-icon btn-danger" *ngIf="note.id" (click)="deleteVisitNote(note.id!)">Remove</button>
+          </li>
+        </ul>
+      </section>
+
+      <section id="clinical-labs" class="workflow-section data-card data-card-clinical">
+        <header class="workflow-section-head">
+          <span class="workflow-badge">5</span>
+          <div>
+            <h4>Laboratory results</h4>
+            <p class="card-lead">Biology results driving therapeutic adjustments.</p>
+          </div>
+        </header>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Test name" [(ngModel)]="newLabName" />
+          <input class="form-control" placeholder="Result" [(ngModel)]="newLabResult" />
+          <input class="form-control" placeholder="Unit" [(ngModel)]="newLabUnit" />
+          <input class="form-control" placeholder="Reference range" [(ngModel)]="newLabReferenceRange" />
+          <button type="button" class="btn btn-primary" (click)="createLabResult()" [disabled]="!selectedRecordId || !newLabName.trim() || !newLabResult.trim()">Add lab result</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let l of labResults">
+            {{ l.testName }}: {{ l.result }} {{ l.unit }}
+            <div class="info-text">{{ explainLabResult(l) }}</div>
+            <button type="button" class="btn-icon btn-danger" *ngIf="l.id" (click)="deleteLabResult(l.id!)">Remove</button>
+          </li>
+        </ul>
+      </section>
+
+      <section id="clinical-imaging" class="workflow-section data-card data-card-clinical">
+        <header class="workflow-section-head">
+          <span class="workflow-badge">6</span>
+          <div>
+            <h4>Medical imaging</h4>
+            <p class="card-lead">Imaging reports or secure links (RIS / PACS).</p>
+          </div>
+        </header>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Modality / type" [(ngModel)]="newImageType" />
+          <input class="form-control" placeholder="Image URL" [(ngModel)]="newImageUrl" />
+          <input class="form-control" placeholder="Description" [(ngModel)]="newImageDescription" />
+          <button type="button" class="btn btn-primary" (click)="createMedicalImage()" [disabled]="!selectedRecordId || !newImageUrl.trim()">Attach study</button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let i of medicalImages">
+            {{ i.imageType }} — {{ i.imageUrl }}
+            <div class="info-text">{{ explainMedicalImage(i) }}</div>
+            <button type="button" class="btn-icon btn-danger" *ngIf="i.id" (click)="deleteMedicalImage(i.id!)">Remove</button>
+          </li>
+        </ul>
+      </section>
+
+      <section id="clinical-prescriptions" class="workflow-section data-card data-card-clinical">
+        <header class="workflow-section-head">
+          <span class="workflow-badge">7</span>
+          <div>
+            <h4>E‑prescribing</h4>
+            <p class="card-lead">Electronic medication orders once the allergy profile is validated.</p>
+          </div>
+        </header>
+        <p class="rx-safety-hint" *ngIf="allergies.length === 0">
+          <strong>Real-world EHRs:</strong> with no allergy on file, prescribers typically get a hard stop or must document an override.
+        </p>
+        <div class="form-grid">
+          <input class="form-control" placeholder="Medication" [(ngModel)]="newPrescriptionMedication" />
+          <input class="form-control" placeholder="Dosage" [(ngModel)]="newPrescriptionDosage" />
+          <input class="form-control" placeholder="Frequency" [(ngModel)]="newPrescriptionFrequency" />
+          <input class="form-control" placeholder="Duration" [(ngModel)]="newPrescriptionDuration" />
+          <input class="form-control" placeholder="Instructions" [(ngModel)]="newPrescriptionInstructions" />
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="createPrescription()"
+            [disabled]="!selectedRecordId || !newPrescriptionMedication.trim() || !newPrescriptionDosage.trim() || !newPrescriptionFrequency.trim()"
+          >
+            Add prescription line
+          </button>
+        </div>
+        <ul class="simple-list">
+          <li *ngFor="let p of prescriptions">
+            {{ p.medicationName }} — {{ p.dosage }} — {{ p.frequency }}
+            <button type="button" class="btn-icon btn-danger" *ngIf="p.id" (click)="deletePrescription(p.id!)">Remove</button>
+          </li>
+        </ul>
+      </section>
+
+      <section id="clinical-telehealth" class="workflow-section data-card data-card-tele">
+        <header class="workflow-section-head">
+          <span class="workflow-badge">8</span>
+          <div>
+            <h4>Telehealth session</h4>
+            <p class="card-lead">Join the booked VIDEO or PHONE appointment (same workflow as hybrid hospitals).</p>
+          </div>
+        </header>
+        <div class="inline-form">
+          <select class="form-control" [(ngModel)]="teleconsultationAppointmentId" title="Choose a scheduled visit">
+            <option [ngValue]="null">Select appointment…</option>
+            <option *ngFor="let opt of teleconsultAppointmentOptions" [ngValue]="opt.id">{{ opt.label }}</option>
+          </select>
+          <button type="button" class="btn btn-secondary" (click)="openTeleconsultationSession()" [disabled]="!teleconsultationAppointmentId">Open room</button>
+        </div>
+      </section>
+
+      <div id="clinical-decision" class="workflow-section workflow-section-ai">
+      <app-medical-risk-assessment
+        *ngIf="selectedPatientId && selectedRecord"
+        [patientId]="selectedPatientId"
+        [patientDisplayName]="selectedPatientDisplayName"
+        [medicalRecord]="selectedRecord"
+      />
+
+      <div class="data-card physician-directory-card">
+        <div class="card-header">
+          <h4>Referrals — physician directory</h4>
+          <p class="info-text">
+            Shows physicians whose user profile <strong>specialty</strong> matches the catalog (same source as User management). This is not automated triage — use
+            <a routerLink="/admin/appointments">Appointments</a>
+            to book. Email addresses here are for contact only; <strong>reminder emails</strong> use <strong>Gmail SMTP</strong> in Spring (<code>spring.mail.*</code>), not this page.
+          </p>
+        </div>
+
+        <div class="directory-controls">
+          <div class="form-row directory-toolbar">
+            <select class="form-control" [(ngModel)]="directorySpecialtyId" [disabled]="directoryLoading">
+              <option [ngValue]="null">Select specialty…</option>
+              <option *ngFor="let s of specialties" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="loadPhysicianDirectory()"
+              [disabled]="directoryLoading || directorySpecialtyId == null"
+            >
+              {{ directoryLoading ? 'Loading…' : 'List physicians' }}
+            </button>
+            <button
+              type="button"
+              *ngIf="directoryPhysicians.length > 0"
+              class="btn btn-outline-secondary"
+              (click)="clearPhysicianDirectory()"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="directoryPhysicians.length > 0" class="physician-directory-table-wrap">
+          <table class="physician-directory-table">
+            <thead>
+              <tr>
+                <th>Physician</th>
+                <th>Specialty</th>
+                <th>Department</th>
+                <th>Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of directoryPhysicians">
+                <td>{{ doc.fullName || (doc.firstName + ' ' + doc.lastName) }}</td>
+                <td>{{ specialtyLabelForUser(doc) }}</td>
+                <td>{{ doc.clinicalDepartment || '—' }}</td>
+                <td class="directory-contact">
+                  <a *ngIf="doc.email" class="mailto-link" [href]="'mailto:' + doc.email">{{ doc.email }}</a>
+                  <button type="button" class="btn-link-inline" (click)="copyPhysicianEmail(doc)">Copy email</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Medical Chatbot Integration -->
+  <app-medical-chatbot
+    [medicalRecord]="selectedRecord"
+    [labResults]="labResults"
+    [allergies]="allergies"
+    [prescriptions]="prescriptions"
+    [visitNotes]="visitNotes"
+    [careTeamDoctors]="directoryPhysicians"
+  ></app-medical-chatbot>
+</div>

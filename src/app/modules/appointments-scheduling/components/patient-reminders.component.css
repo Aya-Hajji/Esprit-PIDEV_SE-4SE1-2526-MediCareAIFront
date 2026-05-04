@@ -1,0 +1,29 @@
+.patient-reminders {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 6px;
+  max-width: 420px;
+  background: #fff;
+}
+.patient-reminders .actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.patient-reminders .list ul {
+  list-style: none;
+  padding: 0;
+}
+.patient-reminders .no-id {
+  color: #6b7280;
+}
+.patient-reminders .send-error {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  font-size: 0.875rem;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+}

@@ -1,0 +1,132 @@
+<div class="appt-detail-module">
+  <header class="appt-detail-hero">
+    <div class="appt-detail-hero-text">
+      <p class="appt-detail-kicker">Visit sheet</p>
+      <h1>Appointment</h1>
+      <p class="appt-detail-lead">
+        Read the <strong>snapshot</strong> first, then <strong>change</strong> time or status if needed, <strong>notify</strong> the patient,
+        and only then <strong>open the tele room</strong> (for video/phone) or use assistive tools.
+      </p>
+    </div>
+  </header>
+
+  <div *ngIf="loading" class="appt-detail-loading" role="status">Loading appointment details…</div>
+  <div *ngIf="error" class="appt-detail-error" role="alert">{{ error }}</div>
+  <div *ngIf="success" class="appt-detail-success" role="status">{{ success }}</div>
+
+  <div class="detail-step-nav" *ngIf="appointment" aria-label="Visit sections">
+    <span class="detail-step-nav-label">On this page</span>
+    <div class="detail-step-buttons">
+      <button
+        type="button"
+        *ngFor="let s of detailWorkflowSteps"
+        class="detail-step-btn"
+        [class.active]="activeDetailStep === s.id"
+        (click)="scrollToDetailSection(s.id)"
+        [attr.title]="s.hint"
+      >
+        <span class="detail-step-short">{{ s.short }}</span>
+        <span class="detail-step-text">{{ s.label }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="appt-detail-scenario" *ngIf="appointment" aria-label="Recommended order">
+    <h2 class="appt-detail-scenario-title">Recommended flow</h2>
+    <ol class="appt-detail-scenario-list">
+      <li>Confirm participants and schedule in <strong>Snapshot</strong>.</li>
+      <li>Use <strong>Visit changes</strong> only if the slot or attendance changes.</li>
+      <li>Set <strong>Reminders</strong> before the visit; <strong>Join</strong> when it is time.</li>
+      <li>Use <strong>Assist</strong> for context-aware chat and patient-facing reminders.</li>
+    </ol>
+  </div>
+
+  <section class="detail-card" id="detail-summary" *ngIf="appointment">
+    <div class="detail-card-head">
+      <span class="detail-badge">1 · Snapshot</span>
+      <h2>{{ appointmentHeading }}</h2>
+    </div>
+    <dl class="detail-dl">
+      <div><dt>Doctor</dt><dd>{{ doctorDisplayName }}</dd></div>
+      <div><dt>Patient</dt><dd>{{ patientDisplayName }}</dd></div>
+      <div><dt>Type</dt><dd>{{ appointment.consultationType }}</dd></div>
+      <div><dt>Status</dt><dd>{{ appointment.status }}</dd></div>
+      <div><dt>Start</dt><dd>{{ appointment.startTime | date:'medium' }}</dd></div>
+      <div><dt>End</dt><dd>{{ appointment.endTime | date:'medium' }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="detail-card" id="detail-ops" *ngIf="appointment">
+    <div class="detail-card-head">
+      <span class="detail-badge">2 · Visit changes</span>
+      <h2>Reschedule or close</h2>
+      <p class="detail-card-hint">Use reschedule to keep the visit; cancel or delete when the encounter will not happen.</p>
+    </div>
+    <div class="form-grid">
+      <input type="datetime-local" class="form-control" [(ngModel)]="rescheduleStartTime" aria-label="New start" />
+      <input type="datetime-local" class="form-control" [(ngModel)]="rescheduleEndTime" aria-label="New end" />
+      <button type="button" class="btn btn-primary" (click)="saveReschedule()">Save reschedule</button>
+      <button type="button" class="btn btn-danger" (click)="cancelAppointment()">Cancel appointment</button>
+      <button type="button" class="btn btn-danger btn-ghost" (click)="deleteAppointment()">Delete record</button>
+    </div>
+  </section>
+
+  <section class="detail-card" id="detail-reminders" *ngIf="appointment">
+    <div class="detail-card-head">
+      <span class="detail-badge detail-badge-notify">3 · Notify</span>
+      <h2>Reminder center</h2>
+      <p class="detail-card-hint">Schedule a future ping or send immediately (channel depends on backend configuration).</p>
+    </div>
+    <div class="form-grid">
+      <input type="datetime-local" class="form-control" [(ngModel)]="reminderAt" aria-label="Reminder time" />
+      <select class="form-control" [(ngModel)]="reminderChannel" aria-label="Reminder channel">
+        <option value="NOTIFICATION">Notification (in-app)</option>
+        <option value="EMAIL">Email</option>
+        <option value="SMS">SMS</option>
+        <option value="PUSH">Push</option>
+      </select>
+      <button type="button" class="btn btn-primary" (click)="scheduleReminder()">Schedule reminder</button>
+      <button type="button" class="btn btn-secondary" (click)="sendReminderNow()">Send now</button>
+    </div>
+    <ul class="simple-list" *ngIf="reminders.length > 0">
+      <li *ngFor="let reminder of reminders">
+        {{ reminder.channel || 'NOTIFICATION' }} at {{ reminder.remindAt | date:'short' }} ({{ reminder.status || 'SCHEDULED' }})
+      </li>
+    </ul>
+    <p *ngIf="reminders.length === 0" class="detail-empty-inline">No reminders scheduled yet.</p>
+  </section>
+
+  <section class="detail-card detail-card-tele" id="detail-tele" *ngIf="appointment">
+    <div class="detail-card-head">
+      <span class="detail-badge detail-badge-tele">4 · Join</span>
+      <h2>Teleconsultation</h2>
+      <p class="detail-card-hint">Run a quick device check, then open the session room when the visit starts.</p>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn btn-secondary" (click)="runPrecheck()">Camera / mic pre-check</button>
+      <button type="button" class="btn btn-primary" (click)="joinTeleconsultation()">Open session room</button>
+    </div>
+    <p class="precheck-status">Camera: {{ precheckCamera ? 'OK' : 'Not ready' }}</p>
+    <p class="precheck-status">Microphone: {{ precheckMicrophone ? 'OK' : 'Not ready' }}</p>
+    <p class="precheck-message">{{ precheckMessage }}</p>
+    <p *ngIf="session"><strong>Session:</strong> {{ session.status || 'PENDING' }}</p>
+  </section>
+
+  <section class="detail-card detail-card-support" id="detail-support" *ngIf="appointment">
+    <div class="detail-card-head">
+      <span class="detail-badge detail-badge-support">5 · Assist</span>
+      <h2>Assistive tools</h2>
+      <p class="detail-card-hint">Optional: clinical assistant chat and patient reminder preferences for this visit.</p>
+    </div>
+    <div class="detail-support-stack">
+      <div class="detail-support-block">
+        <h3 class="detail-support-sub">Medical assistant (chatbot)</h3>
+        <app-medical-chatbot></app-medical-chatbot>
+      </div>
+      <div class="detail-support-block">
+        <h3 class="detail-support-sub">Patient reminders</h3>
+        <app-patient-reminders [appointmentId]="appointmentId"></app-patient-reminders>
+      </div>
+    </div>
+  </section>
+</div>

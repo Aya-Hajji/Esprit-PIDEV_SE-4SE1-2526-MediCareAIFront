@@ -1,0 +1,118 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Reminder center</h2>
+    <p>
+      <strong>Notification reminders</strong>: an in-app message and a browser notification (if allowed)
+      <strong>24 hours before</strong> each appointment — without relying on email or SMS. Other channels stay optional for testing.
+    </p>
+  </div>
+
+  <div class="reminder-toolbar reminder-toolbar-primary">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="scheduleNotificationJ1ForAll()"
+      [disabled]="loading || schedulingBulk || appointments.length === 0"
+    >
+      {{ schedulingBulk ? 'Scheduling…' : 'Schedule all: day-before notification (24 h ahead)' }}
+    </button>
+    <button type="button" class="btn btn-outline-secondary" (click)="refreshAppointments()" [disabled]="loading">Refresh</button>
+  </div>
+
+  <div class="reminder-toolbar reminder-toolbar-secondary">
+    <div class="form-group-inline">
+      <label for="altChannel">Other channels (testing / integration)</label>
+      <select id="altChannel" [(ngModel)]="scheduleChannel" class="form-control">
+        <option value="NOTIFICATION">Notification (in-app)</option>
+        <option value="EMAIL">Email</option>
+        <option value="SMS">SMS</option>
+        <option value="PUSH">Push</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading…</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <div class="table-container" *ngIf="!loading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Appointment</th>
+          <th>Doctor / patient</th>
+          <th>Start</th>
+          <th>Type</th>
+          <th>Reminders</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let appointment of appointments">
+          <td>
+            <span class="appt-when">{{ appointment.startTime | date: 'medium' }}</span>
+            <span *ngIf="isTele(appointment)" class="badge-tele">Online</span>
+          </td>
+          <td>
+            <div><strong>Doctor:</strong> {{ doctorDisplayName(appointment) }}</div>
+            <div><strong>Patient:</strong> {{ patientDisplayName(appointment) }}</div>
+          </td>
+          <td>{{ appointment.startTime | date: 'short' }}</td>
+          <td>{{ appointment.consultationType }}</td>
+          <td class="reminder-cell">
+            <span class="reminder-summary">{{ reminderSummary(appointment) }}</span>
+            <div class="quick-row quick-row-primary">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                (click)="scheduleDayBeforeNotification(appointment)"
+                [disabled]="!appointment.id || schedulingForId === appointment.id || schedulingBulk"
+              >
+                Day-before notification (24 h ahead)
+              </button>
+            </div>
+            <div class="schedule-row">
+              <input
+                type="datetime-local"
+                class="form-control compact"
+                [ngModel]="customRemindAt(appointment.id)"
+                (ngModelChange)="onCustomRemindChange(appointment.id, $event)"
+                [name]="'remAt' + appointment.id"
+              />
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="scheduleCustom(appointment)"
+                [disabled]="!appointment.id || schedulingForId === appointment.id || schedulingBulk"
+              >
+                {{ schedulingForId === appointment.id ? '…' : 'Schedule (channel above)' }}
+              </button>
+            </div>
+            <div class="quick-row">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                (click)="scheduleHoursBefore(appointment, 1)"
+                [disabled]="!appointment.id || schedulingForId === appointment.id || schedulingBulk"
+              >
+                1 h before (selected channel)
+              </button>
+            </div>
+          </td>
+          <td>
+            <button
+              type="button"
+              class="btn-icon"
+              (click)="quickSendReminder(appointment)"
+              [disabled]="!appointment.id || sendingReminderForId === appointment.id || schedulingBulk"
+            >
+              {{ sendingReminderForId === appointment.id ? 'Sending…' : 'Test send (selected channel)' }}
+            </button>
+            <button type="button" class="btn-icon" (click)="openDetails(appointment)" [disabled]="!appointment.id">Details</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="appointments.length === 0" class="empty-hint">No appointments with status SCHEDULED.</p>
+  </div>
+</div>

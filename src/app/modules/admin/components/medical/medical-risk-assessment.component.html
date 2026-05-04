@@ -1,0 +1,217 @@
+<div class="risk-assessment-container">
+  <div class="assessment-header">
+    <div class="header-content">
+      <h1>Health risk assessment</h1>
+      <p class="patient-info" *ngIf="patientDisplayName">Patient: {{ patientDisplayName }}</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-primary" (click)="refreshAssessment()" [disabled]="isLoading">
+        Refresh
+      </button>
+      <button type="button" class="btn btn-success" (click)="saveAssessment()" [disabled]="!assessment">
+        Save
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Calculating assessment…</p>
+  </div>
+
+  <div *ngIf="error && !isLoading" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="assessment && !isLoading" class="assessment-content">
+    <div class="risk-score-card">
+      <div class="score-header">
+        <div class="score-display">
+          <div class="score-circle" [style.background-color]="getRiskColor(assessment.riskLevel)">
+            <span class="score-value">{{ assessment.overallRiskScore }}</span>
+            <span class="score-label">/100</span>
+          </div>
+          <div class="score-info">
+            <h2>{{ getRiskIcon(assessment.riskLevel) }} {{ getRiskDescription(assessment.riskLevel) }}</h2>
+            <p class="assessment-date">Assessment on {{ formatDate(assessment.assessmentDate) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="validation-indicators">
+        <div class="indicator" [class.validated]="assessment.assessedByAI">
+          {{ getAIStatus() }}
+        </div>
+        <div class="indicator" [class.validated]="assessment.assessedByDoctor">
+          {{ getDoctorStatus() }}
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs-navigation">
+      <button type="button" class="tab-btn" [class.active]="selectedTab === 'summary'" (click)="selectedTab = 'summary'">
+        Summary
+      </button>
+      <button type="button" class="tab-btn" [class.active]="selectedTab === 'details'" (click)="selectedTab = 'details'">
+        Details
+      </button>
+      <button type="button" class="tab-btn" [class.active]="selectedTab === 'trend'" (click)="selectedTab = 'trend'">
+        Trend
+      </button>
+    </div>
+
+    <div class="tab-content" *ngIf="selectedTab === 'summary'">
+      <div class="top-risk-strip" *ngIf="topRiskCategoryRows.length > 0">
+        <h3 class="subsection-title">Top risk dimensions</h3>
+        <div class="top-risk-chips">
+          <div *ngFor="let row of topRiskCategoryRows" class="risk-chip">
+            <span class="chip-label">{{ row.label }}</span>
+            <span class="chip-score" [style.color]="getCategoryColor(row.score)">{{ row.score }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="recommendations-card" *ngIf="recommendations.length > 0">
+        <h3>Recommendations</h3>
+        <ul class="recommendations-list">
+          <li *ngFor="let rec of recommendations" class="recommendation-item">
+            {{ rec }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="chronic-diseases-card" *ngIf="assessment.chronicDiseaseComplications && assessment.chronicDiseaseComplications.length > 0">
+        <h3>Chronic conditions</h3>
+        <div class="disease-list">
+          <span *ngFor="let disease of assessment.chronicDiseaseComplications" class="disease-badge">
+            {{ disease }}
+          </span>
+        </div>
+      </div>
+
+      <div class="allergies-card" *ngIf="assessment.allergyRisks && assessment.allergyRisks.length > 0">
+        <h3>Allergy-related risks</h3>
+        <div class="allergy-list">
+          <span *ngFor="let allergy of assessment.allergyRisks" class="allergy-badge">
+            {{ allergy }}
+          </span>
+        </div>
+      </div>
+
+      <div class="summary-card" *ngIf="assessment.doctorNotes">
+        <h3>Clinical notes</h3>
+        <p>{{ assessment.doctorNotes }}</p>
+      </div>
+    </div>
+
+    <div class="tab-content" *ngIf="selectedTab === 'details'">
+      <h3 class="subsection-title">All risk dimensions</h3>
+      <div class="risk-dimensions-compact">
+        <div *ngFor="let row of riskCategoryRows" class="risk-row">
+          <span class="risk-row-label">{{ row.label }}</span>
+          <div class="progress-bar risk-row-bar">
+            <div
+              class="progress-fill"
+              [style.width]="getProgressWidth(row.score)"
+              [style.background-color]="getCategoryColor(row.score)"
+            ></div>
+          </div>
+          <span class="risk-row-pct">{{ row.score }}%</span>
+        </div>
+      </div>
+
+      <h3 class="subsection-title spaced">Drug interactions</h3>
+      <div *ngIf="medicationInteractions.length > 0; else noInteractions">
+        <div class="alert alert-warning" *ngIf="getHighSeverityInteractions().length > 0">
+          {{ getHighSeverityInteractions().length }} high-severity interaction(s) detected
+        </div>
+
+        <div class="medication-interactions-list">
+          <div
+            *ngFor="let interaction of medicationInteractions"
+            class="interaction-card"
+            [class.critical]="interaction.severity === 'CRITICAL'"
+            [class.high]="interaction.severity === 'HIGH'"
+            [class.moderate]="interaction.severity === 'MODERATE'"
+            [class.low]="interaction.severity === 'LOW'"
+          >
+            <div class="interaction-header">
+              <h4>Drug interaction</h4>
+              <span class="severity-badge" [class]="interaction.severity.toLowerCase()">
+                {{ interaction.severity }}
+              </span>
+            </div>
+            <p class="interaction-description">{{ interaction.description }}</p>
+            <div class="conflicting-drugs">
+              <strong>Involved prescriptions:</strong>
+              <ul>
+                <li *ngFor="let conflictId of interaction.conflictingPrescriptionIds">
+                  Prescription #{{ conflictId }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noInteractions>
+        <div class="alert alert-success">No critical drug interactions detected</div>
+      </ng-template>
+
+      <h3 class="subsection-title spaced">Lab anomalies</h3>
+      <div *ngIf="laboratoryScanResults.length > 0; else noAnomalies">
+        <div class="alert alert-warning" *ngIf="getCriticalAnomalies().length > 0">
+          {{ getCriticalAnomalies().length }} critical lab finding(s) detected
+        </div>
+
+        <div class="lab-anomalies-list">
+          <div
+            *ngFor="let anomaly of laboratoryScanResults"
+            class="lab-card"
+            [class.critical]="anomaly.abnormalityType === 'CRITICAL'"
+            [class.high]="anomaly.abnormalityType === 'HIGH'"
+            [class.low]="anomaly.abnormalityType === 'LOW'"
+          >
+            <div class="lab-header">
+              <h4>{{ anomaly.testName }}</h4>
+              <span class="abnormality-badge" [class]="anomaly.abnormalityType.toLowerCase()">
+                {{ anomaly.abnormalityType }}
+              </span>
+            </div>
+            <div class="lab-details">
+              <p><strong>Result:</strong> {{ anomaly.result }}</p>
+              <p><strong>Clinical significance:</strong> {{ anomaly.clinicalSignificance }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noAnomalies>
+        <div class="alert alert-success">No significant lab anomalies</div>
+      </ng-template>
+    </div>
+
+    <div class="tab-content" *ngIf="selectedTab === 'trend'">
+      <div *ngIf="riskTrend.length > 0; else noTrend" class="trend-analysis">
+        <p class="trend-info">Last {{ riskTrend.length }} assessments (30 days)</p>
+        <div class="trend-list">
+          <div *ngFor="let trend of riskTrend" class="trend-item">
+            <span class="trend-date">{{ formatDate(trend.assessmentDate) }}</span>
+            <span class="trend-score">
+              <strong>Score:</strong> {{ trend.overallRiskScore }}/100
+            </span>
+            <span class="trend-level" [style.color]="getRiskColor(trend.riskLevel)">
+              {{ trend.riskLevel }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noTrend>
+        <div class="alert alert-info">
+          Not enough historical data to show a trend
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

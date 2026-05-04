@@ -1,0 +1,127 @@
+<div class="chatbot-container">
+  <button type="button" class="chat-toggle-btn" (click)="toggleChat()" aria-label="Open record assistant">
+    <span class="chat-icon" aria-hidden="true">?</span>
+    <span *ngIf="unreadCount > 0" class="unread-badge">{{ unreadCount }}</span>
+  </button>
+
+  <div class="chat-window" [class.open]="isChatOpen" role="dialog" aria-label="Record assistant">
+    <div class="chat-header">
+      <div class="header-title">
+        <h3>Record assistant</h3>
+        <p class="status">Based on the open record</p>
+      </div>
+      <div class="header-actions">
+        <button
+          type="button"
+          class="header-text-btn"
+          (click)="exportChat()"
+          [disabled]="!hasConversationToExport"
+          [title]="
+            hasConversationToExport
+              ? 'Download conversation as PDF'
+              : 'Send at least one message before exporting'
+          "
+          [attr.aria-label]="
+            hasConversationToExport
+              ? 'Export conversation as PDF'
+              : 'Export PDF — send a message first'
+          "
+        >
+          Export PDF
+        </button>
+        <button type="button" class="header-text-btn" (click)="resetChat()">Reset</button>
+        <button type="button" class="header-close-btn" (click)="toggleChat()" aria-label="Close panel">×</button>
+      </div>
+    </div>
+
+    <div class="pdf-import-panel">
+      <input
+        #pdfFileInput
+        type="file"
+        accept="application/pdf,.pdf"
+        class="sr-only"
+        (change)="onPdfSelected($event)"
+        aria-label="Import patient PDF"
+      />
+      <div class="pdf-import-row">
+        <button type="button" class="btn-pdf-import" (click)="openPdfPicker()" [disabled]="pdfImportLoading">
+          {{ pdfImportLoading ? 'Reading PDF…' : 'Import PDF (patient data)' }}
+        </button>
+        <button
+          type="button"
+          class="btn-pdf-clear"
+          *ngIf="importedPdfSummary"
+          (click)="clearImportedPdf()"
+          [disabled]="pdfImportLoading"
+        >
+          Remove PDF
+        </button>
+      </div>
+      <p *ngIf="importedPdfSummary" class="pdf-meta">
+        <strong>{{ importedPdfSummary.fileName }}</strong> — {{ importedPdfSummary.pageCount }} pp.,
+        {{ importedPdfSummary.charCount }} chars
+        <span *ngIf="importedPdfSummary.truncated"> (excerpt truncated)</span>
+      </p>
+      <p *ngIf="pdfImportError" class="pdf-error">{{ pdfImportError }}</p>
+      <p class="pdf-hint">Use PDFs with selectable text (not image-only scans). Data is processed locally in your browser.</p>
+    </div>
+
+    <div class="quick-actions pdf-quick-actions" *ngIf="importedPdfSummary && !pdfShortcutsDismissed">
+      <p class="quick-actions-label">PDF shortcuts</p>
+      <div class="action-buttons action-buttons--pdf">
+        <button
+          type="button"
+          *ngFor="let qa of pdfQuickActions"
+          class="quick-action-btn quick-action-btn--pdf"
+          (click)="applyQuick(qa.prompt)"
+        >
+          {{ qa.label }}
+        </button>
+      </div>
+    </div>
+
+    <div class="messages-container" #messagesContainer>
+      <p *ngIf="!hasConversationToExport" class="chat-empty-hint" role="status">
+        No conversation yet. Send a message (or a PDF shortcut), then you can export.
+      </p>
+      <div *ngFor="let message of messages" [ngClass]="getMessageClass(message)">
+        <div class="message-avatar" aria-hidden="true">{{ message.sender === 'bot' ? 'A' : 'U' }}</div>
+        <div class="message-content">
+          <div class="message-bubble">
+            <div class="message-text" [innerHTML]="formatMessage(message.text)"></div>
+          </div>
+          <span class="message-time">{{ message.timestamp | date: 'HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="message bot-message">
+        <div class="message-avatar" aria-hidden="true">…</div>
+        <div class="message-content">
+          <div class="message-bubble loading">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <textarea
+        class="user-input"
+        [(ngModel)]="userInput"
+        placeholder="e.g. Summarize my record, explain my labs…"
+        (keydown)="onKeyDown($event)"
+        [disabled]="isLoading"
+        rows="2"
+      ></textarea>
+      <button type="button" class="send-btn" (click)="sendMessage()" [disabled]="!userInput.trim() || isLoading" title="Send">
+        Send
+      </button>
+    </div>
+
+    <div class="chat-footer">
+      <p>General information from on-screen data — not medical advice. Emergencies: call emergency services.</p>
+    </div>
+  </div>
+</div>

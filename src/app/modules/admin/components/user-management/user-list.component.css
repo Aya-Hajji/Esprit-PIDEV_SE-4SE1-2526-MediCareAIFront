@@ -1,0 +1,149 @@
+.module-container {
+  padding: 24px;
+}
+
+.module-header {
+  margin-bottom: 24px;
+}
+
+.module-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.module-header p {
+  color: #6a7282;
+  font-size: 14px;
+}
+
+.controls-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.search-box {
+  flex: 1;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.filter-group select {
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background: #008236;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #006B2D;
+}
+
+.table-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table thead {
+  background: #f9fafb;
+}
+
+.data-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6a7282;
+  text-transform: uppercase;
+}
+
+.data-table td {
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-ADMIN { background: #fef3c7; color: #92400e; }
+.badge-DOCTOR { background: #dbeafe; color: #1e40af; }
+.badge-PATIENT { background: #dcfce7; color: #166534; }
+.badge-PHARMACIST { background: #e9d5ff; color: #6b21a8; }
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: #f3f4f6;
+  color: #6a7282;
+}
+
+.status-badge.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.btn-icon {
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #6a7282;
+  border-radius: 4px;
+}
+
+.btn-icon:hover {
+  background: #f3f4f6;
+  color: #1a1a1a;
+}
+
+.btn-icon.btn-danger:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.loading, .error-message, .no-data {
+  padding: 48px;
+  text-align: center;
+  color: #6a7282;
+}
+
+.error-message {
+  color: #dc2626;
+}

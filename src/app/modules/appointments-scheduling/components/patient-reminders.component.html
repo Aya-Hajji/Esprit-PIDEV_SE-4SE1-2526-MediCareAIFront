@@ -1,0 +1,32 @@
+<div class="patient-reminders">
+  <h3>Appointment reminders</h3>
+  <p class="reminder-mail-hint">
+    Reminder <strong>email</strong> is sent by Spring Boot with <strong>Gmail SMTP</strong> (<code>spring.mail.*</code> and a Google app password). The browser does not send mail — verify in server logs.
+  </p>
+
+  <div *ngIf="!appointmentId" class="no-id">No `appointmentId` set. Pass an `appointmentId` input to this component.</div>
+
+  <div *ngIf="appointmentId">
+    <div class="actions">
+      <input type="datetime-local" [(ngModel)]="newRemindAt" />
+      <select [(ngModel)]="channel">
+        <option value="NOTIFICATION">Notification (in-app)</option>
+        <option value="EMAIL">Email</option>
+        <option value="SMS">SMS</option>
+        <option value="PUSH">Push</option>
+      </select>
+      <button type="button" (click)="schedule()">Schedule</button>
+      <button type="button" (click)="sendNow()">Send now</button>
+    </div>
+    <p *ngIf="sendError" class="send-error">{{ sendError }}</p>
+
+    <div class="list">
+      <h4>Existing reminders</h4>
+      <ul>
+        <li *ngFor="let r of (reminders$ | async)">
+          <strong>{{ r.remindAt }}</strong> — {{ r.channel }} — {{ r.status }}
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

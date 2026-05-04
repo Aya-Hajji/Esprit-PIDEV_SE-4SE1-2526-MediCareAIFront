@@ -1,0 +1,126 @@
+<div class="av-module">
+  <header class="av-hero">
+    <div>
+      <h1>Doctor availability</h1>
+      <p>
+        View published slots, create or edit availability, then <strong>book a teleconsultation or in-person visit</strong> — the
+        appointment form opens with doctor and times prefilled.
+      </p>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="av-alert av-alert-error">{{ error }}</div>
+  <div *ngIf="success" class="av-alert av-alert-success">{{ success }}</div>
+  <div *ngIf="doctorLookupUnavailable" class="av-alert av-alert-info">Enter a valid doctor ID manually if the directory is empty.</div>
+
+  <section class="av-card">
+    <h2 class="av-card-title">Find slots</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="doctorId">Doctor</label>
+        <input
+          *ngIf="doctors.length > 0"
+          type="text"
+          [(ngModel)]="doctorSearchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          class="form-control"
+          placeholder="Search by name, email, or ID"
+        />
+        <select id="doctorId" [(ngModel)]="selectedDoctorId" class="form-control" [disabled]="loadingDoctors">
+          <option [ngValue]="null">Select doctor</option>
+          <option *ngFor="let doctor of filteredDoctors" [ngValue]="doctor.id">{{ getDoctorLabel(doctor) }}</option>
+        </select>
+        <input
+          *ngIf="doctorLookupUnavailable"
+          type="number"
+          min="1"
+          [(ngModel)]="selectedDoctorId"
+          class="form-control manual-input"
+          placeholder="Doctor ID"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="date">Day</label>
+        <input id="date" type="date" [(ngModel)]="selectedDate" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label for="type">Booking mode</label>
+        <select id="type" [(ngModel)]="selectedConsultationType" class="form-control">
+          <option value="VIDEO">Video teleconsultation</option>
+          <option value="PHONE">Phone consultation</option>
+          <option value="IN_PERSON">In person</option>
+        </select>
+      </div>
+    </div>
+    <div class="av-actions">
+      <button type="button" class="btn btn-primary" (click)="loadAvailableSlots()" [disabled]="loadingSlots || loadingDoctors">
+        {{ loadingSlots ? 'Loading…' : 'Load slots for day' }}
+      </button>
+    </div>
+  </section>
+
+  <section class="av-card av-card-muted">
+    <h2 class="av-card-title">{{ editingAvailabilityId ? 'Edit availability window' : 'Create availability window' }}</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="availabilityStart">Start</label>
+        <input id="availabilityStart" type="datetime-local" [(ngModel)]="availabilityStartTime" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="availabilityEnd">End</label>
+        <input id="availabilityEnd" type="datetime-local" [(ngModel)]="availabilityEndTime" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="availabilityMax">Parallel bookings</label>
+        <input id="availabilityMax" type="number" min="1" [(ngModel)]="availabilityMaxAppointments" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="availabilityBlocked">Blocked</label>
+        <select id="availabilityBlocked" [(ngModel)]="availabilityBlocked" class="form-control">
+          <option [ngValue]="false">Available</option>
+          <option [ngValue]="true">Blocked</option>
+        </select>
+      </div>
+    </div>
+    <div class="av-actions">
+      <button type="button" class="btn btn-primary" (click)="saveAvailability()" [disabled]="savingAvailability">
+        {{ savingAvailability ? 'Saving…' : editingAvailabilityId ? 'Update window' : 'Create window' }}
+      </button>
+      <button type="button" class="btn btn-danger" *ngIf="savingAvailability" (click)="cancelAvailabilitySave()">Cancel save</button>
+      <button type="button" class="btn btn-secondary" (click)="clearAvailabilityForm()" [disabled]="savingAvailability">Clear form</button>
+    </div>
+  </section>
+
+  <div class="slots-section" *ngIf="!loadingSlots && availableSlots.length > 0">
+    <h2 class="slots-heading">Slots for selected day</h2>
+    <div class="slots-grid">
+      <article class="slot-card" *ngFor="let slot of availableSlots">
+        <div class="slot-date">{{ slot.startTime | date: 'EEE, MMM d' }}</div>
+        <div class="slot-time">{{ slot.startTime | date: 'shortTime' }} – {{ slot.endTime | date: 'shortTime' }}</div>
+        <div class="slot-meta">
+          <span class="pill" [class.blocked]="slot.blocked">{{ slot.blocked ? 'Blocked' : 'Open' }}</span>
+          <span>Capacity: {{ slot.maxAppointments || 1 }}</span>
+        </div>
+        <div class="slot-actions">
+          <button type="button" class="btn btn-primary btn-block" (click)="bookSlot(slot)" [disabled]="slot.blocked">Book this slot</button>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="startEditAvailability(slot)" [disabled]="!slot.id">Edit</button>
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            (click)="deleteAvailability(slot)"
+            [disabled]="!slot.id || deletingAvailabilityId === slot.id"
+          >
+            {{ deletingAvailabilityId === slot.id ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loadingSlots">Loading slots…</div>
+  <div class="empty" *ngIf="!loadingSlots && selectedDoctorId && availableSlots.length === 0">
+    No slots for this doctor on the selected date. Try another day or create a window above.
+  </div>
+</div>

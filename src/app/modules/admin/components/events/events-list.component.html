@@ -1,0 +1,28 @@
+<div class="module-container">
+  <div class="module-header">
+    <h2>Health Events</h2>
+    <p>Manage health awareness events and campaigns</p>
+  </div>
+
+  <div class="controls-bar">
+    <button class="btn btn-primary">Create Event</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading events...</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div class="events-grid">
+    <div class="event-card" *ngFor="let event of events">
+      <h3>{{ event.title }}</h3>
+      <p>{{ event.description }}</p>
+      <div class="event-meta">
+        <span>📅 {{ event.eventDate | date:'mediumDate' }}</span>
+        <span>📍 {{ event.location }}</span>
+      </div>
+      <div class="event-actions">
+        <button class="btn-icon">Edit</button>
+        <button class="btn-icon btn-danger" (click)="deleteEvent(event.id!)">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

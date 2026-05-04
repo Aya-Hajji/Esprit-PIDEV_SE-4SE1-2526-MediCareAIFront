@@ -1,0 +1,254 @@
+<div class="create-module">
+  <header class="create-hero">
+    <div>
+      <p class="create-kicker">Booking workflow</p>
+      <h1>Schedule appointment</h1>
+      <p>
+        Same sequence as a real desk: <strong>who</strong> is seen, <strong>how</strong> (in person vs tele), then <strong>when</strong> with availability checks.
+        Prefer picking a slot from <strong>Availability</strong>; use <strong>Urgent</strong> only when policy allows a shorter lead time.
+      </p>
+      <ol class="create-scenario-steps">
+        <li><strong>People</strong> — clinician + patient (must be different accounts).</li>
+        <li><strong>Mode</strong> — video / phone drives tele session tools later.</li>
+        <li><strong>Time & context</strong> — window, time zone, reason; run suggest/match if needed.</li>
+      </ol>
+    </div>
+    <button type="button" class="btn btn-hero-secondary" (click)="navigateToAvailability()">Browse availability</button>
+  </header>
+
+  <div class="booking-step-nav" aria-label="Booking sections">
+    <span class="booking-step-nav-label">Form steps</span>
+    <div class="booking-step-buttons">
+      <button
+        type="button"
+        *ngFor="let s of bookingWorkflowSteps"
+        class="booking-step-btn"
+        [class.active]="activeBookingStep === s.id"
+        (click)="scrollToBookingSection(s.id)"
+        [attr.title]="s.hint"
+      >
+        <span class="booking-step-short">{{ s.short }}</span>
+        <span class="booking-step-text">{{ s.label }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error" role="alert">{{ error }}</div>
+  <div *ngIf="userLookupUnavailable" class="alert alert-info">Doctor or patient list is empty — enter numeric IDs manually.</div>
+  <div *ngIf="slotPrefillStale" class="alert alert-warn" role="status">
+    The slot from the link is already in the past. Choose a new time (e.g. from <a href="/appointments/availability">availability</a>) or adjust start/end below.
+  </div>
+
+  <div *ngIf="conflictWarnings.length > 0" class="alert alert-warn">
+    <strong>Availability check</strong>
+    <ul class="alert-list">
+      <li *ngFor="let conflict of conflictWarnings">
+        <span class="sev" [class.blocker]="conflict.severity === 'BLOCKER'">{{ conflict.severity }}</span>
+        {{ conflict.message }}
+      </li>
+    </ul>
+  </div>
+
+  <div *ngIf="matchCandidates.length > 0" class="match-panel">
+    <strong>Suggested slots</strong>
+    <p class="match-sub">Tap a row to apply doctor and times (non-blocking warnings may still apply).</p>
+    <div class="match-list">
+      <button
+        type="button"
+        class="match-option"
+        *ngFor="let candidate of matchCandidates"
+        (click)="applyMatchCandidate(candidate)"
+      >
+        <span class="match-doc">{{ doctorNameForMatch(candidate.doctorId) }}</span>
+        <span class="match-time">{{ candidate.startTime | date: 'short' }}</span>
+        <span class="match-score">{{ candidate.score }}/100 · {{ candidate.confidence }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loadingUsers" class="alert alert-info">Loading doctors and patients…</div>
+
+  <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="create-form" *ngIf="!loadingUsers">
+    <section class="form-card" id="booking-people">
+      <h2 class="form-card-title">People</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="doctorId">Doctor <span class="req">*</span></label>
+          <input
+            *ngIf="doctors.length > 0"
+            type="text"
+            [(ngModel)]="doctorSearchTerm"
+            [ngModelOptions]="{ standalone: true }"
+            class="form-control"
+            placeholder="Filter by name, email, or ID"
+          />
+          <select
+            id="doctorId"
+            formControlName="doctorId"
+            class="form-control"
+            [class.is-invalid]="f['doctorId'].invalid && f['doctorId'].touched"
+          >
+            <option value="">Select a doctor</option>
+            <option *ngFor="let doctor of filteredDoctors" [value]="doctor.id">{{ getUserLabel(doctor) }}</option>
+          </select>
+          <small class="field-error" *ngIf="f['doctorId'].invalid && f['doctorId'].touched">{{ getDoctorErrorMessage() }}</small>
+          <input
+            *ngIf="doctors.length === 0"
+            type="number"
+            min="1"
+            formControlName="doctorId"
+            class="form-control"
+            placeholder="Doctor ID"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="patientId">Patient <span class="req">*</span></label>
+          <input
+            *ngIf="patients.length > 0"
+            type="text"
+            [(ngModel)]="patientSearchTerm"
+            [ngModelOptions]="{ standalone: true }"
+            class="form-control"
+            placeholder="Filter by name, email, or ID"
+          />
+          <select
+            id="patientId"
+            formControlName="patientId"
+            class="form-control"
+            [class.is-invalid]="f['patientId'].invalid && f['patientId'].touched"
+          >
+            <option value="">Select a patient</option>
+            <option *ngFor="let patient of filteredPatients" [value]="patient.id">{{ getUserLabel(patient) }}</option>
+          </select>
+          <small class="field-error" *ngIf="f['patientId'].invalid && f['patientId'].touched">{{ getPatientErrorMessage() }}</small>
+          <small class="field-error" *ngIf="hasSameUserSelection()">Doctor and patient must be different users.</small>
+          <input
+            *ngIf="patients.length === 0"
+            type="number"
+            min="1"
+            formControlName="patientId"
+            class="form-control"
+            placeholder="Patient ID"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="form-card" id="booking-mode">
+      <h2 class="form-card-title">Consultation mode</h2>
+      <div class="type-chips" role="group" aria-label="Consultation type">
+        <button
+          type="button"
+          class="type-chip"
+          [class.active]="f['consultationType'].value === 'VIDEO'"
+          (click)="selectConsultationType('VIDEO')"
+        >
+          <span class="type-chip-title">Video</span>
+          <span class="type-chip-desc">Teleconsultation</span>
+        </button>
+        <button
+          type="button"
+          class="type-chip"
+          [class.active]="f['consultationType'].value === 'PHONE'"
+          (click)="selectConsultationType('PHONE')"
+        >
+          <span class="type-chip-title">Phone</span>
+          <span class="type-chip-desc">Audio visit</span>
+        </button>
+        <button
+          type="button"
+          class="type-chip"
+          [class.active]="f['consultationType'].value === 'IN_PERSON'"
+          (click)="selectConsultationType('IN_PERSON')"
+        >
+          <span class="type-chip-title">In person</span>
+          <span class="type-chip-desc">On-site</span>
+        </button>
+      </div>
+      <div class="type-fallback-wrap">
+        <label for="consultationType">Or select from list</label>
+        <select id="consultationType" formControlName="consultationType" class="form-control">
+          <option *ngFor="let type of consultationTypes" [value]="type">{{ type.replace('_', ' ') }}</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="form-card" id="booking-time">
+      <h2 class="form-card-title">Time & notes</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startTime">Start <span class="req">*</span></label>
+          <input
+            type="datetime-local"
+            id="startTime"
+            formControlName="startTime"
+            class="form-control"
+            (change)="onStartTimeChange()"
+            [class.is-invalid]="f['startTime'].invalid && f['startTime'].touched"
+          />
+          <small class="field-error" *ngIf="f['startTime'].invalid && f['startTime'].touched">{{ getStartTimeErrorMessage() }}</small>
+        </div>
+        <div class="form-group">
+          <label for="endTime">End <span class="req">*</span></label>
+          <input
+            type="datetime-local"
+            id="endTime"
+            formControlName="endTime"
+            class="form-control"
+            [class.is-invalid]="f['endTime'].invalid && (f['endTime'].touched || appointmentForm.getError('endTimeBeforeStart'))"
+          />
+          <small class="field-error" *ngIf="f['endTime'].invalid && f['endTime'].touched">{{ getEndTimeErrorMessage() }}</small>
+          <small class="field-error" *ngIf="appointmentForm.getError('endTimeBeforeStart')">End must be after start.</small>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="timeZone">Time zone <span class="req">*</span></label>
+          <input
+            type="text"
+            id="timeZone"
+            formControlName="timeZone"
+            placeholder="e.g. Africa/Tunis, UTC"
+            class="form-control"
+            [class.is-invalid]="f['timeZone'].invalid && f['timeZone'].touched"
+          />
+          <small class="field-error" *ngIf="f['timeZone'].invalid && f['timeZone'].touched">{{ getTimeZoneErrorMessage() }}</small>
+        </div>
+        <div class="form-group form-group-inline">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="urgent" />
+            <span>Urgent slot</span>
+          </label>
+          <p class="field-hint">Shorter minimum delay before start when your policy allows it.</p>
+        </div>
+      </div>
+      <div class="form-group full-width">
+        <label for="reasonForVisit">Reason for visit</label>
+        <textarea
+          id="reasonForVisit"
+          formControlName="reasonForVisit"
+          class="form-control"
+          placeholder="Chief complaint, referral context, or goals for the visit"
+          rows="3"
+          maxlength="500"
+          [class.is-invalid]="f['reasonForVisit'].invalid && f['reasonForVisit'].touched"
+        ></textarea>
+        <div class="textarea-meta">
+          <span>{{ f['reasonForVisit'].value?.length || 0 }}/500</span>
+          <span class="field-error" *ngIf="f['reasonForVisit'].invalid && f['reasonForVisit'].touched">{{ getReasonErrorMessage() }}</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="form-footer">
+      <button type="button" class="btn btn-secondary" (click)="findBestMatches()" [disabled]="matchingLoading">
+        {{ matchingLoading ? 'Finding matches…' : 'Suggest slots' }}
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitDisabled()">
+        {{ loading ? 'Saving…' : 'Schedule appointment' }}
+      </button>
+      <button type="button" class="btn btn-ghost" (click)="onCancel()" [disabled]="loading">Cancel</button>
+    </div>
+  </form>
+</div>

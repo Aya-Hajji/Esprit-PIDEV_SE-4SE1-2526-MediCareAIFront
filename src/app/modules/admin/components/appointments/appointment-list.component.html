@@ -1,0 +1,332 @@
+<div class="appt-module">
+  <header class="appt-hero">
+    <div class="appt-hero-text">
+      <p class="hero-kicker">Scheduling &amp; access</p>
+      <h1>Appointments &amp; availability</h1>
+      <p>
+        Operate like a real front desk: see today’s load, <strong>book or move</strong> visits, nudge patients with reminders, and
+        <strong>join telehealth</strong> from the same agenda.
+      </p>
+    </div>
+    <div class="appt-hero-chips" role="list">
+      <span class="chip" role="listitem">Triage &amp; filters</span>
+      <span class="chip" role="listitem">Book &amp; reschedule</span>
+      <span class="chip" role="listitem">Remind &amp; join</span>
+    </div>
+  </header>
+
+  <section class="appt-metier-panel" aria-label="Scheduling scenario on this page">
+    <h2 class="appt-metier-title">What you do here (in order)</h2>
+    <p class="appt-scenario-lead" id="ref-scenario">
+      <strong>1) Sense</strong> the queue (totals, tele). <strong>2) Find</strong> a visit (status, search, upcoming).
+      <strong>3) Act</strong> on a row: details, calendar, reminder, or video room.
+    </p>
+    <ol class="appt-workflow-scenario">
+      <li><strong>Capacity</strong> — stats show scheduled load and near-term tele visits.</li>
+      <li><strong>Workflow</strong> — new appointment, availability explorer, reminder center, advanced search.</li>
+      <li><strong>Row ops</strong> — reschedule, no-show, cancel, sync to Google / Outlook / ICS, join session.</li>
+    </ol>
+  </section>
+
+  <div class="scheduling-step-nav" aria-label="Jump to section">
+    <span class="scheduling-step-nav-label">On this page</span>
+    <div class="scheduling-step-buttons">
+      <button
+        type="button"
+        *ngFor="let s of schedulingWorkflowSteps"
+        class="scheduling-step-btn"
+        [class.active]="activeSchedulingStep === s.id"
+        (click)="scrollToSchedulingSection(s.id)"
+        [attr.title]="s.hint"
+      >
+        <span class="scheduling-step-short">{{ s.short }}</span>
+        <span class="scheduling-step-text">{{ s.label }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="scheduling-layout">
+    <aside class="scheduling-journey" aria-label="Intake checklist">
+      <h3 class="scheduling-journey-title">Agenda intake</h3>
+      <ol class="scheduling-journey-list">
+        <li [class.intake-done]="journeyAgendaLoaded">
+          <span class="journey-step-title">Data</span>
+          <span class="journey-step-desc">Agenda loaded from API (or local demo)</span>
+        </li>
+        <li [class.intake-done]="journeyHasVisits">
+          <span class="journey-step-title">Visits</span>
+          <span class="journey-step-desc">At least one row in the table (or create from New appointment)</span>
+        </li>
+        <li>
+          <span class="journey-step-title">Next</span>
+          <span class="journey-step-desc">Open <strong>Details</strong> for a full visit sheet, or <strong>Join session</strong> for tele</span>
+        </li>
+      </ol>
+    </aside>
+
+    <div class="scheduling-main">
+  <div class="stats-bar appt-stats-simple" *ngIf="!loading" id="appt-stats">
+    <div class="stat-item">
+      <span class="stat-label">Total</span>
+      <span class="stat-value">{{ appointmentStats.total }}</span>
+    </div>
+    <div class="stat-item stat-scheduled">
+      <span class="stat-label">Scheduled</span>
+      <span class="stat-value">{{ appointmentStats.scheduled }}</span>
+    </div>
+    <div class="stat-item stat-tele">
+      <span class="stat-label">Upcoming tele</span>
+      <span class="stat-value">{{ appointmentStats.teleUpcoming }}</span>
+    </div>
+  </div>
+
+  <div class="toolbar" id="appt-actions">
+    <div class="toolbar-filters">
+      <label class="sr-only" for="statusFilter">Filter by status</label>
+      <select id="statusFilter" [(ngModel)]="selectedStatus" class="form-control filter-select">
+        <option value="ALL">All statuses</option>
+        <option value="SCHEDULED">Scheduled</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="CANCELLED">Cancelled</option>
+        <option value="NO_SHOW">No-show</option>
+      </select>
+    </div>
+    <div class="toolbar-actions">
+      <span class="toolbar-group">
+        <button type="button" class="btn btn-secondary" (click)="openAvailabilityExplorer()">Availability</button>
+        <button type="button" class="btn btn-secondary" (click)="openReminderCenter()">Reminders</button>
+      </span>
+      <span class="toolbar-group toolbar-group-primary">
+        <button type="button" class="btn btn-primary" (click)="scheduleAppointment()">New appointment</button>
+      </span>
+      <span class="toolbar-group">
+        <button type="button" class="btn btn-outline-secondary" (click)="resetTestData()">Reset demo</button>
+        <button type="button" class="btn btn-outline-secondary" (click)="showAdvancedFilters = !showAdvancedFilters">
+          {{ showAdvancedFilters ? 'Hide search' : 'Advanced search' }}
+        </button>
+      </span>
+    </div>
+  </div>
+
+  <section class="filter-card" *ngIf="showAdvancedFilters" aria-labelledby="advFiltersTitle">
+    <h2 id="advFiltersTitle" class="filter-card-title">Search & upcoming slots (local / API)</h2>
+    <div class="api-search-grid">
+      <input class="form-control" type="text" placeholder="Upcoming: doctor keyword" [(ngModel)]="upcomingDoctorKeyword" />
+      <input class="form-control" type="number" min="1" placeholder="Window (minutes)" [(ngModel)]="upcomingWindowMinutes" />
+      <button type="button" class="btn btn-secondary" (click)="applyUpcomingFilter()" [disabled]="loading">Load upcoming</button>
+
+      <select class="form-control" [(ngModel)]="searchDoctorId" title="Filter by doctor">
+        <option [ngValue]="null">Any doctor</option>
+        <option *ngFor="let d of filterDoctors" [ngValue]="d.id">{{ doctorOptionLabel(d) }}</option>
+      </select>
+      <input class="form-control" type="text" placeholder="Patient keyword" [(ngModel)]="searchPatientKeyword" />
+      <input class="form-control" type="text" placeholder="Reason keyword" [(ngModel)]="searchReasonKeyword" />
+    </div>
+    <div class="api-search-actions">
+      <button type="button" class="btn btn-primary" (click)="applyAdvancedSearch()" [disabled]="loading">Run search</button>
+      <button type="button" class="btn btn-outline-secondary" (click)="clearApiFilters()" [disabled]="loading">Clear</button>
+      <label class="calendar-label" for="calProvider">Calendar</label>
+      <select id="calProvider" [(ngModel)]="calendarProvider" class="form-control compact-control" title="Calendar provider">
+        <option value="GOOGLE">Google</option>
+        <option value="OUTLOOK">Outlook</option>
+        <option value="ICS">ICS file</option>
+      </select>
+      <span class="api-filter-mode">Source : {{ apiFilterMode }}</span>
+    </div>
+  </section>
+
+  <div *ngIf="loading" class="loading-state" role="status" aria-live="polite">
+    <span class="loading-spinner" aria-hidden="true"></span>
+    <span class="loading-text">Loading appointments…</span>
+  </div>
+  <div *ngIf="error" class="alert-banner alert-banner-error" role="alert">{{ error }}</div>
+  <div *ngIf="actionSuccess" class="alert-banner alert-banner-success" role="status">{{ actionSuccess }}</div>
+  <div *ngIf="actionError" class="alert-banner alert-banner-error" role="alert">{{ actionError }}</div>
+
+  <div id="appt-agenda" class="appt-agenda-section">
+  <div class="table-panel" *ngIf="!loading && appointments.length > 0">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Doctor</th>
+            <th>Patient</th>
+            <th>Type</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let appointment of filteredAppointments" [class.urgent]="appointment.urgent">
+            <td class="nowrap">{{ formatDateTime(appointment.startTime) }}</td>
+            <td><span class="name-pill">{{ doctorDisplayName(appointment) }}</span></td>
+            <td><span class="name-pill">{{ patientDisplayName(appointment) }}</span></td>
+            <td>
+              <span class="badge badge-type">{{ formatConsultationType(appointment.consultationType) }}</span>
+            </td>
+            <td class="reason-cell">{{ truncateText(appointment.reasonForVisit) }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(appointment.status)">{{ appointment.status }}</span>
+              <span *ngIf="appointment.urgent" class="badge badge-urgent">Urgent</span>
+            </td>
+            <td>
+              <div class="action-grid">
+                <button
+                  type="button"
+                  class="action-btn"
+                  (click)="openReschedule(appointment)"
+                  *ngIf="appointment.status === 'SCHEDULED'"
+                  title="Reschedule"
+                >
+                  Reschedule
+                </button>
+                <button type="button" class="action-btn" (click)="openReminderScheduler(appointment)" title="Schedule reminder">Reminder</button>
+                <button type="button" class="action-btn" (click)="sendReminderNow(appointment.id!)" title="Send reminder now">Send now</button>
+                <button type="button" class="action-btn" (click)="syncCalendar(appointment.id!)" title="Sync to calendar">Calendar</button>
+                <button
+                  type="button"
+                  class="action-btn action-accent"
+                  (click)="openTeleconsultation(appointment.id!)"
+                  *ngIf="isTeleconsultation(appointment)"
+                  title="Open teleconsultation"
+                >
+                  Join session
+                </button>
+                <button type="button" class="action-btn" (click)="openDetails(appointment.id!)" title="Details">Details</button>
+                <button
+                  type="button"
+                  class="action-btn action-warn"
+                  (click)="markAsNoShow(appointment.id!)"
+                  *ngIf="appointment.status === 'SCHEDULED'"
+                  title="Mark no-show"
+                >
+                  No-show
+                </button>
+                <button
+                  type="button"
+                  class="action-btn action-danger"
+                  (click)="cancelAppointment(appointment.id!)"
+                  *ngIf="appointment.status === 'SCHEDULED'"
+                  title="Cancel appointment"
+                >
+                  Cancel
+                </button>
+                <button type="button" class="action-btn action-danger ghost" (click)="deleteAppointment(appointment.id!)" title="Delete record">Delete</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && appointments.length === 0" class="empty-state">
+    <h3>No appointments yet</h3>
+    <p>Start the flow: pick a slot in <strong>Availability</strong>, then confirm on <strong>New appointment</strong>, or use demo reset if you are testing locally.</p>
+    <button type="button" class="btn btn-primary" (click)="scheduleAppointment()">Schedule appointment</button>
+  </div>
+  </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="rescheduleAppointmentId" (click)="closeReschedule()"></div>
+  <div class="modal-sheet" *ngIf="rescheduleAppointmentId" role="dialog" aria-labelledby="reschedTitle">
+    <h3 id="reschedTitle">{{ rescheduleModalTitle }}</h3>
+    <p class="modal-hint">Conflicts are checked against doctor availability, buffers, and double-booking rules.</p>
+    <div class="panel-grid">
+      <div class="form-group">
+        <label for="rsStart">New start</label>
+        <input id="rsStart" type="datetime-local" [(ngModel)]="rescheduleStartTime" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="rsEnd">New end</label>
+        <input id="rsEnd" type="datetime-local" [(ngModel)]="rescheduleEndTime" class="form-control" />
+      </div>
+    </div>
+    <div class="panel-actions">
+      <button type="button" class="btn btn-primary" (click)="submitReschedule()">Save new time</button>
+      <button type="button" class="btn btn-secondary" (click)="closeReschedule()">Close</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="reminderAppointmentId" (click)="closeReminderScheduler()"></div>
+  <div class="modal-sheet" *ngIf="reminderAppointmentId" role="dialog" aria-labelledby="remTitle">
+    <h3 id="remTitle">{{ reminderModalTitle }}</h3>
+    <p class="modal-hint">
+      <strong>Scheduled reminder:</strong> “Send at” must be in the future and at least <strong>24 hours before</strong> the visit (your device local time).
+      Default is the latest moment that still meets that rule (24h before start).
+      <strong>Send now</strong> bypasses scheduling and triggers an immediate reminder (local time).
+      <strong>Email</strong> uses <strong>Gmail SMTP</strong> through Spring Boot (<code>spring.mail.*</code> — app password on a Google account). This UI does not send mail; check server logs to confirm delivery.
+    </p>
+    <p class="modal-hint modal-hint-warn" *ngIf="reminderLeadUnavailable">
+      This appointment is within 24 hours — you cannot schedule a compliant advance reminder. Use <strong>Send now</strong> on the row, or reschedule the visit.
+    </p>
+    <div class="panel-grid">
+      <div class="form-group">
+        <label for="remAt">Send at</label>
+        <input id="remAt" type="datetime-local" [(ngModel)]="reminderAt" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="remCh">Channel</label>
+        <select id="remCh" [(ngModel)]="reminderChannel" (ngModelChange)="syncReminderProviderForChannel()" class="form-control">
+          <option value="NOTIFICATION">Notification (in-app)</option>
+          <option value="EMAIL">Email</option>
+          <option value="SMS">SMS</option>
+          <option value="PUSH">Push</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="remPr">Provider</label>
+        <select
+          id="remPr"
+          [(ngModel)]="reminderProvider"
+          class="form-control"
+          [disabled]="reminderChannel === 'EMAIL' || reminderChannel === 'NOTIFICATION' || reminderChannel === 'PUSH'"
+        >
+          <option *ngIf="reminderChannel !== 'SMS'" value="LOCAL">Gmail / SMTP (Spring)</option>
+          <option *ngIf="reminderChannel === 'SMS'" value="TWILIO">Twilio (SMS)</option>
+        </select>
+      </div>
+    </div>
+    <div class="panel-actions">
+      <button type="button" class="btn btn-primary" (click)="scheduleReminder()">Schedule reminder</button>
+      <button type="button" class="btn btn-secondary" (click)="closeReminderScheduler()">Close</button>
+    </div>
+  </div>
+
+  <div
+    class="agenda-toast-host"
+    *ngIf="agendaToast as t"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="agenda-toast" [class.agenda-toast--success]="t.kind === 'success'" [class.agenda-toast--error]="t.kind === 'error'">
+      <div class="agenda-toast-accent" aria-hidden="true"></div>
+      <div class="agenda-toast-icon" aria-hidden="true">
+        <svg *ngIf="t.kind === 'success'" width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <path d="m8.5 12.5 2.5 2.5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <svg *ngIf="t.kind === 'error'" width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="agenda-toast-copy">
+        <p class="agenda-toast-title">{{ t.title }}</p>
+        <p class="agenda-toast-body">{{ t.body }}</p>
+      </div>
+      <button type="button" class="agenda-toast-dismiss" (click)="dismissAgendaToast()" aria-label="Dismiss notification">×</button>
+    </div>
+  </div>
+</div>

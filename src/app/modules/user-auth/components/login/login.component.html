@@ -1,0 +1,289 @@
+<div class="login-page" [class.modal-mode]="modalMode">
+  <div class="login-card">
+    @if (modalMode) {
+      <button class="modal-close-btn" type="button" (click)="closeModal()" aria-label="Close login modal">
+        ✕
+      </button>
+    }
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+
+      <!-- ROLE SELECTION VIEW -->
+      @if (!selectedRole) {
+        <div class="panel-inner">
+          <div class="brand" (click)="navigateHome()">
+            <img src="https://api.builder.io/api/v1/image/assets/TEMP/2e6d3cfbb1b2ec614b2d472fa9c587bcbcd6facd?width=80" alt="MediCareAI Logo" class="brand-logo" />
+            <span class="brand-name">MediCareAI</span>
+          </div>
+
+          <div class="welcome-text">
+            <h1 class="welcome-heading">Welcome Back</h1>
+            <p class="welcome-sub">Select your role to access the platform</p>
+          </div>
+
+          <div class="role-list">
+            @for (role of roles; track role.id) {
+              <button class="role-card" (click)="selectRole(role)">
+                <div class="role-icon-wrap" [style.background]="role.iconBg">
+                  <!-- Patient -->
+                  @if (role.icon === 'patient') {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M7 20.662V19C7 18.4696 7.21071 17.9609 7.58579 17.5858C7.96086 17.2107 8.46957 17 9 17H15C15.5304 17 16.0391 17.2107 16.4142 17.5858C16.7893 17.9609 17 18.4696 17 19V20.662" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                  <!-- Doctor -->
+                  @if (role.icon === 'doctor') {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11 2V4" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M5 2V4" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M5 3H4C3.46957 3 2.96086 3.21071 2.58579 3.58579C2.21071 3.96086 2 4.46957 2 5V9C2 10.5913 2.63214 12.1174 3.75736 13.2426C4.88258 14.3679 6.4087 15 8 15C9.5913 15 11.1174 14.3679 12.2426 13.2426C13.3679 12.1174 14 10.5913 14 9V5C14 4.46957 13.7893 3.96086 13.4142 3.58579C13.0391 3.21071 12.5304 3 12 3H11" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M8 15C8 16.5913 8.63214 18.1174 9.75736 19.2426C10.8826 20.3679 12.4087 21 14 21C15.5913 21 17.1174 20.3679 18.2426 19.2426C19.3679 18.1174 20 16.5913 20 15V12" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M20 12C21.1046 12 22 11.1046 22 10C22 8.89543 21.1046 8 20 8C18.8954 8 18 8.89543 18 10C18 11.1046 18.8954 12 20 12Z" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                  <!-- Nurse -->
+                  @if (role.icon === 'nurse') {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9 12H15" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 9V15" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                  <!-- Pharmacist -->
+                  @if (role.icon === 'pharmacist') {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M10.5 20.5L20.5 10.5C20.9673 10.0421 21.3391 9.49606 21.5941 8.89352C21.849 8.29099 21.982 7.64389 21.9853 6.98965C21.9886 6.33541 21.8622 5.687 21.6133 5.08192C21.3645 4.47684 20.9982 3.92709 20.5355 3.46447C20.0729 3.00184 19.5232 2.63552 18.9181 2.38668C18.313 2.13783 17.6646 2.01141 17.0104 2.01471C16.3561 2.01802 15.709 2.15098 15.1065 2.40593C14.5039 2.66087 13.9579 3.03273 13.5 3.5L3.5 13.5C3.03273 13.9579 2.66087 14.5039 2.40593 15.1065C2.15098 15.709 2.01802 16.3561 2.01471 17.0104C2.01141 17.6646 2.13783 18.313 2.38668 18.9181C2.63552 19.5232 3.00184 20.0729 3.46447 20.5355C3.92709 20.9982 4.47684 21.3645 5.08192 21.6133C5.687 21.8622 6.33541 21.9886 6.98965 21.9853C7.64389 21.982 8.29099 21.849 8.89352 21.5941C9.49606 21.3391 10.0421 20.9673 10.5 20.5Z" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M8.5 8.5L15.5 15.5" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                  <!-- Admin -->
+                  @if (role.icon === 'admin') {
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20 13C20 18 16.5 20.5 12.34 21.95C12.1222 22.0238 11.8855 22.0202 11.67 21.94C7.5 20.5 4 18 4 13V5.99996C4 5.73474 4.10536 5.48039 4.29289 5.29285C4.48043 5.10532 4.73478 4.99996 5 4.99996C7 4.99996 9.5 3.79996 11.24 2.27996C11.4519 2.09896 11.7214 1.99951 12 1.99951C12.2786 1.99951 12.5481 2.09896 12.76 2.27996C14.51 3.80996 17 4.99996 19 4.99996C19.2652 4.99996 19.5196 5.10532 19.7071 5.29285C19.8946 5.48039 20 5.73474 20 5.99996V13Z" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M9 12L11 14L15 10" [attr.stroke]="role.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                </div>
+                <div class="role-text">
+                  <span class="role-label">{{ role.label }}</span>
+                  <span class="role-subtitle">{{ role.subtitle }}</span>
+                </div>
+                <svg class="arrow-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.16663 10H15.8333" stroke="#D1D5DC" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 4.16663L15.8333 9.99996L10 15.8333" stroke="#D1D5DC" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+          <p class="hipaa-note">Secure HIPAA-Compliant Access</p>
+        </div>
+      }
+
+      <!-- SIGN IN FORM VIEW -->
+      @if (selectedRole) {
+        <div class="panel-inner signin-panel">
+          <div class="brand" (click)="navigateHome()">
+            <img src="https://api.builder.io/api/v1/image/assets/TEMP/2e6d3cfbb1b2ec614b2d472fa9c587bcbcd6facd?width=80" alt="MediCareAI Logo" class="brand-logo" />
+            <span class="brand-name">MediCareAI</span>
+          </div>
+
+          <div class="signin-role-badge" [style.background]="selectedRole.iconBg">
+            <div class="signin-role-icon" [style.background]="selectedRole.iconBg">
+              <!-- Patient -->
+              @if (selectedRole.icon === 'patient') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7 20.662V19C7 18.4696 7.21071 17.9609 7.58579 17.5858C7.96086 17.2107 8.46957 17 9 17H15C15.5304 17 16.0391 17.2107 16.4142 17.5858C16.7893 17.9609 17 18.4696 17 19V20.662" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+              @if (selectedRole.icon === 'doctor') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11 2V4" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M5 2V4" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M5 3H4C3.46957 3 2.96086 3.21071 2.58579 3.58579C2.21071 3.96086 2 4.46957 2 5V9C2 10.5913 2.63214 12.1174 3.75736 13.2426C4.88258 14.3679 6.4087 15 8 15C9.5913 15 11.1174 14.3679 12.2426 13.2426C13.3679 12.1174 14 10.5913 14 9V5C14 4.46957 13.7893 3.96086 13.4142 3.58579C13.0391 3.21071 12.5304 3 12 3H11" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 15C8 16.5913 8.63214 18.1174 9.75736 19.2426C10.8826 20.3679 12.4087 21 14 21C15.5913 21 17.1174 20.3679 18.2426 19.2426C19.3679 18.1174 20 16.5913 20 15V12" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20 12C21.1046 12 22 11.1046 22 10C22 8.89543 21.1046 8 20 8C18.8954 8 18 8.89543 18 10C18 11.1046 18.8954 12 20 12Z" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+              @if (selectedRole.icon === 'nurse') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 12H15" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 9V15" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+              @if (selectedRole.icon === 'pharmacist') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.5 20.5L20.5 10.5C20.9673 10.0421 21.3391 9.49606 21.5941 8.89352C21.849 8.29099 21.982 7.64389 21.9853 6.98965C21.9886 6.33541 21.8622 5.687 21.6133 5.08192C21.3645 4.47684 20.9982 3.92709 20.5355 3.46447C20.0729 3.00184 19.5232 2.63552 18.9181 2.38668C18.313 2.13783 17.6646 2.01141 17.0104 2.01471C16.3561 2.01802 15.709 2.15098 15.1065 2.40593C14.5039 2.66087 13.9579 3.03273 13.5 3.5L3.5 13.5C3.03273 13.9579 2.66087 14.5039 2.40593 15.1065C2.15098 15.709 2.01802 16.3561 2.01471 17.0104C2.01141 17.6646 2.13783 18.313 2.38668 18.9181C2.63552 19.5232 3.00184 20.0729 3.46447 20.5355C3.92709 20.9982 4.47684 21.3645 5.08192 21.6133C5.687 21.8622 6.33541 21.9886 6.98965 21.9853C7.64389 21.982 8.29099 21.849 8.89352 21.5941C9.49606 21.3391 10.0421 20.9673 10.5 20.5Z" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8.5 8.5L15.5 15.5" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+              @if (selectedRole.icon === 'admin') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 13C20 18 16.5 20.5 12.34 21.95C12.1222 22.0238 11.8855 22.0202 11.67 21.94C7.5 20.5 4 18 4 13V5.99996C4 5.73474 4.10536 5.48039 4.29289 5.29285C4.48043 5.10532 4.73478 4.99996 5 4.99996C7 4.99996 9.5 3.79996 11.24 2.27996C11.4519 2.09896 11.7214 1.99951 12 1.99951C12.2786 1.99951 12.5481 2.09896 12.76 2.27996C14.51 3.80996 17 4.99996 19 4.99996C19.2652 4.99996 19.5196 5.10532 19.7071 5.29285C19.8946 5.48039 20 5.73474 20 5.99996V13Z" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M9 12L11 14L15 10" [attr.stroke]="selectedRole.iconColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+            </div>
+            <div class="signin-role-info">
+              <span class="signin-role-name">{{ selectedRole.label }}</span>
+              <span class="signin-role-sub">{{ selectedRole.subtitle }}</span>
+            </div>
+          </div>
+
+          <div class="signin-heading-group">
+            <h2 class="signin-heading">Sign In</h2>
+            <p class="signin-sub">Enter your credentials to continue</p>
+          </div>
+
+          <form class="signin-form" (ngSubmit)="onSignIn()">
+            @if (errorMessage) {
+              <div class="error-banner">{{ errorMessage }}</div>
+            }
+
+            <div class="form-field">
+              <label class="field-label" for="email">Email Address</label>
+              <div class="input-wrap">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polyline points="22,6 12,13 2,6" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input
+                  id="email"
+                  type="email"
+                  class="text-input"
+                  placeholder="Enter your email"
+                  [(ngModel)]="email"
+                  name="email"
+                  autocomplete="email"
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label" for="password">Password</label>
+              <div class="input-wrap">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="text-input"
+                  placeholder="Enter your password"
+                  [(ngModel)]="password"
+                  name="password"
+                  autocomplete="current-password"
+                />
+                <button type="button" class="toggle-password" (click)="togglePassword()">
+                  @if (!showPassword) {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="12" cy="12" r="3" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                  @if (showPassword) {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <line x1="1" y1="1" x2="23" y2="23" stroke="#99A1AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="signin-btn" [class.loading]="isLoading" [disabled]="isLoading">
+              @if (isLoading) {
+                <span class="spinner"></span>
+                Signing In...
+              }
+              @if (!isLoading) {
+                Sign In
+              }
+            </button>
+          </form>
+
+          <button class="back-btn" (click)="goBack()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Back to role selection
+          </button>
+
+          <p class="signup-prompt">
+            Don't have an account? 
+            <button class="signup-link" (click)="navigateToSignup()">Sign Up</button>
+          </p>
+
+          <p class="forgot-password-prompt">
+            <button class="forgot-password-link" (click)="navigateToForgotPassword()">Forgot Password?</button>
+          </p>
+
+          <p class="hipaa-note">Secure HIPAA-Compliant Access</p>
+        </div>
+      }
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="right-glow right-glow--top"></div>
+      <div class="right-glow right-glow--bottom"></div>
+
+      <div class="right-content">
+        <div class="security-top">
+          <div class="lock-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z" stroke="#7BF1A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#7BF1A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="security-title">Enterprise Grade Security</h2>
+          <p class="security-desc">
+            MediCareAI uses advanced 256-bit encryption and multi-factor authentication to ensure patient data remains confidential and secure.
+          </p>
+        </div>
+
+        <div class="security-features">
+          <div class="security-feature">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4.5 6L5.5 7L7.5 5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="feature-label">Biometric Authentication Support</span>
+          </div>
+          <div class="security-feature">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4.5 6L5.5 7L7.5 5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="feature-label">Real-time Audit Logging</span>
+          </div>
+          <div class="security-feature">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 11C8.76142 11 11 8.76142 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4.5 6L5.5 7L7.5 5" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="feature-label">End-to-End Encryption</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
