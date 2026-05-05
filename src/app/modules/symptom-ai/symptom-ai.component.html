@@ -1,33 +1,91 @@
-<div class="module-dashboard symptom-ai">
-  <div class="dashboard-header">
-    <h2>Symptom AI Overview</h2>
-    <p>AI symptom analysis, risk stratification, and triage suggestions.</p>
+<div class="chatbot-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-info">
+      <span class="header-icon">{{ isDoctor ? '👨‍⚕️' : '🤖' }}</span>
+      <div>
+        <h2>Medical AI Assistant</h2>
+        <span class="role-badge" [class.doctor]="isDoctor" [class.patient]="isPatient">
+          {{ isDoctor ? 'Doctor Mode — Disease Diagnosis' : 'Patient Mode — Specialty Guidance' }}
+        </span>
+      </div>
+    </div>
+    <button (click)="clearChat()" class="clear-btn" title="Effacer la conversation">🗑️</button>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <h3>Checks Today</h3>
-      <p class="stat-number">124</p>
-      <span class="stat-change positive">+9% today</span>
-    </div>
-    <div class="stat-card">
-      <h3>High-Risk Flags</h3>
-      <p class="stat-number">18</p>
-      <span class="stat-change">Needs follow-up</span>
-    </div>
-    <div class="stat-card">
-      <h3>Avg. Completion</h3>
-      <p class="stat-number">92%</p>
-      <span class="stat-change positive">Excellent engagement</span>
+  <!-- Messages -->
+  <div class="chat-messages" #chatContainer>
+    <ng-container *ngFor="let message of messages">
+      <!-- Simple text message -->
+      <div *ngIf="!message.specialties && !message.diseases" class="message" [ngClass]="message.type">
+        <div class="message-content">{{ message.content }}</div>
+        <div class="message-time">{{ message.timestamp | date:'HH:mm' }}</div>
+      </div>
+
+      <!-- Patient result: specialties only (no diseases) -->
+      <div *ngIf="message.specialties && message.specialties.length > 0" class="message bot result-message">
+        <div class="message-content">{{ message.content }}</div>
+        <div class="specialties-list">
+          <div *ngFor="let specialty of message.specialties" class="specialty-card">
+            <div class="specialty-header">
+              <span class="specialty-icon">🏥</span>
+              <strong class="specialty-name">{{ specialty.name }}</strong>
+            </div>
+            <p *ngIf="specialty.description" class="specialty-desc">{{ specialty.description }}</p>
+          </div>
+        </div>
+        <div class="message-time">{{ message.timestamp | date:'HH:mm' }}</div>
+      </div>
+
+      <!-- Doctor result: diseases only (no specialty badge) -->
+      <div *ngIf="message.diseases && message.diseases.length > 0" class="message bot result-message">
+        <div class="message-content">{{ message.content }}</div>
+        <div class="diseases-list">
+          <div *ngFor="let disease of message.diseases" class="disease-card">
+            <div class="disease-header">
+              <span class="disease-icon">🔬</span>
+              <strong class="disease-name">{{ disease.name }}</strong>
+            </div>
+            <p *ngIf="disease.description" class="disease-desc">{{ disease.description }}</p>
+            <div *ngIf="disease.symptoms && disease.symptoms.length > 0" class="symptoms-tags">
+              <span class="symptoms-label">Symptoms:</span>
+              <span *ngFor="let symptom of disease.symptoms" class="symptom-tag">{{ symptom }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="message-time">{{ message.timestamp | date:'HH:mm' }}</div>
+      </div>
+    </ng-container>
+
+    <!-- Typing indicator -->
+    <div *ngIf="isTyping" class="message bot typing">
+      <div class="message-content">
+        <span class="typing-indicator">
+          <span></span><span></span><span></span>
+        </span>
+        Analyzing...
+      </div>
     </div>
   </div>
 
-  <div class="quick-actions">
-    <h3>Quick Actions</h3>
-    <div class="action-grid">
-      <a class="action-btn" routerLink="/symptom-ai">Start Symptom Check</a>
-      <a class="action-btn" routerLink="/appointments/create">Book Appointment</a>
-      <a class="action-btn" routerLink="/pharmacy/medicines">Find Medicines</a>
+  <!-- Input -->
+  <div class="chat-input">
+    <div class="input-hint">
+      {{ isDoctor ? 'Ex: Fever, Cough, Chest pain' : 'Ex: Headache, Fatigue, Fever' }}
+    </div>
+    <div class="input-row">
+      <input
+        id="symptom-ai-input"
+        name="symptomAiInput"
+        [(ngModel)]="userInput"
+        (keydown)="onEnterKey($event)"
+        [placeholder]="isDoctor ? 'Patient symptoms...' : 'Describe your symptoms...'"
+        [disabled]="isTyping"
+        autocomplete="off"
+      />
+      <button (click)="sendMessage()" [disabled]="isTyping || !userInput.trim()" class="send-btn">
+        {{ isTyping ? '⏳' : '➤' }}
+      </button>
     </div>
   </div>
 </div>

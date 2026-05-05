@@ -1,90 +1,355 @@
-.module-dashboard {
-  padding: 24px;
+.chatbot-container {
+  max-width: 700px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  height: 640px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
 }
 
-.dashboard-header {
-  margin-bottom: 24px;
+/* ── Header ── */
+.chat-header {
+  background: linear-gradient(135deg, #00a082 0%, #008866 100%);
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
 }
 
-.dashboard-header h2 {
-  margin: 0 0 8px;
-  font-size: 28px;
-  color: #1a1a1a;
-}
-
-.dashboard-header p {
-  margin: 0;
-  color: #6a7282;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card h3 {
-  margin: 0 0 8px;
-  font-size: 14px;
-  color: #6a7282;
-  font-weight: 600;
-}
-
-.stat-number {
-  margin: 0 0 6px;
-  font-size: 30px;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.stat-change {
-  font-size: 12px;
-  color: #6a7282;
-}
-
-.stat-change.positive {
-  color: #166534;
-}
-
-.quick-actions {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.quick-actions h3 {
-  margin: 0 0 12px;
-  color: #1a1a1a;
-}
-
-.action-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.header-info {
+  display: flex;
+  align-items: center;
   gap: 12px;
 }
 
-.action-btn {
-  text-decoration: none;
-  padding: 14px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  color: #1a1a1a;
-  background: #f9fafb;
-  font-weight: 600;
-  text-align: center;
+.header-icon {
+  font-size: 30px;
 }
 
-.action-btn:hover {
-  background: #008236;
+.chat-header h2 {
+  margin: 0 0 3px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.role-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  display: inline-block;
+}
+
+.role-badge.doctor {
+  background: rgba(255, 220, 100, 0.3);
+  color: #fff8cc;
+}
+
+.role-badge.patient {
+  background: rgba(200, 255, 230, 0.25);
+  color: #ccffe8;
+}
+
+.clear-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
   color: white;
-  border-color: #008236;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 7px 11px;
+  transition: background 0.2s;
+}
+
+.clear-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Messages ── */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 16px;
+  max-width: 78%;
+  word-wrap: break-word;
+}
+
+.message.user {
+  background: #00a082;
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 160, 130, 0.25);
+}
+
+.message.bot {
+  background: white;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.message.result-message {
+  max-width: 96%;
+}
+
+.message-content {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.message-time {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 5px;
+  text-align: right;
+}
+
+.message.user .message-time {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* ── Typing indicator ── */
+.message.typing {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.typing-indicator {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.typing-indicator span {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00a082;
+  animation: bounce 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-8px); }
+}
+
+/* ── Specialty cards (patient) ── */
+.specialties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.specialty-card {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border-left: 4px solid #00a082;
+  transition: box-shadow 0.2s;
+}
+
+.specialty-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 160, 130, 0.15);
+}
+
+.specialty-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.specialty-icon {
+  font-size: 20px;
+}
+
+.specialty-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #065f46;
+}
+
+.specialty-desc {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+/* ── Disease cards (doctor) ── */
+.diseases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.disease-card {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border-left: 4px solid #f59e0b;
+  transition: box-shadow 0.2s;
+}
+
+.disease-card:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.disease-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.disease-icon {
+  font-size: 20px;
+}
+
+.disease-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.disease-desc {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 4px 0 8px;
+  line-height: 1.4;
+}
+
+.symptoms-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.symptoms-label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.symptom-tag {
+  font-size: 11px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+/* ── Input area ── */
+.chat-input {
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 12px 16px 16px;
+  flex-shrink: 0;
+}
+
+.input-hint {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 11px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 25px;
+  outline: none;
+  font-size: 14px;
+  color: #111827;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #f9fafb;
+}
+
+.chat-input input:focus {
+  border-color: #00a082;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 160, 130, 0.1);
+}
+
+.chat-input input:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.send-btn {
+  padding: 11px 20px;
+  background: #00a082;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  min-width: 54px;
+  box-shadow: 0 2px 8px rgba(0, 160, 130, 0.3);
+}
+
+.send-btn:hover:not(:disabled) {
+  background: #008866;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 160, 130, 0.4);
+}
+
+.send-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .chatbot-container {
+    height: calc(100vh - 120px);
+    border-radius: 12px;
+  }
+
+  .message {
+    max-width: 90%;
+  }
+
+  .message.result-message {
+    max-width: 98%;
+  }
 }

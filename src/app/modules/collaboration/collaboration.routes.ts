@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { AuthGuard } from '../../services/auth.guard';
 import { DashboardShellComponent } from '../../shared/components/dashboard-shell/dashboard-shell.component';
+import { PROFESSIONAL_COLLABORATION_ROUTES } from '../professional-collaboration/professional-collaboration.routes';
 
 export const COLLABORATION_ROUTES: Routes = [
   {
@@ -12,11 +13,12 @@ export const COLLABORATION_ROUTES: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./collaboration.component').then((m) => m.CollaborationComponent)
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
       },
       {
         path: 'dashboard',
-        loadComponent: () => import('./collaboration.component').then((m) => m.CollaborationComponent)
+        children: PROFESSIONAL_COLLABORATION_ROUTES
       }
     ]
   }

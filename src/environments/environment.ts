@@ -1,11 +1,11 @@
 /** Default Spring Boot port (`server.port` in application.properties). */
-const API_PORT = 8090;
+const API_PORT = 8089;
 
 /**
  * Spring Boot base URL including servlet context path `/MediCareAI`.
  * Change `API_PORT` if your backend uses another port.
  * For `ng serve` with `proxy.conf.json` only, you may use a relative URL `'/MediCareAI'`
- * instead to avoid browser CORS (proxy forwards to localhost:8090).
+ * instead to avoid browser CORS (proxy forwards to localhost:8089).
  */
 export const environment = {
   production: false,

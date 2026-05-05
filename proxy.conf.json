@@ -1,6 +1,6 @@
 {
   "/MediCareAI": {
-    "target": "http://localhost:8090",
+    "target": "http://localhost:8089",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"

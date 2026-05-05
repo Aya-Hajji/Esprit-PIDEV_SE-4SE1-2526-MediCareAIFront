@@ -67,7 +67,7 @@ export class AuthInterceptor implements HttpInterceptor {
         // rejected the action for the current user, but the session is still valid.
         if (error.status === 0) {
           console.error(
-            'Cannot reach API — check that the base URL matches the backend (default http://localhost:8090/MediCareAI), the server is running, and that nothing is blocking the request (firewall, wrong port, or mixed content).',
+            'Cannot reach API — check that the base URL matches the backend (default http://localhost:8089/MediCareAI), the server is running, and that nothing is blocking the request (firewall, wrong port, or mixed content).',
             error
           );
         }

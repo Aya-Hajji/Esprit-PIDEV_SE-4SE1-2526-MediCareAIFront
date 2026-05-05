@@ -12,7 +12,8 @@ export const SYMPTOM_AI_ROUTES: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./symptom-ai.component').then((m) => m.SymptomAiComponent)
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
       },
       {
         path: 'dashboard',
